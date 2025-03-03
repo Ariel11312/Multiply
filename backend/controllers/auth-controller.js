@@ -276,7 +276,9 @@ export const resetPassword = async (request, response) => {
 export const checkAuth = async (request, response) => {
     try {
         // Get the token from the cookies
-        const token = request.cookies.token;
+const token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2N2M1YzQ4M2U1YTAyZGU4NGUzNmEzNWIiLCJpYXQiOjE3NDEwMTYzNDksImV4cCI6MTc0MTEwMjc0OX0.GWeUcgCAtCNul7321AzIV447xXzrdL4hA9umj_xv_IE";
+const decoded1 = jwt.decode(token);
+console.log("Token expires at:", new Date(decoded1.exp * 1000));
 
         if (!token) {
             return response.status(401).json({
