@@ -275,10 +275,7 @@ export const resetPassword = async (request, response) => {
 // Function to check authentication
 export const checkAuth = async (request, response) => {
     try {
-        // Get the token from the request
-        const token = request.cookies.token || 
-                      request.headers.authorization?.split(' ')[1] ||
-                      request.query.token;
+const token = localStorage.getItem('token');
                       
         if (!token) {
             return response.status(401).json({
