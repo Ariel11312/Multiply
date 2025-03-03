@@ -280,6 +280,7 @@ export const checkAuth = async (request, response) => {
     try {
         // Retrieve token from cookies
         const token = request.cookies.token;
+        console.log("token:" + token)
         
         if (!token) {
             return response.status(401).json({
