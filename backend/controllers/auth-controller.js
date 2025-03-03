@@ -1,17 +1,16 @@
-import { User } from "../models/user.js"
-import bcrypt from "bcryptjs"
-import { generateVerificationToken } from "../utils/generateVerificationToken.js"
-import { generateJWTToken } from "../utils/generateJWTToken.js"
-import { sendPasswordResetEmail, sendResetSuccessEmail, sendVerificationEmail, sendWelcomeEmail } from "../emails/email.js"
-import crypto from "crypto"
-import { Member } from "../models/Member.js"
-import { MemberTransaction } from "../models/member-transactions.js"
-import moment from "moment"
-import jwt from 'jsonwebtoken';
+import { User } from "../models/user.js";
+import bcrypt from "bcryptjs";
+import { generateJWTToken } from "../utils/generateJWTToken.js";
+import { sendPasswordResetEmail, sendResetSuccessEmail } from "../emails/email.js";
+import crypto from "crypto";
+import { Member } from "../models/Member.js";
+import { MemberTransaction } from "../models/member-transactions.js";
+import moment from "moment";
+import jwt from "jsonwebtoken";
 import { OAuth2Client } from "google-auth-library";
-const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
-import { sendOtp } from '../utils/semaphore-utils.js';  // Assuming you have the SMS service
+import { sendOtp } from "../utils/semaphore-utils.js"; // Assuming you have the SMS service
 
+const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 export const signup = async (request, response) => {
     try {
         const { firstName, lastName, phoneNumber, password } = request.body;
@@ -20,7 +19,7 @@ export const signup = async (request, response) => {
         if (!firstName?.trim() || !lastName?.trim() || !phoneNumber?.trim() || !password?.trim()) {
             return response.status(400).json({
                 success: false,
-                message: "All fields are required and cannot be empty"
+                message: "All fields are required and cannot be empty",
             });
         }
 
@@ -29,7 +28,7 @@ export const signup = async (request, response) => {
         if (!nameRegex.test(firstName) || !nameRegex.test(lastName)) {
             return response.status(400).json({
                 success: false,
-                message: "Names should only contain letters and be between 2-50 characters"
+                message: "Names should only contain letters and be between 2-50 characters",
             });
         }
 
@@ -38,18 +37,18 @@ export const signup = async (request, response) => {
         if (!phoneRegex.test(phoneNumber)) {
             return response.status(400).json({
                 success: false,
-                message: "Invalid phone number format. Please enter a valid Philippine mobile number"
+                message: "Invalid phone number format. Please enter a valid Philippine mobile number",
             });
         }
 
         // Format phone number to standard format (63XXXXXXXXXX)
-        const formattedPhone = phoneNumber.replace(/^\+?63|^0/, '63');
+        const formattedPhone = phoneNumber.replace(/^\+?63|^0/, "63");
 
         // Password strength validation
         if (password.length < 8) {
             return response.status(400).json({
                 success: false,
-                message: "Password must be at least 8 characters long"
+                message: "Password must be at least 8 characters long",
             });
         }
 
@@ -58,7 +57,7 @@ export const signup = async (request, response) => {
         if (existingUser) {
             return response.status(409).json({
                 success: false,
-                message: "User with this phone number already exists"
+                message: "User with this phone number already exists",
             });
         }
 
@@ -79,7 +78,7 @@ export const signup = async (request, response) => {
             verificationCode: otp,
             verificationCodeExpiry: otpExpiry,
             createdAt: new Date(),
-            updatedAt: new Date()
+            updatedAt: new Date(),
         });
 
         // Save user
@@ -99,25 +98,24 @@ export const signup = async (request, response) => {
                 lastName: newUser.lastName,
                 phoneNumber: newUser.phoneNumber,
                 isVerified: newUser.isVerified,
-                createdAt: newUser.createdAt
-            }
+                createdAt: newUser.createdAt,
+            },
         });
-
     } catch (error) {
-        console.error('Signup error:', error);
-        
+        console.error("Signup error:", error);
+
         // Handle specific MongoDB errors
         if (error.code === 11000) {
             return response.status(409).json({
                 success: false,
-                message: "User with this phone number already exists"
+                message: "User with this phone number already exists",
             });
         }
 
         return response.status(500).json({
             success: false,
             message: "An error occurred during signup",
-            error: process.env.NODE_ENV === 'development' ? error.message : undefined
+            error: process.env.NODE_ENV === "development" ? error.message : undefined,
         });
     }
 };
@@ -125,14 +123,14 @@ export const signup = async (request, response) => {
 export const login = async (request, response) => {
     let { number, password } = request.body;
 
+    // Format phone number
     if (number.startsWith("09")) {
-        number = "9" + number.slice(2);
+        number = "63" + number.slice(2);
     }
-    
-    
+
     try {
         // Check if user exists
-        const user = await User.findOne({ phoneNumber:number });
+        const user = await User.findOne({ phoneNumber: number });
 
         if (!user) {
             return response.status(400).json({ success: false, message: "Invalid phone number" });
@@ -146,14 +144,13 @@ export const login = async (request, response) => {
         }
 
         // Check if user is verified
-        const isVerified = user.isVerified;
-
-        if (!isVerified) {
-            return response.status(400).json({ success: false, message: "Email not verified" });
+        if (!user.isVerified) {
+            return response.status(400).json({ success: false, message: "Phone number not verified" });
         }
 
         // Generate JWT token
-        generateJWTToken(response, user._id)
+        generateJWTToken(response, user._id);
+
         response.status(200).json({
             success: true,
             message: "Login Successful",
@@ -161,56 +158,77 @@ export const login = async (request, response) => {
                 firstName: user.firstName,
                 lastName: user.lastName,
             },
-        })
-
+        });
     } catch (error) {
-        console.log(error);
+        console.error("Login error:", error);
         return response.status(500).json({ success: false, message: "An unexpected error occurred" });
     }
 };
 export const logout = (request, response) => {
-    response.clearCookie("token")
-    response.status(200).json({ sucess: true, messege: "Logged Out Successfully" })
-}
+    response.clearCookie("token");
+    response.status(200).json({ success: true, message: "Logged Out Successfully" });
+};
 export const verifyEmail = async (request, response) => {
     const { code } = request.body;
+
     try {
-        const user = await User.findOne({verificationCode: code});
+        const user = await User.findOne({ verificationCode: code });
 
         if (!user) {
             return response.status(400).json({ success: false, message: "Incorrect code or code expired." });
         }
 
+        // Check if the OTP is expired
+        if (user.verificationCodeExpiry < new Date()) {
+            return response.status(400).json({ success: false, message: "Verification code has expired." });
+        }
+
+        // Mark user as verified
         user.isVerified = true;
         user.verificationCode = undefined;
         user.verificationCodeExpiry = undefined;
+
+        // Generate JWT token
         generateJWTToken(response, user._id);
+
         await user.save();
         return response.status(200).json({ success: true, message: "Phone number verified successfully." });
-
     } catch (error) {
-        console.error("Error verifying email:", error);
-        return response.status(500).json({ success: false, message: "An error occurred while verifying the email." });
+        console.error("Error verifying phone number:", error);
+        return response.status(500).json({ success: false, message: "An error occurred while verifying the phone number." });
     }
 };
 
 
 export const forgotPassword = async (request, response) => {
     const { email } = request.body;
-    const user = await User.findOne({ email });
-    if (!user) {
-        return response.status(400).json({ sucess: false, messege: "invalid email" })
+
+    try {
+        const user = await User.findOne({ email });
+
+        if (!user) {
+            return response.status(400).json({ success: false, message: "Invalid email" });
+        }
+
+        // Generate reset token
+        const resetPasswordToken = crypto.randomBytes(32).toString("hex");
+        const resetPasswordExpiresAt = Date.now() + 1 * 60 * 60 * 1000; // 1 hour expiry
+
+        // Save reset token to user
+        user.resetPasswordToken = resetPasswordToken;
+        user.resetPasswordExpiredAt = resetPasswordExpiresAt;
+
+        await user.save();
+
+        // Send reset email
+        await sendPasswordResetEmail(user.email, `${process.env.CLIENT_URL}/reset-password/${resetPasswordToken}`);
+
+        return response.status(200).json({ success: true, message: "Reset password email sent successfully" });
+    } catch (error) {
+        console.error("Forgot password error:", error);
+        return response.status(500).json({ success: false, message: "An error occurred while processing your request." });
     }
-    const resetPasswordToken = crypto.randomBytes(32).toString("hex")
-    const resetPasswordExpiresAt = Date.now() + 1 * 60 * 60 * 1000
-    user.resetPasswordToken = resetPasswordToken;
-    user.resetPasswordExpiredAt = resetPasswordExpiresAt;
-
-    await user.save();
-    await sendPasswordResetEmail(user.email, `${process.env.CLIENT_URL}/reset-password/${resetPasswordToken}`)
-    return response.status(200).json({ sucess: false, messege: "reset possword email send successfully" })
-
-}
+};
 export const resetPassword = async (request, response) => {
     try {
         const { token } = request.params;
@@ -247,34 +265,36 @@ export const resetPassword = async (request, response) => {
             message: "Password reset successfully",
         });
     } catch (error) {
-        console.error(error);
+        console.error("Reset password error:", error);
         return response.status(500).json({
             success: false,
             message: "An error occurred while resetting the password",
         });
     }
 };
-
 // Function to check authentication
 export const checkAuth = async (request, response) => {
     try {
         // Get the token from the cookies
         const token = request.cookies.token;
+
         if (!token) {
             return response.status(401).json({
                 success: false,
-                message: 'Authentication token is missing.',
+                message: "Authentication token is missing.",
             });
         }
 
         // Decode and verify the token
         const decoded = jwt.verify(token, process.env.JWT_SECRET);
+
         // Find the user by ID
         const user = await User.findById(decoded.userId);
+
         if (!user) {
             return response.status(404).json({
                 success: false,
-                message: 'User not found.',
+                message: "User not found.",
             });
         }
 
@@ -283,10 +303,10 @@ export const checkAuth = async (request, response) => {
             user: { ...user._doc, password: undefined }, // Exclude the password field
         });
     } catch (error) {
-        console.error('Error in checkAuth:', error);
+        console.error("Error in checkAuth:", error);
         response.status(400).json({
             success: false,
-            message: 'Invalid or expired token.',
+            message: "Invalid or expired token.",
         });
     }
 };
@@ -440,13 +460,12 @@ export const googleLogin = async (req, res) => {
             await user.save();
         }
 
-        // Create session or token (example using JWT)
-        const token = generateJWTToken(res, user._id);
+        // Generate JWT token
+        generateJWTToken(res, user._id);
 
-        res.json({ message: "Login successful" });
+        res.json({ success: true, message: "Login successful" });
     } catch (error) {
         console.error("Google Login Error:", error);
-        res.status(500).json({ message: "Login failed" });
+        res.status(500).json({ success: false, message: "Login failed" });
     }
-
 };
