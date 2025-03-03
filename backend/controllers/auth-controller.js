@@ -275,13 +275,11 @@ export const resetPassword = async (request, response) => {
 // Function to check authentication
 export const checkAuth = async (request, response) => {
     try {
-        // Get the token from the cookies
-        const token = jwt.sign({ userId }, process.env.JWT_SECRET, {
-        });
-
-const decoded1 = jwt.decode(token);
-console.log("Token expires at:", new Date(decoded1.exp * 1000));
-
+        // Get the token from the request
+        const token = request.cookies.token || 
+                      request.headers.authorization?.split(' ')[1] ||
+                      request.query.token;
+                      
         if (!token) {
             return response.status(401).json({
                 success: false,
@@ -291,17 +289,21 @@ console.log("Token expires at:", new Date(decoded1.exp * 1000));
 
         // Decode and verify the token
         const decoded = jwt.verify(token, process.env.JWT_SECRET);
-
+        
+        // Optional: Log token expiration time
+        const decodedInfo = jwt.decode(token);
+        console.log("Token expires at:", new Date(decodedInfo.exp * 1000));
+        
         // Find the user by ID
         const user = await User.findById(decoded.userId);
-
+        
         if (!user) {
             return response.status(404).json({
                 success: false,
                 message: "User not found.",
             });
         }
-
+        
         response.status(200).json({
             success: true,
             user: { ...user._doc, password: undefined }, // Exclude the password field
