@@ -310,6 +310,7 @@ export const checkAuth = async (request, response) => {
         });
     }
 };
+
 export const checkMember = async (request, response) => {
 
     const token = request.cookies.token;
@@ -460,7 +461,7 @@ export const googleLogin = async (req, res) => {
             await user.save();
         }
 
-        // Generate JWT token
+        // Generate JWT token and set it in an HTTP-only cookie
         generateJWTToken(res, user._id);
 
         res.json({ success: true, message: "Login successful" });
