@@ -1,15 +1,23 @@
-
-
 // middleware/auth.js
 export const checkAuth = async (setAuthState) => {
   try {
-    const response = await fetch(`https://multiply-backend.onrender.com/api/auth/check-auth`, {
+    // Set a timeout to prevent long waiting times
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 5000); // 5-second timeout
+
+    const response = await fetch(`http://localhost:3001/api/auth/check-auth`, {
       method: "GET",
       headers: { "Content-Type": "application/json" },
       credentials: "include",
+      signal: controller.signal, // Pass the abort signal
     });
 
-    if (!response.ok) throw new Error("Authentication failed");
+    clearTimeout(timeout); // Clear timeout if request succeeds
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => null);
+      throw new Error(errorData?.message || "Authentication failed");
+    }
 
     const data = await response.json();
 
@@ -21,11 +29,12 @@ export const checkAuth = async (setAuthState) => {
     });
   } catch (error) {
     console.error("Auth check error:", error);
+
     setAuthState({
       isAuthenticated: false,
       user: null,
       isCheckingAuth: false,
-      error: error.message,
+      error: error.name === "AbortError" ? "Request timed out" : error.message,
     });
   }
 };
