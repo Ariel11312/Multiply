@@ -18,7 +18,8 @@ export const generateJWTToken = (response, userId) => {
         const token = jwt.sign({ userId }, process.env.JWT_SECRET, {
             expiresIn: '1d', // Token expires in 1 day
         });
-
+localStorage.setItem('token', data.token);
+  console.log('Token saved to localStorage');
         // Set token in an HTTP-only cookie
         response.cookie('token', token, {
             httpOnly: true, // Prevent access via client-side scripts
