@@ -272,8 +272,6 @@ export const resetPassword = async (request, response) => {
         });
     }
 };
-import User from "../models/User.js"; // Ensure correct import of your User model
-
 export const checkAuth = async (request, response) => {
     try {
         // Retrieve token from cookies
