@@ -273,10 +273,14 @@ export const resetPassword = async (request, response) => {
     }
 };
 // Function to check authentication
+import jwt from "jsonwebtoken";
+import User from "../models/User.js"; // Ensure correct import of your User model
+
 export const checkAuth = async (request, response) => {
     try {
-const token = localStorage.getItem('token');
-                      
+        // Retrieve token from cookies
+        const token = request.cookies.token;
+        
         if (!token) {
             return response.status(401).json({
                 success: false,
@@ -286,24 +290,23 @@ const token = localStorage.getItem('token');
 
         // Decode and verify the token
         const decoded = jwt.verify(token, process.env.JWT_SECRET);
-        
+
         // Optional: Log token expiration time
-        const decodedInfo = jwt.decode(token);
-        console.log("Token expires at:", new Date(decodedInfo.exp * 1000));
-        
+        console.log("Token expires at:", new Date(decoded.exp * 1000));
+
         // Find the user by ID
-        const user = await User.findById(decoded.userId);
-        
+        const user = await User.findById(decoded.userId).select("-password"); // Exclude password
+
         if (!user) {
             return response.status(404).json({
                 success: false,
                 message: "User not found.",
             });
         }
-        
+
         response.status(200).json({
             success: true,
-            user: { ...user._doc, password: undefined }, // Exclude the password field
+            user,
         });
     } catch (error) {
         console.error("Error in checkAuth:", error);
