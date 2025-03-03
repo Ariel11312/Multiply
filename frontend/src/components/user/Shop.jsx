@@ -38,7 +38,7 @@ const EcommerceShop = () => {
   const getCartTotal = () => {
     return cartItems.reduce((total, item) => total + item.price, 0).toFixed(2);
   };
-  const API_BASE_URL = "https://wemultiply-backend.onrender.com";
+  const API_BASE_URL = "https://multiply-backend.onrender.com";
   const getImageUrl = (imageUrl) => {
     if (!imageUrl) return "/default-product-image.jpg"; // Default image if none provided
     if (imageUrl.startsWith("http")) return imageUrl; // If URL is already a full URL, return as is

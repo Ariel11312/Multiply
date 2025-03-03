@@ -95,7 +95,7 @@ const App = () => {
 
         // Then fetch member data
         const response = await fetch(
-          `https://wemultiply-backend.onrender.com/api/auth/check-member`,
+          `https://multiply-backend.onrender.com/api/auth/check-member`,
           {
             method: "GET",
             headers: {

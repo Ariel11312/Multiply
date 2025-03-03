@@ -12,7 +12,7 @@ const ReferralTreeTable = () => {
     const fetchReferralTree = async () => {
       try {
         const response = await fetch(
-          "https://wemultiply-backend.onrender.com/api/member/referral-tree",
+          "https://multiply-backend.onrender.com/api/member/referral-tree",
           {
             method: "GET",
             headers: {

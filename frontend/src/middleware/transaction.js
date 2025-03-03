@@ -1,6 +1,6 @@
 export const checkTransaction = async (setTransactions) => {
     try {
-        const response = await fetch('https://wemultiply-backend.onrender.com/api/trans/transaction', {
+        const response = await fetch('https://multiply-backend.onrender.com/api/trans/transaction', {
             method: 'GET',
             headers: {
                 'Content-Type': 'application/json',
