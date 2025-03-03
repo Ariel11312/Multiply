@@ -1,4 +1,5 @@
 import jwt from 'jsonwebtoken';
+
 /**
  * Generates a JWT token and sets it as an HTTP-only cookie.
  * @param {object} response - The HTTP response object.
@@ -15,13 +16,13 @@ export const generateJWTToken = (response, userId) => {
     try {
         // Generate JWT token
         const token = jwt.sign({ userId }, process.env.JWT_SECRET, {
+            expiresIn: '1d', // Token expires in 1 day
         });
 
         // Set token in an HTTP-only cookie
         response.cookie('token', token, {
             httpOnly: true, // Prevent access via client-side scripts
-            Credentials:true,
-            secure: process.env.NODE_ENV === 'production', // use secure cookies in production
+            secure: process.env.NODE_ENV === 'production', // Use secure cookies in production
             sameSite: 'strict', // Mitigate CSRF attacks
             maxAge: 24 * 60 * 60 * 1000, // Cookie expires in 1 day
             path: '/', // Cookie available across the entire site
