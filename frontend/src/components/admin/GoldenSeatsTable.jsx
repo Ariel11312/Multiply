@@ -10,7 +10,7 @@ const GoldenSeatsTable = () => {
   const [groupedData, setGroupedData] = useState([]);
 
   useEffect(() => {
-    fetch('http://localhost:3001/api/golden/golden-seats')
+    fetch('https://wemultiply-backend.onrender.com/api/golden/golden-seats')
       .then(response => response.json())
       .then(result => {
         if (result.success && result.members.length > 0) {

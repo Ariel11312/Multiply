@@ -3,7 +3,7 @@
 // middleware/auth.js
 export const checkAuth = async (setAuthState) => {
   try {
-    const response = await fetch(`http://localhost:3001/api/auth/check-auth`, {
+    const response = await fetch(`https://wemultiply-backend.onrender.com/api/auth/check-auth`, {
       method: "GET",
       headers: { "Content-Type": "application/json" },
       credentials: "include",

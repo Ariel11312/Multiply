@@ -91,7 +91,7 @@ const Membership = () => {
     if (paymentType === "Gcash") {
       try {
         const response = await axios.post(
-          "http://localhost:3001/api/paymongo/create-payment",
+          "https://wemultiply-backend.onrender.com/api/paymongo/create-payment",
           {
             amount: memberAmount,
             description: memberDescription,
@@ -127,7 +127,7 @@ const Membership = () => {
   const checkAuth = async () => {
     try {
       const response = await fetch(
-        `http://localhost:3001/api/auth/check-auth`,
+        `https://wemultiply-backend.onrender.com/api/auth/check-auth`,
         {
           method: "GET",
           headers: {
@@ -255,7 +255,7 @@ const Membership = () => {
 
       // Check if the member already exists in the database
       const checkResponse = await fetch(
-        `http://localhost:3001/api/member/check-member/${memberID}`
+        `https://wemultiply-backend.onrender.com/api/member/check-member/${memberID}`
       );
       const checkData = await checkResponse.json();
 

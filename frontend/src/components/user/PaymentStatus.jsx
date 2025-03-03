@@ -26,8 +26,8 @@ const PaymentStatus = () => {
       const isUpdate = goldenSeatData && goldenSeatData.GoldenSeat === "success";
       const position = goldenSeatData?.position || ""; // Ensure position is a string
       const apiUrl = isUpdate
-        ? "http://localhost:3001/api/member/update-member"
-        : "http://localhost:3001/api/member/create-member";
+        ? "https://wemultiply-backend.onrender.com/api/member/update-member"
+        : "https://wemultiply-backend.onrender.com/api/member/create-member";
 
       const method = isUpdate ? "PUT" : "POST";
 

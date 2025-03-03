@@ -52,7 +52,7 @@ const ItemsPage = () => {
 
   // Constants
   const categories = ["all", "beverages", "snacks", "food", "supplements"];
-  const API_BASE_URL = "http://localhost:3001";
+  const API_BASE_URL = "https://wemultiply-backend.onrender.com";
 
   // Initial Data Load
   useEffect(() => {
