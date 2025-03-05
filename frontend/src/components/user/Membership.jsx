@@ -255,7 +255,7 @@ const Membership = () => {
 
       // Check if the member already exists in the database
       const checkResponse = await fetch(
-        `http://156.67.214.197:3001/api/member/check-member/${memberID}`
+        `https://api.wemultiplyapp.com/api/member/check-member/${memberID}`
       );
       const checkData = await checkResponse.json();
 
