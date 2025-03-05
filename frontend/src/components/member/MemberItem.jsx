@@ -52,7 +52,7 @@ const ItemsPage = () => {
 
   // Constants
   const categories = ["all", "beverages", "snacks", "food", "supplements"];
-  const API_BASE_URL = "http://156.67.214.197:3001";
+  const API_BASE_URL = "https://156.67.214.197:3001";
 
   // Initial Data Load
   useEffect(() => {

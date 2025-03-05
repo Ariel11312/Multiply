@@ -7,7 +7,7 @@ const GoldenSeats = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await fetch("http://156.67.214.197:3001/api/trans/commisions", {
+        const response = await fetch("https://156.67.214.197:3001/api/trans/commisions", {
           method: 'GET',
           headers: { "Content-Type": "application/json" },
           credentials: 'include'

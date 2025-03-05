@@ -217,7 +217,7 @@ const Dashboard = () => {
 
     try {
       const response = await axios.post(
-        "http://156.67.214.197:3001/api/paymongo/create-payment",
+        "https://156.67.214.197:3001/api/paymongo/create-payment",
         {
           amount: amount,
           description: seat.title,

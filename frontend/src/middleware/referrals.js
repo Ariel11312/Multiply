@@ -1,7 +1,7 @@
 export const fetchReferrals = async (setReferralList, setReferralStats) => {
     try {
         // Make API request to fetch referrals
-        const response = await fetch('http://156.67.214.197:3001/api/member/view-referrals', {
+        const response = await fetch('https://156.67.214.197:3001/api/member/view-referrals', {
             method: 'GET',
             headers: {
                 'Content-Type': 'application/json',

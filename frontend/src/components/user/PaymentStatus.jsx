@@ -26,8 +26,8 @@ const PaymentStatus = () => {
       const isUpdate = goldenSeatData && goldenSeatData.GoldenSeat === "success";
       const position = goldenSeatData?.position || ""; // Ensure position is a string
       const apiUrl = isUpdate
-        ? "http://156.67.214.197:3001/api/member/update-member"
-        : "http://156.67.214.197:3001/api/member/create-member";
+        ? "https://156.67.214.197:3001/api/member/update-member"
+        : "https://156.67.214.197:3001/api/member/create-member";
 
       const method = isUpdate ? "PUT" : "POST";
 
