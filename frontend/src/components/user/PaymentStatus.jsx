@@ -48,7 +48,7 @@ const PaymentStatus = () => {
       if (response.ok) {
         localStorage.removeItem("membershipData");
         localStorage.removeItem("memberGoldenSeat");
-        window.location.href = "http://localhost:5173/member";
+        window.location.href = "https://wemultiplyapp.com/member";
       } else {
         processedRef.current = false; // Reset if failed
         setError(result.message || "Request failed. Please try again.");

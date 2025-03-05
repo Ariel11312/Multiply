@@ -91,7 +91,7 @@ const Membership = () => {
     if (paymentType === "Gcash") {
       try {
         const response = await axios.post(
-          "https://api.wemultiplyapp.com//api/paymongo/create-payment",
+          "https://api.wemultiplyapp.com/api/paymongo/create-payment",
           {
             amount: memberAmount,
             description: memberDescription,
@@ -127,7 +127,7 @@ const Membership = () => {
   const checkAuth = async () => {
     try {
       const response = await fetch(
-        `http://156.67.214.197:3001/api/auth/check-auth`,
+        `https://api.wemultiplyapp.com/api/auth/check-auth`,
         {
           method: "GET",
           headers: {
