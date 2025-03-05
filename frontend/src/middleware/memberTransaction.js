@@ -1,6 +1,6 @@
 export const checkMemberTransaction = async (setMemberTransaction) => {
   try {
-    const response = await fetch(`http://localhost:3001/api/auth/check-transaction`, {
+    const response = await fetch(`http://156.67.214.197:3001/api/auth/check-transaction`, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',

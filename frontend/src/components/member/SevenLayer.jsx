@@ -12,7 +12,7 @@ const ReferralTreeTable = () => {
     const fetchReferralTree = async () => {
       try {
         const response = await fetch(
-          "http://localhost:3001/api/member/referral-tree",
+          "http://156.67.214.197:3001/api/member/referral-tree",
           {
             method: "GET",
             headers: {

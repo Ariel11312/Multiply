@@ -275,7 +275,7 @@ const Navbar = () => {
 
   const handleLogout = async () => {
     try {
-      const response = await fetch("http://localhost:3001/api/auth/logout", {
+      const response = await fetch("http://156.67.214.197:3001/api/auth/logout", {
         method: "POST",
         credentials: "include",
       });

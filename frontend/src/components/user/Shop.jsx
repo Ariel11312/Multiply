@@ -38,7 +38,7 @@ const EcommerceShop = () => {
   const getCartTotal = () => {
     return cartItems.reduce((total, item) => total + item.price, 0).toFixed(2);
   };
-  const API_BASE_URL = "http://localhost:3001";
+  const API_BASE_URL = "http://156.67.214.197:3001";
   const getImageUrl = (imageUrl) => {
     if (!imageUrl) return "/default-product-image.jpg"; // Default image if none provided
     if (imageUrl.startsWith("http")) return imageUrl; // If URL is already a full URL, return as is

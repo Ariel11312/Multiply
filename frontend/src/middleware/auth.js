@@ -5,7 +5,7 @@ export const checkAuth = async (setAuthState) => {
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), 5000); // 5-second timeout
 
-    const response = await fetch(`http://localhost:3001/api/auth/check-auth`, {
+    const response = await fetch(`http://156.67.214.197:3001/api/auth/check-auth`, {
       method: "GET",
       headers: { "Content-Type": "application/json" },
       credentials: "include",

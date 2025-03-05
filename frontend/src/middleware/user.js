@@ -1,7 +1,7 @@
 export const allUsers = async (setData) => {
     try {
         // Make a fetch request to get the users with member details
-        const response = await fetch('http://localhost:3001/api/user/all-users', {
+        const response = await fetch('http://156.67.214.197:3001/api/user/all-users', {
             method: 'GET',
             headers: {
                 'Content-Type': 'application/json',

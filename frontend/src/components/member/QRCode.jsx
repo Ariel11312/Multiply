@@ -10,7 +10,7 @@ const QRCodeGenerator = () => {
   }, []);
 
   const referralLink = MemberData?.referralCode
-    ? `http://localhost:5173/member-registration?referral=${MemberData.referralCode}`
+    ? `http:wemultiplyapp.com/member-registration?referral=${MemberData.referralCode}`
     : "";
 
   return (
