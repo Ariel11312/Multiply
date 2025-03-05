@@ -217,7 +217,7 @@ const Dashboard = () => {
 
     try {
       const response = await axios.post(
-        "https://multiply-backend.onrender.com/api/paymongo/create-payment",
+        "http://localhost:3001/api/paymongo/create-payment",
         {
           amount: amount,
           description: seat.title,

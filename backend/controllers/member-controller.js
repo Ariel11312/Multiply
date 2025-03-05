@@ -81,6 +81,7 @@ export const createMember = async (request, response) => {
             referralCode,
             memberType,
             addressNo,
+            region,
             province,
             city,
             barangay,

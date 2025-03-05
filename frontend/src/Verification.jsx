@@ -55,7 +55,7 @@ const Verification = () => {
     setError(""); // Clear previous errors
 
     try {
-      const response = await fetch("https://multiply-backend.onrender.com/api/auth/verify-email", {
+      const response = await fetch("http://localhost:3001/api/auth/verify-email", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

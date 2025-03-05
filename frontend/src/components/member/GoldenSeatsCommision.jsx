@@ -7,7 +7,7 @@ const GoldenSeats = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await fetch("https://multiply-backend.onrender.com/api/trans/commisions", {
+        const response = await fetch("http://localhost:3001/api/trans/commisions", {
           method: 'GET',
           headers: { "Content-Type": "application/json" },
           credentials: 'include'

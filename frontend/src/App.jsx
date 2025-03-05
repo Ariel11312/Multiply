@@ -95,7 +95,7 @@ const App = () => {
 
         // Then fetch member data
         const response = await fetch(
-          `https://multiply-backend.onrender.com/api/auth/check-member`,
+          `http://localhost:3001/api/auth/check-member`,
           {
             method: "GET",
             headers: {

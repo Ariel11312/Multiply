@@ -26,8 +26,8 @@ const PaymentStatus = () => {
       const isUpdate = goldenSeatData && goldenSeatData.GoldenSeat === "success";
       const position = goldenSeatData?.position || ""; // Ensure position is a string
       const apiUrl = isUpdate
-        ? "https://multiply-backend.onrender.com/api/member/update-member"
-        : "https://multiply-backend.onrender.com/api/member/create-member";
+        ? "http://localhost:3001/api/member/update-member"
+        : "http://localhost:3001/api/member/create-member";
 
       const method = isUpdate ? "PUT" : "POST";
 
@@ -47,6 +47,7 @@ const PaymentStatus = () => {
 
       if (response.ok) {
         localStorage.removeItem("membershipData");
+        localStorage.removeItem("memberGoldenSeat");
         window.location.href = "http://localhost:5173/member";
       } else {
         processedRef.current = false; // Reset if failed

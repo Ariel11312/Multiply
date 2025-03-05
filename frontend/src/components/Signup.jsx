@@ -39,7 +39,7 @@ const Signup = () => {
     setIsLoading(true);
 
     try {
-      const response = await fetch("https://multiply-backend.onrender.com/api/auth/signup", {
+      const response = await fetch("http://localhost:3001/api/auth/signup", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
