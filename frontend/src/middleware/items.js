@@ -1,6 +1,6 @@
 export const fetchItems = async (setItems) => {
     try {
-        const response = await fetch('https://156.67.214.197:3001/api/item/get-all', {
+        const response = await fetch('https://api.wemultiplyapp.com//api/item/get-all', {
             method: 'GET',
             headers: { "Content-Type": "application/json" },
             credentials: 'include'

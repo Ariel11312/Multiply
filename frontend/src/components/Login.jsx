@@ -34,7 +34,7 @@ const Login = () => {
     setError("");
 
     try {
-      const response = await fetch("https://156.67.214.197:3001/api/auth/login", {
+      const response = await fetch("https://api.wemultiplyapp.com/api/auth/login", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -61,7 +61,7 @@ const Login = () => {
   const handleGoogleLoginSuccess = async (credentialResponse) => {
     try {
       const response = await fetch(
-        "https://156.67.214.197:3001/api/auth/google-login",
+        "https://api.wemultiplyapp.com/api/auth/google-login",
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },

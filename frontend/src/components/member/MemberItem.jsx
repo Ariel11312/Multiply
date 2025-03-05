@@ -52,7 +52,7 @@ const ItemsPage = () => {
 
   // Constants
   const categories = ["all", "beverages", "snacks", "food", "supplements"];
-  const API_BASE_URL = "https://156.67.214.197:3001";
+  const API_BASE_URL = "https://api.wemultiplyapp.com";
 
   // Initial Data Load
   useEffect(() => {

@@ -95,7 +95,7 @@ const App = () => {
 
         // Then fetch member data
         const response = await fetch(
-          `https://156.67.214.197:3001/api/auth/check-member`,
+          `https://api.wemultiplyapp.com/api/auth/check-member`,
           {
             method: "GET",
             headers: {

@@ -1,6 +1,6 @@
 export const checkMember = async (setMemberData) => {
     try {
-      const response = await fetch(`https://156.67.214.197:3001/api/auth/check-member`, {
+      const response = await fetch(`https://api.wemultiplyapp.com/api/auth/check-member`, {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
