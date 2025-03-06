@@ -317,7 +317,7 @@ const Navbar = () => {
     navigate(path);
     onClose();
   };
-  const ProfileMenu = ({ isOpen, onClose, user, handleLogout }) => {
+  const ProfileMenu = ({ isOpen, user, handleLogout }) => {
     if (!isOpen) return null;
 
     return (
