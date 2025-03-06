@@ -315,9 +315,8 @@ const Navbar = () => {
   const handleNavigation = (path) => {
     console.log(path);
     navigate(path);
-    onClose();
   };
-  const ProfileMenu = ({ isOpen, user, handleLogout }) => {
+  const ProfileMenu = ({ isOpen, onClose, user, handleLogout }) => {
     if (!isOpen) return null;
 
     return (
@@ -659,7 +658,7 @@ const Navbar = () => {
                         <li className="group">
                           <a
                             className="flex items-center space-x-3 p-3 rounded-lg cursor-pointer transition-colors duration-200 hover:bg-green-50 group-hover:text-green-500"
-                            onClick={() => handleNavigation("/transactions")}
+                            onClick={() => handleNavigation("/member-transactions")}
                           >
                             <CreditCard className="h-5 w-5 text-gray-400 group-hover:text-green-500" />
                             <span>Transactions</span>

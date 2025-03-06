@@ -169,13 +169,13 @@ useEffect(() => {
                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-green-500 mr-2">
                   <path d="M20 6L9 17l-5-5" />
                 </svg>
-                {memberDetails?.referrerBenefit || "Get $10 credit when your friend signs up"}
+                {memberDetails?.referrerBenefit || "your friend will receive 5% commission on every product you purchase"}
               </li>
               <li className="flex items-center mb-1">
                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-green-500 mr-2">
                   <path d="M20 6L9 17l-5-5" />
                 </svg>
-                {memberDetails?.referralBenefit || "Your friend receives $5 welcome bonus"}
+                {memberDetails?.referralBenefit || "Your friend receives 5% commision when you use their referral code"}
               </li>
             </ul>
           </div>
