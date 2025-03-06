@@ -65,20 +65,14 @@ export const CreateItem = async (req, res) => {
 // // Get all items
 export const fetchItems = async (req, res) => {
     try {
-        // Retrieve the token from cookies
-        const token = req.cookies.token;
-        if (!token) {
-            return res.status(401).json({
+        const items = await Item.find({}); // Fetch all documents
+
+        if (!items.length) {
+            return res.status(404).json({
                 success: false,
-                message: 'Authentication token is missing.',
+                message: "No items found",
             });
         }
-
-        // Verify the token to decode the user information
-        const decoded = jwt.verify(token, process.env.JWT_SECRET);
-
-        // Fetch items that belong to the decoded memberId
-        const items = await Item.find({ memberId: decoded.userId });
 
         res.json({
             success: true,
