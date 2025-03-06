@@ -6,7 +6,7 @@ export const addCart = async (req, res) => {
    
        const token = req.cookies.token;
        if (!token) {
-           return response.status(401).json({
+           return res.status(401).json({
                success: false,
                message: 'Authentication token is missing.',
            });
