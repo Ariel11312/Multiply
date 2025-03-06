@@ -7,7 +7,10 @@ const EcommerceShop = () => {
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-
+  const [cartItemCount, setCartItemCount] = useState(0);
+  const [notification, setNotification] = useState(null);
+  const [currentSlide, setCurrentSlide] = useState(0);
+  
   useEffect(() => {
     // Call the fetch function when component mounts
     const loadProducts = async () => {
@@ -19,12 +22,68 @@ const EcommerceShop = () => {
         setLoading(false);
       }
     };
-    
+
     loadProducts();
   }, []);
 
-  const addToCart = (product) => {
-    setCartItems([...cartItems, product]);
+  // Add to cart function for frontend
+  const addToCart = async (itemId, quantity = 1, userId) => {
+    try {
+      // Show loading state if needed
+      setLoading(true);
+
+      // API call to add item to cart
+      const response = await fetch(
+        import.meta.env.VITE_API_URL + "/api/cart/addcart",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          credentials: "include",
+          body: JSON.stringify({
+            userId,
+            itemId,
+            quantity,
+          }),
+        }
+      );
+      // Handle error responses
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || "Failed to add item to cart");
+      }
+
+      // Parse the successful response
+      const updatedCart = await response.json();
+
+      // Update local cart state
+      setCart(updatedCart);
+
+      // Update cart item count for UI badge/indicator
+      setCartItemCount(
+        updatedCart.items.reduce((total, item) => total + item.quantity, 0)
+      );
+
+      // Show success message
+      setNotification({
+        type: "success",
+        message: "Item added to cart successfully!",
+      });
+
+      return updatedCart;
+    } catch (error) {
+      // Handle and display error
+      console.error("Add to cart error:", error);
+      setNotification({
+        type: "error",
+        message: error.message || "Failed to add item to cart",
+      });
+      throw error;
+    } finally {
+      // Clear loading state
+      setLoading(false);
+    }
   };
 
   const removeFromCart = (productId) => {
@@ -44,151 +103,241 @@ const EcommerceShop = () => {
     if (imageUrl.startsWith("http")) return imageUrl; // If URL is already a full URL, return as is
     return `${API_BASE_URL}${imageUrl}`; // If it's a relative path, prepend the base API URL
   };
-
+  const recommendedProducts = [
+    {
+      id: 1,
+      imageUrl: "/uploads/product1.png",
+      alt: "Product 2"
+    },
+    {
+      id: 2,
+      imageUrl: "/uploads/product3.png",
+      alt: "Product 3"
+    },
+    {
+      id: 3,
+      imageUrl: "/uploads/product4.png",
+      alt: "Product 4"
+    }
+  ];
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCurrentSlide((prev) => (prev === recommendedProducts.length - 1 ? 0 : prev + 1));
+    }, 5000);
+    
+    return () => clearInterval(interval);
+  }, [recommendedProducts.length]);
+  
+  // Handle dot indicator click
+  const goToSlide = (index) => {
+    setCurrentSlide(index);
+  };
+  
 
   return (
     <>
       <Navbar />
       <div className="flex flex-col min-h-screen">
         {/* Main Content */}
-        <main className="flex-grow pt-24">
-          {/* Hero Section */}
-          <section className="container mx-auto px-4 py-8">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              {/* Main Promo */}
-              <div className="md:col-span-2 bg-gray-200 rounded p-8 flex items-center justify-center h-64">
-                <p className="text-2xl font-bold">IMAGE PROMO</p>
-              </div>
+        <main className="flex-grow pt-16 md:pt-24">
+  {/* Hero Section */}
+  <section className="container mx-auto px-4 py-4">
+    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6">
+      {/* Main Promo */}
+      <div className="md:col-span-2 bg-gray-200 rounded p-4 md:p-8 flex flex-col items-center">
+        <div className="w-full">
+          <img
+            className="w-full h-auto object-cover rounded"
+            src={import.meta.env.VITE_API_URL + "/uploads/promo_main.png"}
+            alt="Main promotion"
+          />
+        </div>
+        
+        {/* Small Promos */}
+        <div className="grid grid-cols-3 gap-2 md:gap-4 w-full mt-4 md:mt-6">
+          <div className="bg-gray-200 rounded p-2 flex items-center justify-center">
+            <img
+              className="w-full h-auto"
+              src={import.meta.env.VITE_API_URL + "/uploads/subpromo1.png"}
+              alt="Promotion 1"
+            />
+          </div>
+          <div className="bg-gray-200 rounded p-2 flex items-center justify-center">
+            <img
+              className="w-full h-auto"
+              src={import.meta.env.VITE_API_URL + "/uploads/subpromo2.png"}
+              alt="Promotion 2"
+            />
+          </div>
+          <div className="bg-gray-200 rounded p-2 flex items-center justify-center">
+            <img
+              className="w-full h-auto"
+              src={import.meta.env.VITE_API_URL + "/uploads/subpromo3.png"}
+              alt="Promotion 3"
+            />
+          </div>
+        </div>
+      </div>
 
-              {/* Side Content */}
-              <div className="space-y-6">
-                <div className="bg-green-500 rounded p-4 text-white">
-                  <p className="font-medium">Subfeatured Text</p>
-                </div>
-                <div className="bg-white rounded p-4 shadow">
-                  <p className="font-medium text-green-600">Subfeatured Text</p>
-                </div>
-              </div>
+      {/* Side Content */}
+      <div className="space-y-4 md:space-y-6 mt-4 md:mt-0">
+        <div className="bg-green-500 rounded p-4 text-white">
+          <p className="font-medium mb-2">Previous Product</p>
+          <img
+            className="w-full h-96 bg-white"
+            src={import.meta.env.VITE_API_URL + "/uploads/product2.png"}
+            alt="Feature promotion"
+          />
+        </div>
+        <div className="bg-white rounded p-4 shadow relative">
+      <p className="font-medium text-green-600 mb-2">Recommended Product</p>
+      
+      {/* Slider container */}
+      <div className="relative overflow-hidden h-96">
+        <div 
+          className="flex transition-transform duration-500 ease-in-out h-full"
+          style={{ transform: `translateX(-${currentSlide * 100}%)` }}
+        >
+          {recommendedProducts.map((product) => (
+            <div key={product.id} className="min-w-full h-full flex-shrink-0">
+              <img
+                className="w-full h-full object-cover rounded"
+                src={import.meta.env.VITE_API_URL + product.imageUrl}
+                alt={product.alt}
+              />
             </div>
+          ))}
+        </div>
+      </div>
+      
+      {/* Dot indicators */}
+      <div className="flex justify-center mt-4 space-x-2">
+        {recommendedProducts.map((_, index) => (
+          <button
+            key={index}
+            onClick={() => goToSlide(index)}
+            className={`w-3 h-3 rounded-full ${
+              currentSlide === index ? 'bg-green-500' : 'bg-gray-300'
+            }`}
+            aria-label={`Go to slide ${index + 1}`}
+          />
+        ))}
+      </div>
+    </div>
+      </div>
+    </div>
+  </section>
 
-            {/* Small Promos */}
-            <div className="grid grid-cols-3 gap-4 mt-4">
-              <div className="bg-gray-200 rounded p-4 flex items-center justify-center">
-                <p className="font-bold">IMAGE PROMO</p>
-              </div>
-              <div className="bg-gray-200 rounded p-4 flex items-center justify-center">
-                <p className="font-bold">IMAGE PROMO</p>
-              </div>
-              <div className="bg-gray-200 rounded p-4 flex items-center justify-center">
-                <p className="font-bold">IMAGE PROMO</p>
-              </div>
+  {/* Search Bar */}
+  <section className="container mx-auto px-4 py-4">
+    <div className="bg-gray-200 rounded-full py-3 px-6 w-full max-w-3xl mx-auto"></div>
+  </section>
+
+  {/* Products Grid */}
+  <section className="container mx-auto px-4 py-6 md:py-8">
+    {loading ? (
+      <div className="text-center py-8">Loading products...</div>
+    ) : error ? (
+      <div className="text-center py-8 text-red-500">
+        Error loading products: {error}
+      </div>
+    ) : items.length === 0 ? (
+      <div className="text-center py-8">No products found</div>
+    ) : (
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
+        {items.map((product) => (
+          <div
+            key={product._id}
+            className="bg-white rounded shadow overflow-hidden flex flex-col h-full"
+          >
+            <div className="relative pt-[100%]">
+              <img
+                src={getImageUrl(product.imageUrl)}
+                alt={product.name}
+                className="absolute top-0 left-0 w-full h-full object-cover"
+                onError={(e) => {
+                  e.target.src = "/api/placeholder/200/150";
+                }}
+              />
             </div>
-          </section>
-
-          {/* Search Bar */}
-          <section className="container mx-auto px-4 py-4">
-            <div className="bg-gray-200 rounded-full py-3 px-6 w-full max-w-3xl mx-auto"></div>
-          </section>
-
-          {/* Products Grid */}
-          <section className="container mx-auto px-4 py-8">
-            {loading ? (
-              <div className="text-center py-8">Loading products...</div>
-            ) : error ? (
-              <div className="text-center py-8 text-red-500">Error loading products: {error}</div>
-            ) : items.length === 0 ? (
-              <div className="text-center py-8">No products found</div>
-            ) : (
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-                {items.map((product) => (
-                  <div
-                    key={product._id}
-                    className="bg-white rounded shadow overflow-hidden"
-                  >
-                    <img
-                    src={getImageUrl(product.imageUrl)}
-                      alt={product.name}
-                      className="w-full h-48 object-cover"
-                      onError={(e) => {
-                        e.target.src = "/api/placeholder/200/150";
-                      }}
-                    />
-                    <div className="p-4 bg-green-500 text-white">
-                      <div className="w-full h-10 flex justify-between">
-                        <p className="font-medium">Reaper 10</p>
-                        <p className="font-medium">Golden Seater 10</p>
-                      </div>
-                      <h3 className="font-medium">{product.name}</h3>
-                      <div className="flex justify-between items-center mt-2">
-                        <p>₱ {parseFloat(product.price).toFixed(2)}</p>
-                        <button
-                          onClick={() => addToCart(product)}
-                          className="bg-white text-green-600 px-3 py-1 rounded hover:bg-gray-100"
-                        >
-                          Add
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                ))}
+            <div className="p-4 bg-green-500 text-white flex-grow">
+              <div className="flex justify-between text-xs mb-1">
+                <p>Reaper 10</p>
+                <p>Golden Seater 10</p>
               </div>
-            )}
-          </section>
-
-          {/* Cart Modal */}
-          {cartItems.length > 0 && (
-            <div className="fixed bottom-4 right-4 bg-white shadow-lg rounded-lg p-4 w-80">
-              <div className="flex justify-between items-center border-b pb-2">
-                <h3 className="font-bold">Shopping Cart</h3>
+              <h3 className="font-medium text-sm md:text-base line-clamp-2">{product.name}</h3>
+              <div className="flex justify-between items-center mt-2">
+                <p className="font-bold">₱ {parseFloat(product.price).toFixed(2)}</p>
                 <button
-                  onClick={() => setCartItems([])}
-                  className="text-red-500 hover:text-red-700"
+                  onClick={() => addToCart(product)}
+                  className="bg-white text-green-600 px-3 py-1 rounded hover:bg-gray-100 text-sm"
                 >
-                  Clear
-                </button>
-              </div>
-              <div className="max-h-64 overflow-auto py-2">
-                {cartItems.map((item, index) => (
-                  <div
-                    key={index}
-                    className="flex justify-between items-center py-2 border-b"
-                  >
-                    <div>
-                      <div className="w-full h-10 flex between">
-                        <p className="font-medium">Reapers 10</p>
-                        <p className="font-medium">Golden Seaters 10</p>
-                      </div>
-                      <p className="font-medium">{item.name}</p>
-                      <p className="text-sm text-gray-600">${parseFloat(item.price).toFixed(2)}</p>
-                    </div>
-                    <button
-                      onClick={() => removeFromCart(item._id)}
-                      className="text-red-500 hover:text-red-700"
-                    >
-                      ✕
-                    </button>
-                  </div>
-                ))}
-              </div>
-              <div className="mt-4 pt-2 border-t">
-                <div className="flex justify-between items-center font-bold">
-                  <p>Total:</p>
-                  <p>${getCartTotal()}</p>
-                </div>
-                <button className="w-full mt-4 bg-green-500 text-white py-2 rounded hover:bg-green-600">
-                  Checkout
+                  Add
                 </button>
               </div>
             </div>
-          )}
-        </main>
+          </div>
+        ))}
+      </div>
+    )}
+  </section>
+
+  {/* Cart Modal */}
+  {cartItems.length > 0 && (
+    <div className="fixed bottom-4 right-4 bg-white shadow-lg rounded-lg p-4 w-full max-w-xs sm:max-w-sm z-50">
+      <div className="flex justify-between items-center border-b pb-2">
+        <h3 className="font-bold">Shopping Cart</h3>
+        <button
+          onClick={() => setCartItems([])}
+          className="text-red-500 hover:text-red-700"
+        >
+          Clear
+        </button>
+      </div>
+      <div className="max-h-64 overflow-auto py-2">
+        {cartItems.map((item, index) => (
+          <div
+            key={index}
+            className="flex justify-between items-center py-2 border-b"
+          >
+            <div className="flex-grow pr-2">
+              <div className="flex justify-between text-xs">
+                <p>Reapers 10</p>
+                <p>Golden Seaters 10</p>
+              </div>
+              <p className="font-medium text-sm line-clamp-1">{item.name}</p>
+              <p className="text-sm text-gray-600">
+                ₱{parseFloat(item.price).toFixed(2)}
+              </p>
+            </div>
+            <button
+              onClick={() => removeFromCart(item._id)}
+              className="text-red-500 hover:text-red-700 ml-2"
+            >
+              ✕
+            </button>
+          </div>
+        ))}
+      </div>
+      <div className="mt-4 pt-2 border-t">
+        <div className="flex justify-between items-center font-bold">
+          <p>Total:</p>
+          <p>₱{getCartTotal()}</p>
+        </div>
+        <button className="w-full mt-4 bg-green-500 text-white py-2 rounded hover:bg-green-600">
+          Checkout
+        </button>
+      </div>
+    </div>
+  )}
+</main>
 
         {/* Footer */}
         <footer className="bg-green-600 text-white py-8">
           <div className="container mx-auto px-4">
             <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
               <div>
-                <h3 className="font-bold text-lg mb-4">NEMULTIPLEY</h3>
+                <h3 className="font-bold text-lg mb-4">WEMULTIPLY</h3>
                 <p className="text-sm">
                   Your one-stop shop for all your needs.
                 </p>
@@ -306,7 +455,7 @@ const EcommerceShop = () => {
               </div>
             </div>
             <div className="border-t border-green-500 mt-8 pt-8 text-center text-sm">
-              <p>© 2025 NEMULTIPLEY. All rights reserved.</p>
+              <p>© 2025 WEMULTIPLY. All rights reserved.</p>
             </div>
           </div>
         </footer>

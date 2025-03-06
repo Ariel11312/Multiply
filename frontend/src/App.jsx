@@ -223,7 +223,7 @@ const App = () => {
         />
 
         <Route
-          path="/member-items"
+          path="/admin/items" 
           element={
             <ProtectedRoute allowedRoles={["Member"]}>
               <ItemsPage />

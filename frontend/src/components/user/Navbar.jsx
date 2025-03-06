@@ -89,7 +89,7 @@ const CartModal = ({
                   <div className="flex items-center space-x-3">
                     {item.image ? (
                       <img
-                        src={item.image}
+                        src={ import.meta.env.VITE_API_URL + item.image}
                         alt={item.name}
                         className="w-16 h-16 object-cover rounded"
                       />
@@ -116,7 +116,7 @@ const CartModal = ({
                         {item.name || "Unnamed Product"}
                       </h3>
                       <p className="text-green-700 font-bold">
-                        ${(item.price || 0).toFixed(2)}
+                      ₱ {(item.price || 0).toFixed(2)}
                       </p>
                     </div>
                   </div>
@@ -172,7 +172,7 @@ const CartModal = ({
             <div className="p-4 border-t">
               <div className="flex justify-between font-bold mb-4">
                 <span>Total:</span>
-                <span>${calculateTotalPrice()}</span>
+                <span>₱ {calculateTotalPrice()}</span>
               </div>
 
               <div className="flex space-x-2">
@@ -203,56 +203,71 @@ const Navbar = () => {
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false); // State for profile menu
   const [memberData, setMemberData] = useState([]);
+  const [lastUpdate, setLastUpdate] = useState(Date.now());
+  const refreshCart = () => {
+    setLastUpdate(Date.now());
+  };
+
   useEffect(() => {
     checkMember(setMemberData);
-  }, []);
+  }, [lastUpdate]);
   const member = memberData.userType;
 
   // Example products data
-  const exampleProducts = [
-    {
-      id: 1,
-      name: "Organic Tomatoes",
-      price: 3.99,
-      image:
-        "https://images.unsplash.com/photo-1546094096-0df4bcaaa337?q=80&w=200&auto=format",
-    },
-    {
-      id: 2,
-      name: "Fresh Lettuce",
-      price: 2.49,
-      image:
-        "https://images.unsplash.com/photo-1622206151224-71ce3aebd43a?q=80&w=200&auto=format",
-    },
-    {
-      id: 3,
-      name: "Farm Eggs (dozen)",
-      price: 4.99,
-      image:
-        "https://images.unsplash.com/photo-1506976785307-8732e854ad03?q=80&w=200&auto=format",
-    },
-    {
-      id: 4,
-      name: "Organic Apples",
-      price: 1.99,
-      image:
-        "https://images.unsplash.com/photo-1567306226416-28f0efdc88ce?q=80&w=200&auto=format",
-    },
-    {
-      id: 5,
-      name: "Fresh Bread",
-      price: 3.49,
-      image:
-        "https://images.unsplash.com/photo-1608198093002-ad4e005484ec?q=80&w=200&auto=format",
-    },
-  ];
+ 
+  const [cartItems, setCartItems] = useState([]);
+  
+  useEffect(() => {
+    fetchUserCart();
+  }, [cartItems]);
+  
+  const fetchUserCart = async () => {
+    try {
+      
+      // Get auth token
+     
+      const response = await fetch(import.meta.env.VITE_API_URL + `/api/cart/usercart`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        credentials: 'include',
+      });
+      
+      if (!response.ok) {
+        // If response is 404 (cart not found), it's not really an error - just an empty cart
+        if (response.status === 404) {
+          setCartItems([]);
+          refreshCart();
+          return;
+        }
+        
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Failed to fetch cart');
+      }
+      
+      const cartData = await response.json();
+      
+      // Transform cart items to match your state structure
+      const formattedCartItems = cartData.items.map(item => ({
+        _id: item.itemId,
+        name: item.name,
+        price: item.price,
+        image: item.imageUrl,
+        quantity: item.quantity
+      }));
+      
+      setCartItems(formattedCartItems);
+      
+    } catch (error) {
+      console.error('Error fetching cart:', error);
+      setError(error.message);
+    } finally {
 
+    }
+  };
+  
   // Initialize cart with some sample items
-  const [cartItems, setCartItems] = useState([
-    { ...exampleProducts[0], quantity: 1 },
-    { ...exampleProducts[2], quantity: 1 },
-    { ...exampleProducts[4], quantity: 1 },
-  ]);
 
   const addToCart = (product) => {
     const existingItem = cartItems.find((item) => item.id === product.id);
@@ -312,12 +327,9 @@ const Navbar = () => {
     navigate(route);
     setIsMenuOpen(false);
   };
-  const handleNavigation = (path) => {
-    console.log(path);
-    navigate(path);
-  };
+
   const ProfileMenu = ({ isOpen, onClose, user, handleLogout }) => {
-    if (!isOpen) return null;
+        if (!isOpen) return null;
 
     return (
       <div className="fixed inset-0 z-50 flex items-center justify-center">
@@ -423,7 +435,12 @@ const Navbar = () => {
       </div>
     );
   };
-
+  const handleNavigation = (path) => {
+    console.log(path);
+    navigate(path);
+    onClose();
+  };
+  
   const handleLogout = async () => {
     try {
       const response = await fetch(
@@ -658,7 +675,7 @@ const Navbar = () => {
                         <li className="group">
                           <a
                             className="flex items-center space-x-3 p-3 rounded-lg cursor-pointer transition-colors duration-200 hover:bg-green-50 group-hover:text-green-500"
-                            onClick={() => handleNavigation("/member-transactions")}
+                            onClick={() => handleNavigation("/transactions")}
                           >
                             <CreditCard className="h-5 w-5 text-gray-400 group-hover:text-green-500" />
                             <span>Transactions</span>
