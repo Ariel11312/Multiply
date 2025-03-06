@@ -35,7 +35,7 @@ app.use(cors({
 
 // ✅ Handle Preflight Requests for CORS
 app.use((req, res, next) => {
-    res.header("Access-Control-Allow-Origin", process.env.CLIENT_URL || 'http://localhost:3000');
+    res.header("Access-Control-Allow-Origin", process.env.CLIENT_URL || 'https://wemultiplyapp.com');
     res.header("Access-Control-Allow-Credentials", "true");
     res.header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
     res.header("Access-Control-Allow-Headers", "Content-Type, Authorization");
