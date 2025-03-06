@@ -219,7 +219,7 @@ const Navbar = () => {
   
   useEffect(() => {
     fetchUserCart();
-  }, [cartItems]);
+  }, []);
   
   const fetchUserCart = async () => {
     try {
