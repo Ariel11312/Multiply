@@ -31,3 +31,27 @@ export const allUsers = async (request, response) => {
         return response.status(500).json({ success: false, error: 'Internal Server Error' });
     }
 };
+export const memberReferral = async (request, response) => {
+    try {
+        const { referralCode } = request.params;
+        console.log(referralCode);
+        const member = await User.findOne({ _id:referralCode });
+        if (!member) {
+            return response.status(404).json({
+                success: false,
+                message: "Member not found"
+            });
+        }
+        response.status(200).json({
+            success: true,
+            member
+        });
+    }
+    catch (error) {
+        console.error(`Error fetching member by referral code: ${error.message}`);
+        response.status(500).json({
+            success: false,
+            message: "An error occurred while fetching member"
+        });
+    }
+}

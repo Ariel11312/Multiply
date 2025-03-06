@@ -52,7 +52,7 @@ const ItemsPage = () => {
 
   // Constants
   const categories = ["all", "beverages", "snacks", "food", "supplements"];
-  const API_BASE_URL = "https://api.wemultiplyapp.com";
+  const API_BASE_URL = import.meta.env.VITE_API_URL;
 
   // Initial Data Load
   useEffect(() => {

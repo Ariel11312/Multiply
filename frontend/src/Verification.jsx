@@ -55,7 +55,7 @@ const Verification = () => {
     setError(""); // Clear previous errors
 
     try {
-      const response = await fetch("https://api.wemultiplyapp.com/api/auth/verify-email", {
+      const response = await fetch(import.meta.env.VITE_API_URL+"/api/auth/verify-email", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

@@ -23,6 +23,7 @@ import PaymentStatus from "./components/user/PaymentStatus";
 import GoldenSeatsTable from "./components/admin/GoldenSeatsTable";
 import GoldenSeats from "./components/member/GoldenSeatsCommision";
 import EcommerceShop from "./components/user/Shop";
+import ReferralCode from "./components/user/ReferralCode";
 
 const App = () => {
   const [authState, setAuthState] = useState({
@@ -95,7 +96,7 @@ const App = () => {
 
         // Then fetch member data
         const response = await fetch(
-          `https://api.wemultiplyapp.com/api/auth/check-member`,
+          import.meta.env.VITE_API_URL+`/api/auth/check-member`,
           {
             method: "GET",
             headers: {
@@ -171,6 +172,14 @@ const App = () => {
           element={
             <PublicRoute>
               <Verification />
+            </PublicRoute>
+          }
+        />
+        <Route
+          path="/referral-verification"
+          element={
+            <PublicRoute>
+              <ReferralCode />
             </PublicRoute>
           }
         />

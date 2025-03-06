@@ -12,7 +12,7 @@ const ReferralTreeTable = () => {
     const fetchReferralTree = async () => {
       try {
         const response = await fetch(
-          "https://api.wemultiplyapp.com/api/member/referral-tree",
+          import.meta.env.VITE_API_URL+"/api/member/referral-tree",
           {
             method: "GET",
             headers: {

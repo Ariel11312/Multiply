@@ -1,22 +1,19 @@
-import { defineConfig } from 'vite'
-import react from '@vitejs/plugin-react'
+import { defineConfig } from 'vite';
+import react from '@vitejs/plugin-react';
+import dotenv from 'dotenv';
+
+dotenv.config(); // Load environment variables
 
 export default defineConfig({
-  // Add the PSD files as assets
-  assetsInclude: ['**/*.psd'],
-
-  // Server settings with proxy for API requests
   server: {
     host: '0.0.0.0',
     port: 5173,
     proxy: {
-      // Proxy API requests to your backend server during development
       '/api': {
-        target: 'http://localhost:3001',
+        target: process.env.VITE_API_URL || 'http://localhost:5173',
         changeOrigin: true,
       }
     }
   },
-
   plugins: [react()],
-})
+});

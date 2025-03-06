@@ -1,7 +1,7 @@
 export const fetchReferrals = async (setReferralList, setReferralStats) => {
     try {
         // Make API request to fetch referrals
-        const response = await fetch('https://api.wemultiplyapp.com/api/member/view-referrals', {
+        const response = await fetch(import.meta.env.VITE_API_URL+'/api/member/view-referrals', {
             method: 'GET',
             headers: {
                 'Content-Type': 'application/json',

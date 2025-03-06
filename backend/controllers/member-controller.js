@@ -378,3 +378,26 @@ export const getMembersByType = async (request, response) => {
 //         });
 //     }
 // };
+export const memberReferral = async (request, response) => {
+    try {
+        const { referralCode } = request.params;
+        const member = await Member.findOne({ referralCode });
+        if (!member) {
+            return response.status(404).json({
+                success: false,
+                message: "Member not found"
+            });
+        }
+        response.status(200).json({
+            success: true,
+            member
+        });
+    }
+    catch (error) {
+        console.error(`Error fetching member by referral code: ${error.message}`);
+        response.status(500).json({
+            success: false,
+            message: "An error occurred while fetching member"
+        });
+    }
+}

@@ -7,7 +7,7 @@ const GoldenSeats = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await fetch("https://api.wemultiplyapp.com/api/trans/commisions", {
+        const response = await fetch(import.meta.env.VITE_API_URL+"/api/trans/commisions", {
           method: 'GET',
           headers: { "Content-Type": "application/json" },
           credentials: 'include'

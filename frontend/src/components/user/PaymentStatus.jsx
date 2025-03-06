@@ -26,8 +26,8 @@ const PaymentStatus = () => {
       const isUpdate = goldenSeatData && goldenSeatData.GoldenSeat === "success";
       const position = goldenSeatData?.position || ""; // Ensure position is a string
       const apiUrl = isUpdate
-        ? "https://api.wemultiplyapp.com/api/member/update-member"
-        : "https://api.wemultiplyapp.com/api/member/create-member";
+        ? import.meta.env.VITE_API_URL+"/api/member/update-member"
+        : import.meta.env.VITE_API_URL+"/api/member/create-member";
 
       const method = isUpdate ? "PUT" : "POST";
 

@@ -1,7 +1,7 @@
 export const allUsers = async (setData) => {
     try {
         // Make a fetch request to get the users with member details
-        const response = await fetch('https://api.wemultiplyapp.com/api/user/all-users', {
+        const response = await fetch(import.meta.env.VITE_API_URL+'/api/user/all-users', {
             method: 'GET',
             headers: {
                 'Content-Type': 'application/json',

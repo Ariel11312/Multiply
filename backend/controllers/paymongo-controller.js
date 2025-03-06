@@ -81,7 +81,7 @@ export const createPayment = async (req, res) => {
                 data: {
                     attributes: {
                         payment_method: paymentMethod.data.data.id,
-                        return_url: process.env.PAYMENT_SUCCESS_URL || "https://wemultiplyapp.com/verify-payment",
+                        return_url: process.env.PAYMENT_SUCCESS_URL || process.env.VITE_URL+"/verify-payment",
                     },
                 },
             },

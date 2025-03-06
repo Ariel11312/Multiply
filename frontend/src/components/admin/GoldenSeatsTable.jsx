@@ -10,7 +10,7 @@ const GoldenSeatsTable = () => {
   const [groupedData, setGroupedData] = useState([]);
 
   useEffect(() => {
-    fetch('https://api.wemultiplyapp.com/api/golden/golden-seats')
+    fetch(import.meta.env.VITE_API_URL+'/api/golden/golden-seats')
       .then(response => response.json())
       .then(result => {
         if (result.success && result.members.length > 0) {

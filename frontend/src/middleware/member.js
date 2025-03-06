@@ -1,6 +1,6 @@
 export const checkMember = async (setMemberData) => {
     try {
-      const response = await fetch(`https://api.wemultiplyapp.com/api/auth/check-member`, {
+      const response = await fetch(import.meta.env.VITE_API_URL+`/api/auth/check-member`, {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',

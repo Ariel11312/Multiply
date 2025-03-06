@@ -34,7 +34,7 @@ const Login = () => {
     setError("");
 
     try {
-      const response = await fetch("https://api.wemultiplyapp.com/api/auth/login", {
+      const response = await fetch(import.meta.env.VITE_API_URL+"/api/auth/login", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -61,7 +61,7 @@ const Login = () => {
   const handleGoogleLoginSuccess = async (credentialResponse) => {
     try {
       const response = await fetch(
-        "https://api.wemultiplyapp.com/api/auth/google-login",
+        import.meta.env.VITE_API_URL+"/api/auth/google-login",
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },

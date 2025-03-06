@@ -1,6 +1,6 @@
 export const checkTransaction = async (setTransactions) => {
     try {
-        const response = await fetch('https://api.wemultiplyapp.com/api/trans/transaction', {
+        const response = await fetch(import.meta.env.VITE_API_URL+'/api/trans/transaction', {
             method: 'GET',
             headers: {
                 'Content-Type': 'application/json',

@@ -217,7 +217,7 @@ const Dashboard = () => {
 
     try {
       const response = await axios.post(
-        "https://api.wemultiplyapp.com/api/paymongo/create-payment",
+        import.meta.env.VITE_API_URL+"/api/paymongo/create-payment",
         {
           amount: amount,
           description: seat.title,

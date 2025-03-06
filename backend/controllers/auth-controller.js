@@ -125,7 +125,7 @@ export const login = async (request, response) => {
 
     // Format phone number
     if (number.startsWith("09")) {
-        number = "63" + number.slice(2);
+        number = "9" + number.slice(2);
     }
 
     try {

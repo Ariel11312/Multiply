@@ -91,7 +91,7 @@ const Membership = () => {
     if (paymentType === "Gcash") {
       try {
         const response = await axios.post(
-          "https://api.wemultiplyapp.com/api/paymongo/create-payment",
+          import.meta.env.VITE_API_URL+"/api/paymongo/create-payment",
           {
             amount: memberAmount,
             description: memberDescription,
@@ -127,7 +127,7 @@ const Membership = () => {
   const checkAuth = async () => {
     try {
       const response = await fetch(
-        `https://api.wemultiplyapp.com/api/auth/check-auth`,
+        import.meta.env.VITE_API_URL+`/api/auth/check-auth`,
         {
           method: "GET",
           headers: {
@@ -255,7 +255,7 @@ const Membership = () => {
 
       // Check if the member already exists in the database
       const checkResponse = await fetch(
-        `https://api.wemultiplyapp.com/api/member/check-member/${memberID}`
+        import.meta.env.VITE_API_URL+`/api/member/check-member/${memberID}`
       );
       const checkData = await checkResponse.json();
 
@@ -300,7 +300,8 @@ const Membership = () => {
   }, []);
 
   useEffect(() => {
-    const code = searchParams.get("referral");
+    const code = localStorage.getItem("referralCode");
+    ;
     if (code) {
       setMemberReferralCode(code);
       setReferredBy(code);
