@@ -190,6 +190,7 @@ const App = () => {
               <GoldenSeatsTable />
             </PublicRoute>
           }
+
         />
 
         <Route
