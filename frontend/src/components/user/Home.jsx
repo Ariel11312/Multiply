@@ -5,6 +5,7 @@ import Carousel from "./Carousel";
 import Footer from "./Footer";
 
 const Home = () => {
+  
   const BitcoinCoin = ({ size = 64 }) => (
     <svg width={size * 1.5} height={size * 1.5} viewBox="0 0 64 64">
       <circle cx="32" cy="32" r="30" fill="#F7931A" />
@@ -40,7 +41,11 @@ const Home = () => {
 
   const AnimatedBackground = () => {
     const [items, setItems] = useState([]);
-
+    useEffect(() => {
+      if (localStorage.getItem("accepted")) {
+      window.location.href = "/member-registration";
+      }
+    }, []);
     useEffect(() => {
       // Create more items for a denser effect
       const createItem = () => ({
