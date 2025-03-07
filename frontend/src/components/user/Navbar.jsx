@@ -235,7 +235,7 @@ const [cartQuantity, setCartQuantity] = useState(0);
       console.error('Error fetching cart:', error);
       setError(error.message);
     }
-  }, [cartUpdated]);
+  }, [cartItems]);
 
 
   const updateCart = () => {
@@ -320,7 +320,7 @@ const [cartQuantity, setCartQuantity] = useState(0);
   };
 
   const loginNav = () => {
-    navigate("/login");
+    window.location.href = "/login";
   };
   
   const NavLinks = () => (
@@ -362,9 +362,12 @@ const [cartQuantity, setCartQuantity] = useState(0);
     </ul>
   );
   useEffect(() => {
-
+    const interval = setInterval(() => {
       fetchUserCart();
-    }, []); // Empty dependency array
+    }, 1500);
+  
+    return () => clearInterval(interval);
+  }, []); // Empty dependency array
   return (
     <>
       <nav className="w-full bg-white shadow-sm fixed top-0 left-0 z-50">
