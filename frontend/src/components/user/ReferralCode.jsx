@@ -88,7 +88,9 @@ useEffect(() => {
   const handleAccept = () => {
     setAccepted(true);
     localStorage.setItem("referralCode", referralCode);
-    window.location.href = "/member-registration";
+    localStorage.setItem("accepted", true);
+    
+    window.location.href = "/login";
   };
   
   // If loading or error state
