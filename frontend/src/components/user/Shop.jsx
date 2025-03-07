@@ -24,6 +24,7 @@ const EcommerceShop = () => {
       }
     };
 
+
     loadProducts();
   }, []);
 
@@ -44,26 +45,6 @@ const EcommerceShop = () => {
       if (!response.ok) {
         throw new Error('Failed to add item to cart');
       }
-  
-      const cartData = await response.json();
-  
-      // Check if `cartData.items` exists before mapping
-      if (!cartData.items || !Array.isArray(cartData.items)) {
-        console.error("cartData.items is undefined or not an array:", cartData);
-        setCartItems([]); // Set an empty array instead of undefined
-        return;
-      }
-  
-      // Transform cart items properly
-      const formattedCartItems = cartData.items.map(item => ({
-        _id: item.itemId,
-        name: item.name,
-        price: item.price,
-        image: item.imageUrl,
-        quantity: item.quantity
-      }));
-  
-      setCartItems(formattedCartItems);
       setShowModal(true); // Show modal after adding item
 
     } catch (error) {
@@ -276,12 +257,14 @@ const EcommerceShop = () => {
         <button
           onClick={() => setCartItems([])}
           className="text-red-500 hover:text-red-700"
-        >
+          >
           Clear
         </button>
       </div>
       <div className="max-h-64 overflow-auto py-2">
-        {cartItems.map((item, index) => (
+        {
+        cartItems.map((item, index) => (
+         
           <div
             key={index}
             className="flex justify-between items-center py-2 border-b"
@@ -291,7 +274,7 @@ const EcommerceShop = () => {
                 <p>Reapers 10</p>
                 <p>Golden Seaters 10</p>
               </div>
-              <p className="font-medium text-sm line-clamp-1">{item.name}</p>
+              <p className="font-medium text-sm line-clamp-1">{item.name} </p>
               <p className="text-sm text-gray-600">
                 ₱{parseFloat(item.price).toFixed(2)}
               </p>
@@ -480,6 +463,7 @@ const EcommerceShop = () => {
 
 
   );
+
 };
 
 export default EcommerceShop;
