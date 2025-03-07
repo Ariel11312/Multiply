@@ -51,7 +51,9 @@ const Membership = () => {
   const [searchParams] = useSearchParams();
   const [memberReferralCode, setMemberReferralCode] = useState("");
   const [referredBy, setReferredBy] = useState("");
-
+  useEffect(() => {
+    localStorage.removeItem("accepted");
+  }, []); // Empty dependency array ensures this runs only on mount
   const referralCode = generateCustomString();
   const memberID = authState.user?._id;
   const date = new Date();
