@@ -6,6 +6,7 @@ const EcommerceShop = () => {
   const [cartItems, setCartItems] = useState([]);
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [cart, setCart] = useState([]);
   const [error, setError] = useState(null);
   const [cartItemCount, setCartItemCount] = useState(0);
   const [notification, setNotification] = useState(null);
@@ -24,7 +25,7 @@ const EcommerceShop = () => {
     };
 
     loadProducts();
-  }, []);
+  }, [setCart]);
 
   // Add to cart function for frontend
   const addToCart = async (itemId, quantity = 1, userId) => {
