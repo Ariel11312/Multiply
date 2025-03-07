@@ -198,7 +198,7 @@ const Navbar = () => {
   const [cartUpdated, setCartUpdated] = useState(false);
   const [error, setError] = useState(null);
   const [cartItems, setCartItems] = useState([]);
-
+const [cartQuantity, setCartQuantity] = useState(0);
   const refreshCart = () => {
     setLastUpdate(Date.now());
   };
@@ -229,7 +229,7 @@ const Navbar = () => {
         image: item.imageUrl,
         quantity: item.quantity
       }));
-
+      setCartQuantity(cartData.items.length)
       setCartItems(formattedCartItems);
     } catch (error) {
       console.error('Error fetching cart:', error);
@@ -362,12 +362,9 @@ const Navbar = () => {
     </ul>
   );
   useEffect(() => {
-    const interval = setInterval(() => {
+
       fetchUserCart();
-    }, 1500);
-  
-    return () => clearInterval(interval);
-  }, []); // Empty dependency array
+    }, []); // Empty dependency array
   return (
     <>
       <nav className="w-full bg-white shadow-sm fixed top-0 left-0 z-50">
@@ -396,7 +393,7 @@ const Navbar = () => {
               >
                 <div className="absolute -top-1 -right-1 transform translate-x-1/4 -translate-y-1/4">
                   <p className="flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-xs text-white">
-                    {cartItems.reduce((total, item) => total + item.quantity, 0) || 0}
+                    {cartQuantity}
                   </p>
                 </div>
                 <svg
