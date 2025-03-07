@@ -178,9 +178,8 @@ const App = () => {
         <Route
           path="/referral-verification"
           element={
-            <PublicRoute>
+
               <ReferralCode />
-            </PublicRoute>
           }
         />
 
