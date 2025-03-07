@@ -202,11 +202,6 @@ const Navbar = () => {
   const refreshCart = () => {
     setLastUpdate(Date.now());
   };
-
-  useEffect(() => {
-    checkMember(setMemberData);
-  }, [lastUpdate]);
-
   const member = memberData.userType;
 
   const fetchUserCart = useCallback(async () => {
@@ -242,9 +237,6 @@ const Navbar = () => {
     }
   }, [cartUpdated]);
 
-  useEffect(() => {
-    fetchUserCart();
-  }, [fetchUserCart]);
 
   const updateCart = () => {
     setCartUpdated(prev => !prev);
@@ -330,7 +322,7 @@ const Navbar = () => {
   const loginNav = () => {
     navigate("/login");
   };
-
+  
   const NavLinks = () => (
     <ul className="flex flex-col md:flex-row gap-4 lg:gap-8 text-green-700 font-bold text-sm lg:text-base">
       <li
@@ -369,7 +361,13 @@ const Navbar = () => {
       </li>
     </ul>
   );
-
+  useEffect(() => {
+    const interval = setInterval(() => {
+      fetchUserCart();
+    }, 1500);
+  
+    return () => clearInterval(interval);
+  }, []); // Empty dependency array
   return (
     <>
       <nav className="w-full bg-white shadow-sm fixed top-0 left-0 z-50">
@@ -673,6 +671,7 @@ const Navbar = () => {
       )}
     </>
   );
+
 };
 
 export default Navbar;
