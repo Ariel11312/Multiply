@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import logo from "../../assets/MULTIPLY-1 remove back.png";
 import avatar from "../../assets/avatar.png";
 import { useLocation, useNavigate } from "react-router-dom";
@@ -217,15 +217,8 @@ const Navbar = () => {
  
   const [cartItems, setCartItems] = useState([]);
   
-  useEffect(() => {
-    fetchUserCart();
-  }, [cartItems]);
-  
-  const fetchUserCart = async () => {
+  const fetchUserCart = useCallback(async () => {
     try {
-      
-      // Get auth token
-     
       const response = await fetch(import.meta.env.VITE_API_URL + `/api/cart/usercart`, {
         method: 'GET',
         headers: {
@@ -233,22 +226,20 @@ const Navbar = () => {
         },
         credentials: 'include',
       });
-      
+  
       if (!response.ok) {
-        // If response is 404 (cart not found), it's not really an error - just an empty cart
         if (response.status === 404) {
-          setCartItems([]);
+          setCartItems(prevItems => (prevItems.length === 0 ? prevItems : [])); // Avoid unnecessary state update
           refreshCart();
           return;
         }
-        
+  
         const errorData = await response.json();
         throw new Error(errorData.message || 'Failed to fetch cart');
       }
-      
+  
       const cartData = await response.json();
-      
-      // Transform cart items to match your state structure
+  
       const formattedCartItems = cartData.items.map(item => ({
         _id: item.itemId,
         name: item.name,
@@ -256,17 +247,21 @@ const Navbar = () => {
         image: item.imageUrl,
         quantity: item.quantity
       }));
-      
-      setCartItems(formattedCartItems);
-      
+  
+      // Update state only if data has changed
+      setCartItems(prevItems => {
+        return JSON.stringify(prevItems) === JSON.stringify(formattedCartItems) ? prevItems : formattedCartItems;
+      });
+  
     } catch (error) {
       console.error('Error fetching cart:', error);
       setError(error.message);
-    } finally {
-
     }
-  };
+  }, []); // Empty dependency array ensures fetchUserCart is stable
   
+  useEffect(() => {
+    fetchUserCart();
+  }, [fetchUserCart]); // Runs only when fetchUserCart changes (which is stable now)  
   // Initialize cart with some sample items
 
   const addToCart = (product) => {
