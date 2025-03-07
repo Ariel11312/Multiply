@@ -2,19 +2,11 @@ import React, { useCallback, useEffect, useState } from "react";
 import logo from "../../assets/MULTIPLY-1 remove back.png";
 import avatar from "../../assets/avatar.png";
 import { useLocation, useNavigate } from "react-router-dom";
-import {
-  Menu,
-  X,
-  User,
-  Home,
-  CreditCard,
-  Settings,
-  LogOut,
-} from "lucide-react";
+import { Menu, X, User, Home, CreditCard, Settings, LogOut } from "lucide-react";
 import { checkAuth } from "../../middleware/auth";
 import { checkMember } from "../../middleware/member";
 
-// Define the CartModal component
+// CartModal Component
 const CartModal = ({
   isOpen,
   onClose,
@@ -89,7 +81,7 @@ const CartModal = ({
                   <div className="flex items-center space-x-3">
                     {item.image ? (
                       <img
-                        src={ import.meta.env.VITE_API_URL + item.image}
+                        src={import.meta.env.VITE_API_URL + item.image}
                         alt={item.name}
                         className="w-16 h-16 object-cover rounded"
                       />
@@ -116,7 +108,7 @@ const CartModal = ({
                         {item.name || "Unnamed Product"}
                       </h3>
                       <p className="text-green-700 font-bold">
-                      ₱ {(item.price || 0).toFixed(2)}
+                        ₱ {(item.price || 0).toFixed(2)}
                       </p>
                     </div>
                   </div>
@@ -194,16 +186,19 @@ const CartModal = ({
   );
 };
 
-// Define the ProfileMenu component
-
+// Navbar Component
 const Navbar = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isCartOpen, setIsCartOpen] = useState(false);
-  const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false); // State for profile menu
+  const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
   const [memberData, setMemberData] = useState([]);
   const [lastUpdate, setLastUpdate] = useState(Date.now());
+  const [cartUpdated, setCartUpdated] = useState(false);
+  const [error, setError] = useState(null);
+  const [cartItems, setCartItems] = useState([]);
+
   const refreshCart = () => {
     setLastUpdate(Date.now());
   };
@@ -211,35 +206,27 @@ const Navbar = () => {
   useEffect(() => {
     checkMember(setMemberData);
   }, [lastUpdate]);
+
   const member = memberData.userType;
 
-  // Example products data
- 
-  const [cartItems, setCartItems] = useState([]);
-  
   const fetchUserCart = useCallback(async () => {
     try {
       const response = await fetch(import.meta.env.VITE_API_URL + `/api/cart/usercart`, {
         method: 'GET',
-        headers: {
-          'Content-Type': 'application/json'
-        },
+        headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
       });
-  
+
       if (!response.ok) {
         if (response.status === 404) {
-          setCartItems(prevItems => (prevItems.length === 0 ? prevItems : [])); // Avoid unnecessary state update
-          refreshCart();
+          setCartItems([]);
           return;
         }
-  
         const errorData = await response.json();
         throw new Error(errorData.message || 'Failed to fetch cart');
       }
-  
+
       const cartData = await response.json();
-  
       const formattedCartItems = cartData.items.map(item => ({
         _id: item.itemId,
         name: item.name,
@@ -247,43 +234,30 @@ const Navbar = () => {
         image: item.imageUrl,
         quantity: item.quantity
       }));
-  
-      // Update state only if data has changed
-      setCartItems(prevItems => {
-        return JSON.stringify(prevItems) === JSON.stringify(formattedCartItems) ? prevItems : formattedCartItems;
-      });
-  
+
+      setCartItems(formattedCartItems);
     } catch (error) {
       console.error('Error fetching cart:', error);
       setError(error.message);
     }
-  }, []); // Empty dependency array ensures fetchUserCart is stable
-  
+  }, [cartUpdated]);
+
   useEffect(() => {
     fetchUserCart();
-  }, [fetchUserCart]); // Runs only when fetchUserCart changes (which is stable now)  
-  // Initialize cart with some sample items
+  }, [fetchUserCart]);
 
-  const addToCart = (product) => {
-    const existingItem = cartItems.find((item) => item.id === product.id);
-
-    if (existingItem) {
-      // Increase quantity if product already in cart
-      updateQuantity(product.id, existingItem.quantity + 1);
-    } else {
-      // Add new product with quantity 1
-      setCartItems([...cartItems, { ...product, quantity: 1 }]);
-    }
+  const updateCart = () => {
+    setCartUpdated(prev => !prev);
   };
 
-  const removeFromCart = (productId) => {
-    setCartItems(cartItems.filter((item) => item.id !== productId));
+  const removeFromCart = (itemId) => {
+    setCartItems((prevItems) => prevItems.filter((item) => item._id !== itemId));
   };
 
-  const updateQuantity = (productId, newQuantity) => {
-    setCartItems(
-      cartItems.map((item) =>
-        item.id === productId ? { ...item, quantity: newQuantity } : item
+  const updateQuantity = (itemId, quantity) => {
+    setCartItems((prevItems) =>
+      prevItems.map((item) =>
+        item._id === itemId ? { ...item, quantity: Math.max(1, quantity) } : item
       )
     );
   };
@@ -323,119 +297,11 @@ const Navbar = () => {
     setIsMenuOpen(false);
   };
 
-  const ProfileMenu = ({ isOpen, onClose, user, handleLogout }) => {
-        if (!isOpen) return null;
-
-    return (
-      <div className="fixed inset-0 z-50 flex items-center justify-center">
-        {/* Backdrop with blur effect */}
-        <div
-          className="absolute inset-0 bg-black bg-opacity-50 backdrop-blur-sm"
-          onClick={onClose}
-        ></div>
-
-        {/* Modal */}
-        <div className="relative bg-white rounded-lg shadow-xl max-w-md w-full max-h-[80vh] overflow-auto">
-          {/* Header with gradient background */}
-          <div className="flex justify-between items-center p-4 bg-gradient-to-r from-green-500 to-green-600 text-white rounded-t-lg">
-            <h2 className="text-xl font-bold">My Profile</h2>
-            <button
-              onClick={onClose}
-              className="text-white hover:text-gray-200 transition-colors"
-            >
-              <X className="h-6 w-6" />
-            </button>
-          </div>
-
-          {/* User info section with shadow */}
-          <div className="p-6 border-b space-y-4">
-            <div className="flex items-center space-x-4">
-              <div className="relative">
-                <img
-                  className="w-20 h-20 rounded-full object-cover border-2 border-green-400 shadow-md"
-                  src={user?.profileImage || avatar}
-                  alt="User Avatar"
-                />
-                <div className="absolute bottom-0 right-0 bg-green-500 h-4 w-4 rounded-full border-2 border-white"></div>
-              </div>
-              <div>
-                <h3 className="font-bold text-xl">
-                  {user?.firstName} {user?.lastName}
-                </h3>
-                <p className="text-gray-500">{user?.email}</p>
-                <span className="inline-block mt-1 px-2 py-1 bg-red-100 text-green-600 text-xs font-medium rounded-full">
-                  {user?.membershipType || "Standard Member"}
-                </span>
-              </div>
-            </div>
-          </div>
-
-          {/* Menu options with icons */}
-          <div className="p-4">
-            <h4 className="text-sm font-medium text-gray-500 mb-2 uppercase tracking-wider">
-              Account Options
-            </h4>
-            <ul className="space-y-2 mb-6">
-              <li className="group">
-                <a
-                  className="flex items-center space-x-3 p-3 rounded-lg cursor-pointer transition-colors duration-200 hover:bg-green-50 group-hover:text-green-500"
-                  onClick={() => handleNavigation("/account")}
-                >
-                  <User className="h-5 w-5 text-gray-400 group-hover:text-green-500" />
-                  <span>My Account</span>
-                </a>
-              </li>
-              <li className="group">
-                <a
-                  className="flex items-center space-x-3 p-3 rounded-lg cursor-pointer transition-colors duration-200 hover:bg-green-50 group-hover:text-green-500"
-                  onClick={() => handleNavigation("/member")}
-                >
-                  <Home className="h-5 w-5 text-gray-400 group-hover:text-green-500" />
-                  <span>Member Home</span>
-                </a>
-              </li>
-              <li className="group">
-                <a
-                  className="flex items-center space-x-3 p-3 rounded-lg cursor-pointer transition-colors duration-200 hover:bg-green-50 group-hover:text-green-500"
-                  onClick={() => handleNavigation("/member-transactions")}
-                >
-                  <CreditCard className="h-5 w-5 text-gray-400 group-hover:text-green-500" />
-                  <span>Transactions</span>
-                </a>
-              </li>
-              <li className="group">
-                <a
-                  className="flex items-center space-x-3 p-3 rounded-lg cursor-pointer transition-colors duration-200 hover:bg-green-50 group-hover:text-green-500"
-                  onClick={() => handleNavigation("/settings")}
-                >
-                  <Settings className="h-5 w-5 text-gray-400 group-hover:text-green-500" />
-                  <span>Settings</span>
-                </a>
-              </li>
-            </ul>
-
-            {/* Logout button with icon */}
-            <button
-              className="w-full flex items-center justify-center space-x-2 px-4 py-3 rounded-lg font-bold bg-green-500 text-white transition-all duration-200 hover:bg-green-600 shadow-sm hover:shadow"
-              onClick={() => {
-                handleLogout();
-                onClose();
-              }}
-            >
-              <LogOut className="h-5 w-5" />
-              <span>Logout</span>
-            </button>
-          </div>
-        </div>
-      </div>
-    );
-  };
   const handleNavigation = (path) => {
-    console.log(path);
     navigate(path);
-    onClose();
+    setIsProfileMenuOpen(false);
   };
-  
+
   const handleLogout = async () => {
     try {
       const response = await fetch(
@@ -454,10 +320,15 @@ const Navbar = () => {
           isCheckingAuth: false,
           error: null,
         });
+        navigate("/");
       }
     } catch (error) {
       console.error("Logout error:", error);
     }
+  };
+
+  const loginNav = () => {
+    navigate("/login");
   };
 
   const NavLinks = () => (
@@ -478,7 +349,7 @@ const Navbar = () => {
       >
         Shop
       </li>
-      {member === "Member" ? null : ( // Don't render anything if the user is already a member
+      {member === "Member" ? null : (
         <li
           className={`cursor-pointer transition-colors duration-200 hover:text-red-400 ${
             active === 2 ? "text-red-500" : ""
@@ -488,7 +359,6 @@ const Navbar = () => {
           Be a Member?
         </li>
       )}
-
       <li
         className={`cursor-pointer transition-colors duration-200 hover:text-red-400 ${
           active === 3 ? "text-red-500" : ""
@@ -499,10 +369,6 @@ const Navbar = () => {
       </li>
     </ul>
   );
-
-  const loginNav = () => {
-    window.location.href = "./login";
-  };
 
   return (
     <>
@@ -532,10 +398,7 @@ const Navbar = () => {
               >
                 <div className="absolute -top-1 -right-1 transform translate-x-1/4 -translate-y-1/4">
                   <p className="flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-xs text-white">
-                    {cartItems.reduce(
-                      (total, item) => total + item.quantity,
-                      0
-                    ) || 0}
+                    {cartItems.reduce((total, item) => total + item.quantity, 0) || 0}
                   </p>
                 </div>
                 <svg
@@ -549,7 +412,7 @@ const Navbar = () => {
                   <path
                     strokeLinecap="round"
                     strokeLinejoin="round"
-                    d="M2.25 3h1.386c.51 0 .955.343 1.087.835l.383 1.437M7.5 14.25a3 3 0 00-3 3h15.75m-12.75-3h11.218c1.121-2.3 2.1-4.684 2.924-7.138a60.114 60.114 0 00-16.536-1.84M7.5 14.25L5.106 5.272M6 20.25a.75.75 0 11-1.5 0     75 0 1 1-1.5 0 .75.75 0 011.5 0zM2.25 3h1.386c.51 0 .955.343 1.087.835l.383 1.437M7.5 14.25a3 3 0 00-3 3h15.75m-12.75-3h11.218c1.121-2.3 2.1-4.684 2.924-7.138a60.114 60.114 0 00-16.536-1.84M7.5 14.25L5.106 5.272M6 20.25a.75.75 0 11-1.5 0 .75.75 0 011.5 0zm12.75 0a.75.75 0 11-1.5 0 .75.75 0 011.5 0z"
+                    d="M2.25 3h1.386c.51 0 .955.343 1.087.835l.383 1.437M7.5 14.25a3 3 0 00-3 3h15.75m-12.75-3h11.218c1.121-2.3 2.1-4.684 2.924-7.138a60.114 60.114 0 00-16.536-1.84M7.5 14.25L5.106 5.272M6 20.25a.75.75 0 11-1.5 0 .75.75 0 011.5 0zm12.75 0a.75.75 0 11-1.5 0 .75.75 0 011.5 0z"
                   />
                 </svg>
               </div>
@@ -559,7 +422,7 @@ const Navbar = () => {
                 <div className="flex items-center space-x-2 lg:space-x-4">
                   <div
                     className="flex items-center space-x-2 cursor-pointer"
-                    onClick={() => setIsProfileMenuOpen(true)} // Open profile menu on click
+                    onClick={() => setIsProfileMenuOpen(true)}
                   >
                     <img
                       className="w-6 h-6 sm:w-8 sm:h-8 rounded-full object-cover transition-all duration-200"
@@ -590,10 +453,7 @@ const Navbar = () => {
               >
                 <div className="absolute -top-1 -right-1 transform translate-x-1/4 -translate-y-1/4">
                   <p className="flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-xs text-white">
-                    {cartItems.reduce(
-                      (total, item) => total + item.quantity,
-                      0
-                    ) || 0}
+                    {cartItems.reduce((total, item) => total + item.quantity, 0) || 0}
                   </p>
                 </div>
                 <svg
@@ -645,48 +505,46 @@ const Navbar = () => {
                           {authState.user?.firstName}
                         </p>
                       </div>
-                      {member ===
-      "Member" ? // Don't render anything if the user is already a member
-        
-                      <ul>
-                        <li className="group">
-                          <a
-                            className="flex items-center space-x-3 p-3 rounded-lg cursor-pointer transition-colors duration-200 hover:bg-green-50 group-hover:text-green-500"
-                            onClick={() => handleNavigation("/account")}
-                          >
-                            <User className="h-5 w-5 text-gray-400 group-hover:text-green-500" />
-                            <span>My Account</span>
-                          </a>
-                        </li>
-                        <li className="group">
-                          <a
-                            className="flex items-center space-x-3 p-3 rounded-lg cursor-pointer transition-colors duration-200 hover:bg-green-50 group-hover:text-green-500"
-                            onClick={() => handleNavigation("/member")}
-                          >
-                            <Home className="h-5 w-5 text-gray-400 group-hover:text-green-500" />
-                            <span>Member Home</span>
-                          </a>
-                        </li>
-                        <li className="group">
-                          <a
-                            className="flex items-center space-x-3 p-3 rounded-lg cursor-pointer transition-colors duration-200 hover:bg-green-50 group-hover:text-green-500"
-                            onClick={() => handleNavigation("/transactions")}
-                          >
-                            <CreditCard className="h-5 w-5 text-gray-400 group-hover:text-green-500" />
-                            <span>Transactions</span>
-                          </a>
-                        </li>
-                        <li className="group">
-                          <a
-                            className="flex items-center space-x-3 p-3 rounded-lg cursor-pointer transition-colors duration-200 hover:bg-green-50 group-hover:text-green-500"
-                            onClick={() => handleNavigation("/settings")}
-                          >
-                            <Settings className="h-5 w-5 text-gray-400 group-hover:text-green-500" />
-                            <span>Settings</span>
-                          </a>
-                        </li>
-                      </ul>
-                      : null}
+                      {member === "Member" ? (
+                        <ul>
+                          <li className="group">
+                            <a
+                              className="flex items-center space-x-3 p-3 rounded-lg cursor-pointer transition-colors duration-200 hover:bg-green-50 group-hover:text-green-500"
+                              onClick={() => handleNavigation("/account")}
+                            >
+                              <User className="h-5 w-5 text-gray-400 group-hover:text-green-500" />
+                              <span>My Account</span>
+                            </a>
+                          </li>
+                          <li className="group">
+                            <a
+                              className="flex items-center space-x-3 p-3 rounded-lg cursor-pointer transition-colors duration-200 hover:bg-green-50 group-hover:text-green-500"
+                              onClick={() => handleNavigation("/member")}
+                            >
+                              <Home className="h-5 w-5 text-gray-400 group-hover:text-green-500" />
+                              <span>Member Home</span>
+                            </a>
+                          </li>
+                          <li className="group">
+                            <a
+                              className="flex items-center space-x-3 p-3 rounded-lg cursor-pointer transition-colors duration-200 hover:bg-green-50 group-hover:text-green-500"
+                              onClick={() => handleNavigation("/transactions")}
+                            >
+                              <CreditCard className="h-5 w-5 text-gray-400 group-hover:text-green-500" />
+                              <span>Transactions</span>
+                            </a>
+                          </li>
+                          <li className="group">
+                            <a
+                              className="flex items-center space-x-3 p-3 rounded-lg cursor-pointer transition-colors duration-200 hover:bg-green-50 group-hover:text-green-500"
+                              onClick={() => handleNavigation("/settings")}
+                            >
+                              <Settings className="h-5 w-5 text-gray-400 group-hover:text-green-500" />
+                              <span>Settings</span>
+                            </a>
+                          </li>
+                        </ul>
+                      ) : null}
                     </div>
                     <button
                       className="w-full px-4 py-2 rounded-lg font-bold bg-slate-900 text-white text-sm transition-colors duration-200 hover:bg-slate-800"
@@ -720,12 +578,99 @@ const Navbar = () => {
       />
 
       {/* Profile Menu Component */}
-      <ProfileMenu
-        isOpen={isProfileMenuOpen}
-        onClose={() => setIsProfileMenuOpen(false)}
-        user={authState.user}
-        handleLogout={handleLogout}
-      />
+      {isProfileMenuOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center">
+          <div
+            className="absolute inset-0 bg-black bg-opacity-50 backdrop-blur-sm"
+            onClick={() => setIsProfileMenuOpen(false)}
+          ></div>
+          <div className="relative bg-white rounded-lg shadow-xl max-w-md w-full max-h-[80vh] overflow-auto">
+            <div className="flex justify-between items-center p-4 bg-gradient-to-r from-green-500 to-green-600 text-white rounded-t-lg">
+              <h2 className="text-xl font-bold">My Profile</h2>
+              <button
+                onClick={() => setIsProfileMenuOpen(false)}
+                className="text-white hover:text-gray-200 transition-colors"
+              >
+                <X className="h-6 w-6" />
+              </button>
+            </div>
+            <div className="p-6 border-b space-y-4">
+              <div className="flex items-center space-x-4">
+                <div className="relative">
+                  <img
+                    className="w-20 h-20 rounded-full object-cover border-2 border-green-400 shadow-md"
+                    src={authState.user?.profileImage || avatar}
+                    alt="User Avatar"
+                  />
+                  <div className="absolute bottom-0 right-0 bg-green-500 h-4 w-4 rounded-full border-2 border-white"></div>
+                </div>
+                <div>
+                  <h3 className="font-bold text-xl">
+                    {authState.user?.firstName} {authState.user?.lastName}
+                  </h3>
+                  <p className="text-gray-500">{authState.user?.email}</p>
+                  <span className="inline-block mt-1 px-2 py-1 bg-red-100 text-green-600 text-xs font-medium rounded-full">
+                    {authState.user?.membershipType || "Standard Member"}
+                  </span>
+                </div>
+              </div>
+            </div>
+            <div className="p-4">
+              <h4 className="text-sm font-medium text-gray-500 mb-2 uppercase tracking-wider">
+                Account Options
+              </h4>
+              <ul className="space-y-2 mb-6">
+                <li className="group">
+                  <a
+                    className="flex items-center space-x-3 p-3 rounded-lg cursor-pointer transition-colors duration-200 hover:bg-green-50 group-hover:text-green-500"
+                    onClick={() => handleNavigation("/account")}
+                  >
+                    <User className="h-5 w-5 text-gray-400 group-hover:text-green-500" />
+                    <span>My Account</span>
+                  </a>
+                </li>
+                <li className="group">
+                  <a
+                    className="flex items-center space-x-3 p-3 rounded-lg cursor-pointer transition-colors duration-200 hover:bg-green-50 group-hover:text-green-500"
+                    onClick={() => handleNavigation("/member")}
+                  >
+                    <Home className="h-5 w-5 text-gray-400 group-hover:text-green-500" />
+                    <span>Member Home</span>
+                  </a>
+                </li>
+                <li className="group">
+                  <a
+                    className="flex items-center space-x-3 p-3 rounded-lg cursor-pointer transition-colors duration-200 hover:bg-green-50 group-hover:text-green-500"
+                    onClick={() => handleNavigation("/member-transactions")}
+                  >
+                    <CreditCard className="h-5 w-5 text-gray-400 group-hover:text-green-500" />
+                    <span>Transactions</span>
+                  </a>
+                </li>
+                <li className="group">
+                  <a
+                    className="flex items-center space-x-3 p-3 rounded-lg cursor-pointer transition-colors duration-200 hover:bg-green-50 group-hover:text-green-500"
+                    onClick={() => handleNavigation("/settings")}
+                  >
+                    <Settings className="h-5 w-5 text-gray-400 group-hover:text-green-500" />
+                    <span>Settings</span>
+                  </a>
+                </li>
+              </ul>
+              <button
+                className="w-full flex items-center justify-center space-x-2 px-4 py-3 rounded-lg font-bold bg-green-500 text-white transition-all duration-200 hover:bg-green-600 shadow-sm hover:shadow"
+                onClick={() => {
+                  handleLogout();
+                  setIsProfileMenuOpen(false);
+                }}
+              >
+                <LogOut className="h-5 w-5" />
+                <span>Logout</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </>
   );
 };
