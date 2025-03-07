@@ -276,20 +276,16 @@ export const checkAuth = async (request, response) => {
     try {
         // Retrieve token from cookies
         const token = request.cookies.token;
-        console.log("token:" + token)
         
         if (!token) {
             return response.status(401).json({
                 success: false,
-                message: "Authentication token is missing.",
             });
         }
 
         // Decode and verify the token
         const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
-        // Optional: Log token expiration time
-        console.log("Token expires at:", new Date(decoded.exp * 1000));
 
         // Find the user by ID
         const user = await User.findById(decoded.userId).select("-password"); // Exclude password
