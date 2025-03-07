@@ -4,9 +4,9 @@ import { fetchItems } from "../../middleware/shopItems";
 
 const EcommerceShop = () => {
   const [cartItems, setCartItems] = useState([]);
+  const [cart, setCart] = useState([]);
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [cart, setCart] = useState([]);
   const [error, setError] = useState(null);
   const [cartItemCount, setCartItemCount] = useState(0);
   const [notification, setNotification] = useState(null);
@@ -25,68 +25,52 @@ const EcommerceShop = () => {
     };
 
     loadProducts();
-  }, [setCart]);
+  }, []);
 
+  const [showModal, setShowModal] = useState(false); // Modal state
   // Add to cart function for frontend
-  const addToCart = async (itemId, quantity = 1, userId) => {
+  const addToCart = async (productId) => {
+    setShowModal(true);
+    setTimeout(() => setShowModal(false), 3000);
+    const id = productId._id;
     try {
-      // Show loading state if needed
-      setLoading(true);
-
-      // API call to add item to cart
-      const response = await fetch(
-        import.meta.env.VITE_API_URL + "/api/cart/addcart",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          credentials: "include",
-          body: JSON.stringify({
-            userId,
-            itemId,
-            quantity,
-          }),
-        }
-      );
-      // Handle error responses
+      const response = await fetch(import.meta.env.VITE_API_URL + `/api/cart/addcart`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({itemId: id, quantity: 1})
+      });
+  
       if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || "Failed to add item to cart");
+        throw new Error('Failed to add item to cart');
       }
+  
+      const cartData = await response.json();
+  
+      // Check if `cartData.items` exists before mapping
+      if (!cartData.items || !Array.isArray(cartData.items)) {
+        console.error("cartData.items is undefined or not an array:", cartData);
+        setCartItems([]); // Set an empty array instead of undefined
+        return;
+      }
+  
+      // Transform cart items properly
+      const formattedCartItems = cartData.items.map(item => ({
+        _id: item.itemId,
+        name: item.name,
+        price: item.price,
+        image: item.imageUrl,
+        quantity: item.quantity
+      }));
+  
+      setCartItems(formattedCartItems);
+      setShowModal(true); // Show modal after adding item
 
-      // Parse the successful response
-      const updatedCart = await response.json();
-
-      // Update local cart state
-      setCart(updatedCart);
-
-      // Update cart item count for UI badge/indicator
-      setCartItemCount(
-        updatedCart.items.reduce((total, item) => total + item.quantity, 0)
-      );
-
-      // Show success message
-      setNotification({
-        type: "success",
-        message: "Item added to cart successfully!",
-      });
-
-      return updatedCart;
     } catch (error) {
-      // Handle and display error
-      console.error("Add to cart error:", error);
-      setNotification({
-        type: "error",
-        message: error.message || "Failed to add item to cart",
-      });
-      throw error;
-    } finally {
-      // Clear loading state
-      setLoading(false);
+      console.error("Error adding item to cart:", error.message);
     }
   };
-
+  
   const removeFromCart = (productId) => {
     const index = cartItems.findIndex((item) => item._id === productId);
     if (index !== -1) {
@@ -134,9 +118,10 @@ const EcommerceShop = () => {
     setCurrentSlide(index);
   };
   
-
   return (
     <>
+  
+  
       <Navbar />
       <div className="flex flex-col min-h-screen">
         {/* Main Content */}
@@ -461,7 +446,39 @@ const EcommerceShop = () => {
           </div>
         </footer>
       </div>
+
+      {showModal && (<div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
+      <div className="bg-white p-6 rounded-lg shadow-lg text-center relative">
+        <div className="mb-3 flex justify-center">
+          <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center">
+            <svg 
+              className="w-6 h-6 text-green-500" 
+              fill="none" 
+              stroke="currentColor" 
+              viewBox="0 0 24 24" 
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path 
+                strokeLinecap="round" 
+                strokeLinejoin="round" 
+                strokeWidth="2" 
+                d="M5 13l4 4L19 7"
+              />
+            </svg>
+          </div>
+        </div>
+        
+        <p className="text-lg font-semibold text-gray-800">🛒 Item added to cart!</p>
+
+        
+          Continue Shopping
+      </div>
+    </div>
+      )}
+
     </>
+
+
   );
 };
 
