@@ -46,6 +46,7 @@ const Login = () => {
       const data = await response.json();
 
       if (response.ok) {
+        {localStorage.getItem("accepted") && (window.location.href = "/member-registration")}
         navigate("/");
       } else {
         setError(data.message || "Login failed. Please try again.");
