@@ -1,5 +1,5 @@
 import express from 'express';
-import { signup, login, logout, verifyEmail, resetPassword, forgotPassword, checkAuth, checkMember, checkMemberTransaction, googleLogin } from '../controllers/auth-controller.js';
+import { signup, login, logout, verifyEmail, resetPassword, forgotPassword, checkAuth, checkMember, checkMemberTransaction, googleLogin, resendOtp } from '../controllers/auth-controller.js';
 import { verifyToken } from '../middleware/verifyToken.js';
 const router = express.Router();
 
@@ -13,5 +13,6 @@ router.get('/check-auth', checkAuth)
 router.get('/check-member', checkMember)
 router.get('/check-transaction', checkMemberTransaction)
 router.post('/google-login', googleLogin)
+router.post('/resend', resendOtp)
 
 export default router;
