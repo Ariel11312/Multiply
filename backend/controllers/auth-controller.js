@@ -190,8 +190,16 @@ export const verifyEmail = async (request, response) => {
 
         // Generate JWT token
         generateJWTToken(response, user._id);
-
+        const cart = new Cart({
+            userId: newUser._id,   
+            items: [],
+            totalAmount: 0,
+            updatedAt: new Date(),
+            createdAt: new Date()
+        });
+        cart.save();
         await user.save();
+        
         return response.status(200).json({ success: true, message: "Phone number verified successfully." });
     } catch (error) {
         console.error("Error verifying phone number:", error);
