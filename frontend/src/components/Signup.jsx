@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
+
 const Signup = () => {
   const [firstName, setFirstname] = useState("");
   const [lastName, setLastName] = useState("");
@@ -10,7 +11,11 @@ const Signup = () => {
   const navigate = useNavigate();
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [showModal, setShowModal] = useState(false);
+  const [userEmail, setUserEmail] = useState('');
+  
   const handleSignup = async (e) => {
     e.preventDefault();
 
@@ -121,21 +126,108 @@ const Signup = () => {
               pattern="[0-9]{10}" // Basic phone number pattern (10 digits)
               title="Please enter a valid 10-digit phone number"
             />
-            <input
-              type="password"
-              className="w-full h-12 px-4 bg-gray-100 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-600 transition-all"
-              placeholder="Create Password"
-              required
-              onChange={(e) => setPassword(e.target.value)}
-            />
-            <input
-              type="password"
-              className="w-full h-12 px-4 bg-gray-100 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-600 transition-all"
-              placeholder="Confirm Password"
-              required
-              onChange={(e) => setConfirmPassword(e.target.value)}
-            />
-            <button
+  <div className="space-y-4 w-full">
+      {/* Create Password Field */}
+      <div className="relative">
+        <input
+          type={showPassword ? "text" : "password"}
+          className="w-full h-12 px-4 bg-gray-100 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-600 transition-all"
+          placeholder="Create Password"
+          required
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+        />
+        <button
+          type="button"
+          className="absolute right-3 top-1/2 transform -translate-y-1/2"
+          onClick={() => setShowPassword(!showPassword)}
+          aria-label={showPassword ? "Hide password" : "Show password"}
+        >
+          {showPassword ? (
+            <svg 
+              width="20" 
+              height="20" 
+              viewBox="0 0 24 24" 
+              fill="none" 
+              xmlns="http://www.w3.org/2000/svg"
+              className="text-gray-500"
+            >
+              <path 
+                d="M12 5C7 5 2.73 8.11 1 12C2.73 15.89 7 19 12 19C17 19 21.27 15.89 23 12C21.27 8.11 17 5 12 5ZM12 17C9.24 17 7 14.76 7 12C7 9.24 9.24 7 12 7C14.76 7 17 9.24 17 12C17 14.76 14.76 17 12 17Z" 
+                fill="currentColor"
+              />
+              <circle cx="12" cy="12" r="3" fill="currentColor"/>
+            </svg>
+          ) : (
+            <svg 
+              width="20" 
+              height="20" 
+              viewBox="0 0 24 24" 
+              fill="none" 
+              xmlns="http://www.w3.org/2000/svg"
+              className="text-gray-500"
+            >
+              <path 
+                d="M12 5C7 5 2.73 8.11 1 12C2.73 15.89 7 19 12 19C17 19 21.27 15.89 23 12C21.27 8.11 17 5 12 5ZM12 17C9.24 17 7 14.76 7 12C7 9.24 9.24 7 12 7C14.76 7 17 9.24 17 12C17 14.76 14.76 17 12 17Z" 
+                fill="currentColor"
+              />
+              <line x1="4" y1="4" x2="20" y2="20" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+            </svg>
+          )}
+        </button>
+      </div>
+      
+      {/* Confirm Password Field */}
+      <div className="relative">
+        <input
+          type={showConfirmPassword ? "text" : "password"}
+          className="w-full h-12 px-4 bg-gray-100 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-600 transition-all"
+          placeholder="Confirm Password"
+          required
+          value={confirmPassword}
+          onChange={(e) => setConfirmPassword(e.target.value)}
+        />
+        <button
+          type="button"
+          className="absolute right-3 top-1/2 transform -translate-y-1/2"
+          onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+          aria-label={showConfirmPassword ? "Hide password" : "Show password"}
+        >
+          {showConfirmPassword ? (
+            <svg 
+              width="20" 
+              height="20" 
+              viewBox="0 0 24 24" 
+              fill="none" 
+              xmlns="http://www.w3.org/2000/svg"
+              className="text-gray-500"
+            >
+              <path 
+                d="M12 5C7 5 2.73 8.11 1 12C2.73 15.89 7 19 12 19C17 19 21.27 15.89 23 12C21.27 8.11 17 5 12 5ZM12 17C9.24 17 7 14.76 7 12C7 9.24 9.24 7 12 7C14.76 7 17 9.24 17 12C17 14.76 14.76 17 12 17Z" 
+                fill="currentColor"
+              />
+              <circle cx="12" cy="12" r="3" fill="currentColor"/>
+            </svg>
+          ) : (
+            <svg 
+              width="20" 
+              height="20" 
+              viewBox="0 0 24 24" 
+              fill="none" 
+              xmlns="http://www.w3.org/2000/svg"
+              className="text-gray-500"
+            >
+              <path 
+                d="M12 5C7 5 2.73 8.11 1 12C2.73 15.89 7 19 12 19C17 19 21.27 15.89 23 12C21.27 8.11 17 5 12 5ZM12 17C9.24 17 7 14.76 7 12C7 9.24 9.24 7 12 7C14.76 7 17 9.24 17 12C17 14.76 14.76 17 12 17Z" 
+                fill="currentColor"
+              />
+              <line x1="4" y1="4" x2="20" y2="20" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+            </svg>
+          )}
+        </button>
+      </div>
+    </div>
+              <button
               type="submit"
               className="w-full h-12 bg-green-600 text-white font-semibold rounded-lg flex justify-center items-center hover:bg-green-700 transition-colors disabled:opacity-50"
               disabled={isLoading}
