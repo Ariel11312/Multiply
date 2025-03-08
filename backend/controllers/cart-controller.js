@@ -86,9 +86,6 @@ export const userCart = async (req, res) => {
         const { userId } = decoded;
 
         const cart = await Cart.findOne({ userId }).populate("items.itemId");
-        if (!cart) {
-            return res.status(404).json({ message: 'Cart not found' });
-        }
 
         return res.status(200).json(cart);
         
