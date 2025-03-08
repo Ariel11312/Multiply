@@ -5,48 +5,48 @@ const Carousel = () => {
   const testimonials = [
     {
       name: "David Chen",
-      role: "Fitness Enthusiast",
+      role: "WeMultiply Golden Seat Member",
       message:
-        "Cnergee's pre-workout gives me incredible energy and focus during my training sessions. No crash, just clean energy!",
+        "Yumaman ako dahil sa wemultiply. Salamat sa lahat ng blessings!",
       rating: 5,
-      productUsed: "Pre-Workout Plus",
-      image: "/api/placeholder/100/100",
+      productUsed: "Golden Seater",
+      image: "",
     },
     {
       name: "Sarah Martinez",
-      role: "CrossFit Athlete",
+      role: "WeMultiply Golden Seat Member",
       message:
-        "The protein blend tastes amazing and mixes perfectly. I've seen great improvements in my recovery since using Cnergee supplements.",
+        "I earned my 1st million because of wemultiply. I can't believe it",
       rating: 5,
-      productUsed: "Premium Whey Isolate",
-      image: "/api/placeholder/100/100",
+      productUsed: "Golden Seater",
+      image: "",
     },
     {
       name: "Mike Johnson",
-      role: "Bodybuilder",
+      role: "WeMultiply Golden Seat Member",
       message:
-        "Best supplements I've used in my 10 years of training. The quality is unmatched and results are visible within weeks.",
+        "Nakapaghongkong ako dahil sa weMultiply",
       rating: 5,
-      productUsed: "Mass Gainer Elite",
-      image: "/api/placeholder/100/100",
+      productUsed: "Golden Seater",
+      image: "",
     },
     {
       name: "Emma Wilson",
-      role: "Personal Trainer",
+      role: "WeMultiply Golden Seat Member",
       message:
-        "I recommend Cnergee to all my clients. The BCAA blend is perfect for maintaining muscle during intense cut phases.",
+        "Ang sarap makita ung weMultiply na wallet ko na padami ng padami araw araw. Literal na multiply",
       rating: 5,
-      productUsed: "BCAA Recovery",
-      image: "/api/placeholder/100/100",
+      productUsed: "Golden Seater",
+      image: "",
     },
     {
       name: "Alex Thompson",
-      role: "Endurance Runner",
+      role: "WeMultiply Golden Seat Member",
       message:
-        "The electrolyte formula has been a game-changer for my marathon training. Great taste and perfect for long runs!",
+        "Amg sarap maging goldenseater! Natupad ang pangarap kong maging governor, e-Governor nga lang. Thank you weMultiply",
       rating: 5,
-      productUsed: "Hydration Plus",
-      image: "/api/placeholder/100/100",
+      productUsed: "Golden Seater",
+      image: "",
     },
   ];
 
