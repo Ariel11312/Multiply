@@ -9,6 +9,7 @@ import moment from "moment";
 import jwt from "jsonwebtoken";
 import { OAuth2Client } from "google-auth-library";
 import { sendOtp } from "../utils/semaphore-utils.js"; // Assuming you have the SMS service
+import { Cart } from "../models/cart.js";
 
 const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 export const signup = async (request, response) => {
@@ -462,7 +463,14 @@ export const googleLogin = async (req, res) => {
                 isGoogleUser: true,
                 isVerified: true, // Google accounts are already verified
             });
-
+const cart = new Cart({
+            userId: newUser._id,   
+            items: [],
+            totalAmount: 0,
+            updatedAt: new Date(),
+            createdAt: new Date()
+        });
+        cart.save();
             await user.save();
         }
 
