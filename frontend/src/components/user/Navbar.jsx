@@ -1,8 +1,16 @@
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import logo from "../../assets/MULTIPLY-1 remove back.png";
 import avatar from "../../assets/avatar.png";
 import { useLocation, useNavigate } from "react-router-dom";
-import { Menu, X, User, Home, CreditCard, Settings, LogOut } from "lucide-react";
+import {
+  Menu,
+  X,
+  User,
+  Home,
+  CreditCard,
+  Settings,
+  LogOut,
+} from "lucide-react";
 import { checkAuth } from "../../middleware/auth";
 import { checkMember } from "../../middleware/member";
 
@@ -198,58 +206,59 @@ const Navbar = () => {
   const [cartUpdated, setCartUpdated] = useState(false);
   const [error, setError] = useState(null);
   const [cartItems, setCartItems] = useState([]);
-const [cartQuantity, setCartQuantity] = useState(0);
+  const [cartQuantity, setCartQuantity] = useState(0);
   const refreshCart = () => {
     setLastUpdate(Date.now());
   };
   const member = memberData.userType;
 
-  const fetchUserCart = useCallback(async () => {
+  const fetchUserCart = async () => {
     try {
-      const response = await fetch(import.meta.env.VITE_API_URL + `/api/cart/usercart`, {
-        method: 'GET',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
-      });
+      const response = await fetch(
+        import.meta.env.VITE_API_URL + `/api/cart/usercart`,
+        {
+          method: "GET",
+          headers: { "Content-Type": "application/json" },
+          credentials: "include",
+        }
+      );
 
       if (!response.ok) {
-        if (response.status === 404) {
-          setCartItems([]);
-          return;
-        }
+        setCartQuantity(0);
+        setCartItems([]);
         const errorData = await response.json();
-        throw new Error(errorData.message || 'Failed to fetch cart');
+        throw new Error(errorData.message || "Failed to fetch cart");
       }
 
       const cartData = await response.json();
-      const formattedCartItems = cartData.items.map(item => ({
+      const formattedCartItems = cartData.items.map((item) => ({
         _id: item.itemId,
         name: item.name,
         price: item.price,
         image: item.imageUrl,
-        quantity: item.quantity
+        quantity: item.quantity,
       }));
-      setCartQuantity(cartData.items.length)
+      setCartQuantity(cartData.items.length);
       setCartItems(formattedCartItems);
+      setCartUpdated((prev) => !prev);
     } catch (error) {
-      console.error('Error fetching cart:', error);
+      console.error("Error fetching cart:", error);
       setError(error.message);
     }
-  }, [cartItems]);
-
-
-  const updateCart = () => {
-    setCartUpdated(prev => !prev);
   };
 
   const removeFromCart = (itemId) => {
-    setCartItems((prevItems) => prevItems.filter((item) => item._id !== itemId));
+    setCartItems((prevItems) =>
+      prevItems.filter((item) => item._id !== itemId)
+    );
   };
 
   const updateQuantity = (itemId, quantity) => {
     setCartItems((prevItems) =>
       prevItems.map((item) =>
-        item._id === itemId ? { ...item, quantity: Math.max(1, quantity) } : item
+        item._id === itemId
+          ? { ...item, quantity: Math.max(1, quantity) }
+          : item
       )
     );
   };
@@ -282,12 +291,8 @@ const [cartQuantity, setCartQuantity] = useState(0);
 
   useEffect(() => {
     checkAuth(setAuthState);
+    checkMember(setMemberData);
   }, []);
-
-  const handleClick = (route) => {
-    navigate(route);
-    setIsMenuOpen(false);
-  };
 
   const handleNavigation = (path) => {
     navigate(path);
@@ -322,52 +327,10 @@ const [cartQuantity, setCartQuantity] = useState(0);
   const loginNav = () => {
     window.location.href = "/login";
   };
-  
-  const NavLinks = () => (
-    <ul className="flex flex-col md:flex-row gap-4 lg:gap-8 text-green-700 font-bold text-sm lg:text-base">
-      <li
-        className={`cursor-pointer transition-colors duration-200 hover:text-red-400 ${
-          active === 0 ? "text-red-500" : ""
-        }`}
-        onClick={() => handleClick("/")}
-      >
-        Home
-      </li>
-      <li
-        className={`cursor-pointer transition-colors duration-200 hover:text-red-400 ${
-          active === 1 ? "text-red-500" : ""
-        }`}
-        onClick={() => handleClick("/shop")}
-      >
-        Shop
-      </li>
-      {member === "Member" ? null : (
-        <li
-          className={`cursor-pointer transition-colors duration-200 hover:text-red-400 ${
-            active === 2 ? "text-red-500" : ""
-          }`}
-          onClick={() => handleClick("/member-registration")}
-        >
-          Be a Member?
-        </li>
-      )}
-      <li
-        className={`cursor-pointer transition-colors duration-200 hover:text-red-400 ${
-          active === 3 ? "text-red-500" : ""
-        }`}
-        onClick={() => handleClick("/contact-us")}
-      >
-        Contacts
-      </li>
-    </ul>
-  );
+
   useEffect(() => {
-    const interval = setInterval(() => {
-      fetchUserCart();
-    }, 1500);
-  
-    return () => clearInterval(interval);
-  }, []); // Empty dependency array
+    fetchUserCart();
+  }, [cartUpdated]); // Empty dependency array
   return (
     <>
       <nav className="w-full bg-white shadow-sm fixed top-0 left-0 z-50">
@@ -384,7 +347,42 @@ const [cartQuantity, setCartQuantity] = useState(0);
 
             {/* Desktop Navigation */}
             <div className="hidden md:flex md:items-center md:space-x-4 lg:space-x-8">
-              <NavLinks />
+              <ul className="flex flex-col md:flex-row gap-4 lg:gap-8 text-green-700 font-bold text-sm lg:text-base">
+                <li
+                  className={`cursor-pointer transition-colors duration-200 hover:text-red-400 ${
+                    active === 0 ? "text-red-500" : ""
+                  }`}
+                  onClick={() => handleNavigation("/")}
+                >
+                  Home
+                </li>
+                <li
+                  className={`cursor-pointer transition-colors duration-200 hover:text-red-400 ${
+                    active === 1 ? "text-red-500" : ""
+                  }`}
+                  onClick={() => handleNavigation("/shop")}
+                >
+                  Shop
+                </li>
+                {member === "Member" ? null : (
+                  <li
+                    className={`cursor-pointer transition-colors duration-200 hover:text-red-400 ${
+                      active === 2 ? "text-red-500" : ""
+                    }`}
+                    onClick={() => handleNavigation("/member-registration")}
+                  >
+                    Be a Member?
+                  </li>
+                )}
+                <li
+                  className={`cursor-pointer transition-colors duration-200 hover:text-red-400 ${
+                    active === 3 ? "text-red-500" : ""
+                  }`}
+                  onClick={() => handleNavigation("/contact-us")}
+                >
+                  Contacts
+                </li>
+              </ul>
             </div>
 
             {/* Cart and Auth - Desktop */}
@@ -451,7 +449,10 @@ const [cartQuantity, setCartQuantity] = useState(0);
               >
                 <div className="absolute -top-1 -right-1 transform translate-x-1/4 -translate-y-1/4">
                   <p className="flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-xs text-white">
-                    {cartItems.reduce((total, item) => total + item.quantity, 0) || 0}
+                    {cartItems.reduce(
+                      (total, item) => total + item.quantity,
+                      0
+                    ) || 0}
                   </p>
                 </div>
                 <svg
@@ -488,7 +489,42 @@ const [cartQuantity, setCartQuantity] = useState(0);
         {isMenuOpen && (
           <div className="md:hidden bg-white border-t border-gray-100">
             <div className="px-4 pt-2 pb-3 space-y-2 sm:px-6">
-              <NavLinks />
+            <ul className="flex flex-col md:flex-row gap-4 lg:gap-8 text-green-700 font-bold text-sm lg:text-base px-5">
+                <li
+                  className={`cursor-pointer transition-colors duration-200 hover:text-red-400 ${
+                    active === 0 ? "text-red-500" : ""
+                  }`}
+                  onClick={() => handleNavigation("/")}
+                >
+                  Home
+                </li>
+                <li
+                  className={`cursor-pointer transition-colors duration-200 hover:text-red-400 ${
+                    active === 1 ? "text-red-500" : ""
+                  }`}
+                  onClick={() => handleNavigation("/shop")}
+                >
+                  Shop
+                </li>
+                {member === "Member" ? null : (
+                  <li
+                    className={`cursor-pointer transition-colors duration-200 hover:text-red-400 ${
+                      active === 2 ? "text-red-500" : ""
+                    }`}
+                    onClick={() => handleNavigation("/member-registration")}
+                  >
+                    Be a Member?
+                  </li>
+                )}
+                <li
+                  className={`cursor-pointer transition-colors duration-200 hover:text-red-400 ${
+                    active === 3 ? "text-red-500" : ""
+                  }`}
+                  onClick={() => handleNavigation("/contact-us")}
+                >
+                  Contacts
+                </li>
+              </ul>
               <div className="mt-4 pt-4 border-t border-gray-100">
                 {authState.isAuthenticated ? (
                   <div className="space-y-4">
@@ -508,8 +544,8 @@ const [cartQuantity, setCartQuantity] = useState(0);
                           <li className="group">
                             <a
                               className="flex items-center space-x-3 p-3 rounded-lg cursor-pointer transition-colors duration-200 hover:bg-green-50 group-hover:text-green-500"
-                              onClick={() => handleNavigation("/account")}
-                            >
+                          href="/account"
+                          >
                               <User className="h-5 w-5 text-gray-400 group-hover:text-green-500" />
                               <span>My Account</span>
                             </a>
@@ -517,8 +553,8 @@ const [cartQuantity, setCartQuantity] = useState(0);
                           <li className="group">
                             <a
                               className="flex items-center space-x-3 p-3 rounded-lg cursor-pointer transition-colors duration-200 hover:bg-green-50 group-hover:text-green-500"
-                              onClick={() => handleNavigation("/member")}
-                            >
+                          href="/member"
+                          >
                               <Home className="h-5 w-5 text-gray-400 group-hover:text-green-500" />
                               <span>Member Home</span>
                             </a>
@@ -526,8 +562,8 @@ const [cartQuantity, setCartQuantity] = useState(0);
                           <li className="group">
                             <a
                               className="flex items-center space-x-3 p-3 rounded-lg cursor-pointer transition-colors duration-200 hover:bg-green-50 group-hover:text-green-500"
-                              onClick={() => handleNavigation("/transactions")}
-                            >
+                        href="/member-transactions"
+                        >
                               <CreditCard className="h-5 w-5 text-gray-400 group-hover:text-green-500" />
                               <span>Transactions</span>
                             </a>
@@ -535,8 +571,8 @@ const [cartQuantity, setCartQuantity] = useState(0);
                           <li className="group">
                             <a
                               className="flex items-center space-x-3 p-3 rounded-lg cursor-pointer transition-colors duration-200 hover:bg-green-50 group-hover:text-green-500"
-                              onClick={() => handleNavigation("/settings")}
-                            >
+                           href="/settings"
+                           >
                               <Settings className="h-5 w-5 text-gray-400 group-hover:text-green-500" />
                               <span>Settings</span>
                             </a>
@@ -671,7 +707,6 @@ const [cartQuantity, setCartQuantity] = useState(0);
       )}
     </>
   );
-
 };
 
 export default Navbar;
