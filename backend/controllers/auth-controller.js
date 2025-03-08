@@ -279,10 +279,9 @@ export const checkAuth = async (request, response) => {
         
         if (!token) {
             return response.status(401).json({
-                success: false,
+                status: 401
             });
         }
-
         // Decode and verify the token
         const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
@@ -291,9 +290,8 @@ export const checkAuth = async (request, response) => {
         const user = await User.findById(decoded.userId).select("-password"); // Exclude password
 
         if (!user) {
-            return response.status(404).json({
-                success: false,
-                message: "User not found.",
+            return response.status(401).json({
+                status: 401
             });
         }
 
@@ -467,5 +465,70 @@ export const googleLogin = async (req, res) => {
     } catch (error) {
         console.error("Google Login Error:", error);
         res.status(500).json({ success: false, message: "Login failed" });
+    }
+};
+
+export const resendOtp = async (req, res) => {
+    const { phoneNumber } = req.body;
+    console.log('Resending OTP to:', phoneNumber);
+    try {
+        let formattedNumber = phoneNumber;
+        if (phoneNumber.startsWith("09")) {
+            formattedNumber = "9" + phoneNumber.slice(2);
+        }
+
+        console.log('Resending OTP to:', formattedNumber);
+
+        // Find user by phone number
+        const userPhone = await User.findOne({ phoneNumber: formattedNumber });
+
+        if (!userPhone) {
+            return res.status(404).json({
+                success: false,
+                message: 'User not found with this phone number'
+            });
+        }
+
+    
+        // Check if the OTP is expired
+        const now = new Date();
+        if (userPhone.verificationCodeExpiry && new Date(userPhone.verificationCodeExpiry) < now) {
+            console.log("OTP expired, generating a new one...");
+            // Generate a new OTP
+            const newOtpCode = crypto.randomInt(100000, 999999).toString();
+            const newExpiry = new Date();
+            newExpiry.setMinutes(newExpiry.getMinutes() + 5); // Set expiry to 5 minutes from now
+
+            // Update OTP and expiry in the database
+            userPhone.verificationCode = newOtpCode;
+            userPhone.verificationCodeExpiry = newExpiry;
+            await userPhone.save();
+
+            // Use the new OTP
+            var otpCode = newOtpCode;
+        } else {
+            // Use existing OTP if still valid
+            var otpCode = userPhone.verificationCode;
+        }
+
+        // Create OTP message
+        const otpMessage = `Your verification code is: ${otpCode}. This code will expire in 5 minutes. Do not share this code with anyone.`;
+
+        // Send OTP (Ensure sendOtp function is defined)
+        const result = await sendOtp(phoneNumber, otpMessage);
+
+        return res.status(200).json({
+            success: true,
+            message: 'OTP resent successfully',
+            data: result,
+            otpCode: otpCode
+        });
+    } catch (error) {
+        console.error('Error in resendOtp function:', error);
+
+        return res.status(500).json({
+            success: false,
+            message: error.message || 'Failed to resend OTP'
+        });
     }
 };
