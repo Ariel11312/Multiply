@@ -122,7 +122,7 @@ const Home = () => {
     <>
       <div className="overflow-hidden ">
         <Navbar />
-        <div className="relative min-h-screen">
+        <div className="relative md-min-h-screen">
           <AnimatedBackground />
           <div className="relative z-10 ">
             <Hero />

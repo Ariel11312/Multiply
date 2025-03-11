@@ -55,30 +55,28 @@ const ReferralTreeTable = () => {
       className="mb-2 cursor-pointer border border-emerald-200 hover:border-emerald-300 hover:bg-gray-50"
       onClick={() => openModal(node)}
     >
-      <div className="flex items-center justify-between p-3">
-        <div className="flex items-center space-x-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-full bg-emerald-500 text-sm text-white font-semibold">
-            {node.userDetails.firstName.charAt(0).toUpperCase()}
-            {node.userDetails.lastName.charAt(0).toUpperCase()}
-          </div>
-          <div>
-            <h3 className="text-base font-medium capitalize">
-              {node.userDetails.firstName.toLowerCase()}{" "}
-              {node.userDetails.lastName.toLowerCase()}
-            </h3>
-            <div className="flex flex-col text-sm">
-              <span className="text-gray-500">Referral Income</span>
-              <span className="font-medium">
-                ₱ {node.statistics?.directReferralEarnings || 0}
-              </span>
-            </div>
-          </div>
-        </div>
-        <div className="text-right text-sm">
-          <span className="text-gray-500">Commission Received</span>
-          <p className="font-medium">₱ {node.statistics?.commission || 0}</p>
-          <p className="text-xs text-gray-400">{node.memberDate}</p>
-        </div>
+      <div className="flex text-center items-center justify-between p-3">
+       <table className="w-full h-full">
+        <thead className="">
+<tr className="text-lg">
+
+          <th>Name</th>
+          <th>Total Withdraw</th>
+          <th>Current Wallet Balance</th>
+          <th>Overall Commission</th>
+</tr>
+        </thead>
+        <tbody className="text-md font-bold text-green-500">
+          <tr>
+          <td> {node.userDetails.firstName.toLowerCase() + " " + node.userDetails.lastName.toLowerCase()} </td>          
+         <td>0</td>
+         <td>{node.statistics.directReferralEarnings}</td>
+         <td>{node.statistics.directReferralEarnings}</td>
+          </tr>
+        </tbody>
+       </table>
+      
+      
       </div>
     </Card>
   );

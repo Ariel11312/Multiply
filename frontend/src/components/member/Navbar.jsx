@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import logo from "../../assets/MULTIPLY-1 remove back.png";
 import {
   Menu,
   X,
@@ -20,22 +21,47 @@ const Navigation = () => {
     { icon: Users, label: "Customers", path: "/customers" },
     { icon: Settings, label: "Settings", path: "/settings" },
   ];
+  const handleLogout = async () => {
+    try {
+      const response = await fetch(
+        import.meta.env.VITE_API_URL + "/api/auth/logout",
+        {
+          method: "POST",
+          credentials: "include",
+        }
+      );
+
+      if (response.ok) {
+        setAuthState({
+          isAuthenticated: false,
+          user: null,
+          isCheckingAuth: false,
+          error: null,
+        });
+        navigate("/");
+      }
+    } catch (error) {
+      console.error("Logout error:", error);
+    }
+  };
 
   return (
-    <>
+   
+   
+   <>
       {/* Main Navigation */}
       <nav className="bg-emerald-600 fixed w-full top-0 z-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
             {/* Logo and Brand */}
             <div className="flex items-center">
-              <div className="text-white font-bold text-xl">Logo</div>
+              <div className="text-white font-bold text-xl"><img src={logo} alt=""                 className="h-24 sm:h-10 md:h-28 w-auto object-contain transition-all duration-200" /></div>
             </div>
 
             {/* Desktop Navigation */}
             <div className="hidden md:flex items-center space-x-4">
               <Bell className="h-6 w-6 text-white cursor-pointer hover:text-emerald-200 transition-colors" />
-              <User className="h-6 w-6 text-white cursor-pointer hover:text-emerald-200 transition-colors" />
+              <User className="h-6 w-6 text-white cursor-pointer hover:text-emerald-200 transition-colors" onClick={() => setIsOpen(true)} />
             </div>
 
             {/* Mobile Menu Button */}
@@ -96,10 +122,11 @@ const Navigation = () => {
                 onClick={() => {
                   // Handle logout
                   setIsOpen(false);
+                handleLogout()
                 }}
                 className="flex items-center w-full px-4 py-3 text-gray-700 hover:bg-emerald-50 hover:text-emerald-600"
               >
-                <LogOut className="h-5 w-5 mr-3" />
+                <LogOut className="h-5 w-5 mr-3"/>
                 Logout
               </button>
             </div>

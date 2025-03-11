@@ -168,14 +168,14 @@ const Dashboard = () => {
   };
   const seats = [
     {
-      title: "e-Captain",
-      availed: memberData?.memberType === "e-Captain" ? true : false, // Set availed to true if memberType is "e-Captain"
-      unlockAmount: "25,000",
+      title: "e-President - Christian Albert Viceo",
+      availed: memberData?.memberType === "e-President" ? true : false, // Set availed to true if memberType is "e-President"
+      unlockAmount: "500,000",
     },
     {
-      title: "e-Mayor",
-      availed: memberData?.memberType === "e-Mayor" ? true : false, // Set availed to true if memberType is "e-Mayor"
-      unlockAmount: "50,000",
+      title: "e-Vice President",
+      availed: memberData?.memberType === "e-Vice President" ? true : false, // Set availed to true if memberType is "e-Vice President"
+      unlockAmount: "300,000",
     },
     {
       title: "e-Governor",
@@ -188,17 +188,17 @@ const Dashboard = () => {
       unlockAmount: "200,000",
     },
     {
-      title: "e-Vice President",
-      availed: memberData?.memberType === "e-Vice President" ? true : false, // Set availed to true if memberType is "e-Vice President"
-      unlockAmount: "300,000",
+      title: "e-Mayor",
+      availed: memberData?.memberType === "e-Mayor" ? true : false, // Set availed to true if memberType is "e-Mayor"
+      unlockAmount: "50,000",
     },
     {
-      title: "e-President",
-      availed: memberData?.memberType === "e-President" ? true : false, // Set availed to true if memberType is "e-President"
-      unlockAmount: "500,000",
+      title: "e-Captain",
+      availed: memberData?.memberType === "e-Captain" ? true : false, // Set availed to true if memberType is "e-Captain"
+      unlockAmount: "25,000",
     },
   ];
-
+  
   useEffect(() => {
     checkMember(setMemberData);
     checkMemberTransaction(setMemberTransaction);
