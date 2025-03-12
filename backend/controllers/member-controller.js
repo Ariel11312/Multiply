@@ -3,6 +3,7 @@ import jwt from 'jsonwebtoken';
 import { User } from '../models/user.js';
 import { MemberTransaction } from '../models/member-transactions.js';
 import { goldenseats } from '../models/golden-seats.js';
+import { GoldenSeatOwner } from '../models/golden-seat-owner.js';
 
 
 export const createMember = async (request, response) => {
@@ -249,52 +250,59 @@ export const getMemberById = async (request, response) => {
 
 export const updateMember = async (request, response) => {
     try {
-        // Extract the token from cookies
-        const token = request.cookies.token;
-        if (!token) {
-            return response.status(401).json({
-                success: false,
-                message: "Authentication token is missing.",
-            });
-        }
-
-        // Verify the token
-        const decoded = jwt.verify(token, process.env.JWT_SECRET);
-        const memberGoldenSeater = decoded.userId; // Extract userId from the token
-        const { position } = request.body; // Extract position as a string
-
-        // Find member by memberID and update memberType
-        const member = await Member.findOneAndUpdate(
-            { memberID: memberGoldenSeater }, // Find by memberID
-            { $set: { memberType: position } }, // Ensure memberType is a string
-            { new: true } // Return updated document
-        );
-        
-
-        // If no member was found, return 404
-        if (!member) {
-            return response.status(404).json({
-                success: false,
-                message: "Member not found or unauthorized",
-            });
-        }
-
-        // Success response
-        return response.status(200).json({
-            success: true,
-            message: "Member updated successfully",
-            member,
+      // Extract the token from cookies
+      const token = request.cookies.token;
+      if (!token) {
+        return response.status(401).json({
+          success: false,
+          message: "Authentication token is missing.",
         });
-
+      }
+      
+      // Verify the token
+      const decoded = jwt.verify(token, process.env.JWT_SECRET);
+      const memberGoldenSeater = decoded.userId; // Extract userId from the token
+      const { position } = request.body; // Extract position as a string
+      
+      // Find member by memberID and update memberType
+      const member = await Member.findOneAndUpdate(
+        { memberID: memberGoldenSeater }, // Find by memberID
+        { $set: { memberType: position } }, // Ensure memberType is a string
+        { new: true } // Return updated document
+      );
+      
+      // If no member was found, return 404
+      if (!member) {
+        return response.status(404).json({
+          success: false,
+          message: "Member not found or unauthorized",
+        });
+      }
+      
+      // Create a new GoldenSeatOwner document
+      const createGoldenSeats = new GoldenSeatOwner({
+        userId:memberGoldenSeater,
+        position,
+        spot: "sample"
+      });
+      
+      // Save the new GoldenSeatOwner document
+      await createGoldenSeats.save();
+      
+      // Success response
+      return response.status(200).json({
+        success: true,
+        message: "Member updated successfully",
+        member,
+      });
     } catch (error) {
-        console.error(`Error updating member: ${error.message}`);
-        return res.status(500).json({  // Change response to res
-            success: false,
-            message: "An error occurred while updating the member",
-        });
-        
+      console.error(`Error updating member: ${error.message}`);
+      return response.status(500).json({  // Fixed: changed res to response
+        success: false,
+        message: "An error occurred while updating the member",
+      });
     }
-};
+  };
 
 export const deleteMember = async (request, response) => {
     try {

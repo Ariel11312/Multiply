@@ -24,6 +24,7 @@ import GoldenSeatsTable from "./components/admin/GoldenSeatsTable";
 import GoldenSeats from "./components/member/GoldenSeatsCommision";
 import EcommerceShop from "./components/user/Shop";
 import ReferralCode from "./components/user/ReferralCode";
+import Seatlist from "./components/member/SeatList";
 
 const App = () => {
   const [authState, setAuthState] = useState({
@@ -162,6 +163,12 @@ const App = () => {
           }
         />
 
+<Route
+          path="/seatlist"
+          element={
+              <Seatlist />
+          }
+        />
         <Route path="/member-registration" element={<Membership />} />
         <Route path="/verify-payment" element={<PaymentStatus />} />
         <Route path="/" element={<Home />} />

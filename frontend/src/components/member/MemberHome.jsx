@@ -30,6 +30,7 @@ import { checkAuth } from "../../middleware/auth";
 import { fetchReferrals } from "../../middleware/referrals";
 import SevenLayer from "./SevenLayer";
 import GoldenSeats from "./GoldenSeatsCommision";
+import Seatlist from "./SeatList";
 
 // const topProducts = [
 //   { id: 1, name: "X1 Package", sales: 150, revenue: 750000 },
@@ -39,9 +40,9 @@ import GoldenSeats from "./GoldenSeatsCommision";
 // ];
 
 const topReapers = [
-  { id: 1, name: "John Doe", referrals: 50, earnings: 250000 },
-  { id: 2, name: "Jane Smith", referrals: 45, earnings: 225000 },
-  { id: 3, name: "Mike Johnson", referrals: 40, earnings: 200000 },
+  { id: 1, name: "Christian Albert Viceo", referrals: 50, earnings: 250000 },
+  { id: 2, name: "Christian Albert Viceo", referrals: 45, earnings: 225000 },
+  { id: 3, name: "Christian Albert Viceo", referrals: 40, earnings: 200000 },
 ];
 
 // Custom Podluck Icon component
@@ -61,16 +62,16 @@ const PodluckIcon = ({ availed }) => {
   );
 };
 const topSowers = [
-  { id: 1, name: "Sarah Wilson", referrals: 30, earnings: 150000 },
-  { id: 2, name: "Tom Brown", referrals: 28, earnings: 140000 },
-  { id: 3, name: "Lisa Davis", referrals: 25, earnings: 125000 },
+  { id: 1, name: "Christian Albert Viceo", referrals: 30, earnings: 150000 },
+  { id: 2, name: "Christian Albert Viceo", referrals: 28, earnings: 140000 },
+  { id: 3, name: "Christian Albert Viceo", referrals: 25, earnings: 125000 },
 ];
 
 const topOfficials = [
-  { id: 1, role: "Senator", name: "James Wilson", supporters: 1200 },
-  { id: 2, role: "Governor", name: "Maria Santos", supporters: 800 },
-  { id: 3, role: "Mayor", name: "Robert Lee", supporters: 500 },
-  { id: 4, role: "Captain", name: "Elena Cruz", supporters: 200 },
+  { id: 1, role: "Senator", name: "Christian Albert Viceo", supporters: 1200 },
+  { id: 2, role: "Governor", name: "Christian Albert Viceo", supporters: 800 },
+  { id: 3, role: "Mayor", name: "Christian Albert Viceo", supporters: 500 },
+  { id: 4, role: "Captain", name: "Christian Albert Viceo", supporters: 200 },
 ];
 const quotaLevels = [
   {
@@ -168,6 +169,11 @@ const Dashboard = () => {
   };
   const seats = [
     {
+      title: "e-World - Philippines",
+      availed: memberData?.memberType === "e-World" ? true : false, // Set availed to true if memberType is "e-President"
+      unlockAmount: "500,000",
+    },
+    {
       title: "e-President - Christian Albert Viceo",
       availed: memberData?.memberType === "e-President" ? true : false, // Set availed to true if memberType is "e-President"
       unlockAmount: "500,000",
@@ -178,14 +184,14 @@ const Dashboard = () => {
       unlockAmount: "300,000",
     },
     {
-      title: "e-Governor",
-      availed: memberData?.memberType === "e-Governor" ? true : false, // Set availed to true if memberType is "e-Governor"
-      unlockAmount: "100,000",
-    },
-    {
       title: "e-Senator",
       availed: memberData?.memberType === "e-Senator" ? true : false, // Set availed to true if memberType is "e-Senator"
       unlockAmount: "200,000",
+    },
+    {
+      title: "e-Governor",
+      availed: memberData?.memberType === "e-Governor" ? true : false, // Set availed to true if memberType is "e-Governor"
+      unlockAmount: "100,000",
     },
     {
       title: "e-Mayor",
@@ -209,6 +215,7 @@ const Dashboard = () => {
   const HandleAvailModal = (seat) => {
     setSelectedSeat(seat);
     setAvailModal(true);
+    localStorage.setItem("owner", seat.title)
   };
 
   const CreatePayment = async (seat) => {
@@ -711,7 +718,7 @@ const Dashboard = () => {
       <InfoModal />
       {availModal && selectedSeat && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4 relative">
+          <div className="bg-white rounded-lg p-6 max-w-xl w-full mx-4 relative">
             <h2 className="text-xl font-bold mt-1">
               {selectedSeat
                 ? `Golden Seats: ${selectedSeat.title}`
@@ -736,7 +743,10 @@ const Dashboard = () => {
                   <li>Commissions for every member availed products</li>
                 </ul>
               </div>
-
+<h2>Select: {selectedSeat.title} Spot</h2>
+<div className="overflow-auto w-full h-80">
+<Seatlist/>
+</div>
               {/* Unlock Button */}
               <button
                 onClick={() => CreatePayment(selectedSeat)}
