@@ -16,7 +16,8 @@ const PaymentStatus = () => {
 
   const handleMember = async () => {
     const goldenSeatData = JSON.parse(localStorage.getItem("memberGoldenSeat"));
-
+    const selectedSpot = JSON.parse(localStorage.getItem("selectedSpot"));
+console.log("selectedSpot",selectedSpot);
     if (processedRef.current) {
       return; // Prevent duplicate processing
     }
@@ -25,13 +26,14 @@ const PaymentStatus = () => {
     try {
       const isUpdate = goldenSeatData && goldenSeatData.GoldenSeat === "success";
       const position = goldenSeatData?.position || ""; // Ensure position is a string
+      const spot = selectedSpot?.name || ""; // Ensure position is a string
       const apiUrl = isUpdate
         ? import.meta.env.VITE_API_URL+"/api/member/update-member"
         : import.meta.env.VITE_API_URL+"/api/member/create-member";
 
       const method = isUpdate ? "PUT" : "POST";
 
-      const bodyData = isUpdate ? { position } : JSON.parse(storedData);
+      const bodyData = isUpdate ? { position,spot } : JSON.parse(storedData);
 
       const response = await fetch(apiUrl, {
         method: method,

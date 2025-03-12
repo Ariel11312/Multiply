@@ -12,7 +12,7 @@ const ReferralTreeTable = () => {
     const fetchReferralTree = async () => {
       try {
         const response = await fetch(
-          import.meta.env.VITE_API_URL+"/api/member/referral-tree",
+          import.meta.env.VITE_API_URL + "/api/member/referral-tree",
           {
             method: "GET",
             headers: {
@@ -21,24 +21,75 @@ const ReferralTreeTable = () => {
             credentials: "include",
           }
         );
+  
         if (!response.ok) throw new Error("Failed to fetch");
+  
         const data = await response.json();
         setTreeData(data.data.referralTree);
+  
         const totalEarnings =
           data.data?.statistics?.totalEarningsWithCommissionAndDirectReferral ||
           "Not available";
         localStorage.setItem("totalEarnings", totalEarnings);
+  
+        // Function to log referral earnings by level
+        function logReferralEarningsByLevel(data) {
+          // Initialize an object to store earnings for each level
+          const earningsByLevel = {
+            1: 0,
+            2: 0,
+            3: 0,
+            4: 0,
+            5: 0,
+            6: 0,
+            7: 0,
+          };
+  
+          // Function to recursively traverse the tree
+          function traverseTree(node, currentLevel) {
+            // Log the current node and level for debugging
+            console.log(`Level ${currentLevel} Node:`, node);
+  
+            // If the level is within our range of interest (1-7)
+            if (currentLevel >= 1 && currentLevel <= 7) {
+              // Add the direct referral earnings to the appropriate level
+              earningsByLevel[currentLevel] +=
+                node.statistics.directReferralEarnings || 0;
+            }
+  
+            // Recursively process children
+            if (node.children && node.children.length > 0) {
+              node.children.forEach((child) => {
+                traverseTree(child, currentLevel + 1);
+              });
+            }
+          }
+  
+          // Start traversing from the referralTree array (level 1)
+          if (data.data.referralTree && data.data.referralTree.length > 0) {
+            data.data.referralTree.forEach((child) => {
+              traverseTree(child, 1);
+            });
+          }
+  
+          // Log the results
+          for (let level = 1; level <= 7; level++) {
+            console.log(`Level ${level} Direct Referral Earnings: ${earningsByLevel[level]}`);
+          }
+        }
+  
+        // Call the function with the response data
+        logReferralEarningsByLevel(data);
+  
         setIsLoading(false);
       } catch (err) {
         setError(err.message);
         setIsLoading(false);
       }
     };
-
+  
     fetchReferralTree();
-  }, []);
-
-  const openModal = (node) => {
+  }, []);  const openModal = (node) => {
     setSelectedNode(node);
     setIsModalOpen(true);
   };

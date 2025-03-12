@@ -278,12 +278,12 @@ export const updateMember = async (request, response) => {
           message: "Member not found or unauthorized",
         });
       }
-      
+      const spot = request.body.spot;
       // Create a new GoldenSeatOwner document
       const createGoldenSeats = new GoldenSeatOwner({
         userId:memberGoldenSeater,
         position,
-        spot: "sample"
+        spot: spot,
       });
       
       // Save the new GoldenSeatOwner document

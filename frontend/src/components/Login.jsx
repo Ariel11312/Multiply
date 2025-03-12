@@ -159,7 +159,7 @@ const Login = () => {
         if (localStorage.getItem("accepted")) {
           window.location.href = "/member-registration";
         } else {
-          navigate("/");
+          window.location.href = "/";
         }
       } else {
         setError(data.message || "Login failed. Please try again.");

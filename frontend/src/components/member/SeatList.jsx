@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Loader2 } from "lucide-react";
+import { Loader2, Check } from "lucide-react";
 
 const Seatlist = () => {
   const [regions, setRegions] = useState([]);
@@ -16,10 +16,15 @@ const Seatlist = () => {
   const [selectedBarangay, setSelectedBarangay] = useState("");
   const [selectedBarangayName, setSelectedBarangayName] = useState("");
   const [loading, setLoading] = useState(false);
+  
+  // States for confirmation animation
+  const [confirmed, setConfirmed] = useState(false);
+  const [showCheck, setShowCheck] = useState(false);
 
   // Current view state (region, province, city, barangay)
   const [currentView, setCurrentView] = useState("region");
-const position = localStorage.getItem("owner")
+  const position = localStorage.getItem("owner");
+
   // Fetch all regions on initial load
   const fetchRegions = async () => {
     setLoading(true);
@@ -31,17 +36,15 @@ const position = localStorage.getItem("owner")
       console.error("Error fetching regions:", error);
     }
     setLoading(false);
-   
   };
 
   // Fetch provinces for selected region
   const fetchProvincesByRegion = async (regionCode) => {
-      setLoading(true);
-      if(position === "e-Senator"){
-        setLoading(false);
-   
-        return
-        }
+    setLoading(true);
+    if (position === "e-Senator") {
+      setLoading(false);
+      return;
+    }
     try {
       const response = await fetch("https://psgc.gitlab.io/api/provinces/");
       const allProvinces = await response.json();
@@ -58,11 +61,10 @@ const position = localStorage.getItem("owner")
 
   // Fetch cities for selected province
   const fetchCities = async (provinceCode) => {
-    if(position === "e-Governor"){
-        setLoading(false);
-   
-        return
-        }
+    if (position === "e-Governor") {
+      setLoading(false);
+      return;
+    }
     setLoading(true);
     try {
       const response = await fetch(
@@ -78,12 +80,10 @@ const position = localStorage.getItem("owner")
 
   // Fetch barangays for selected city
   const fetchBarangays = async (cityCode) => {
-    if(position === "e-Mayor"){
+    if (position === "e-Mayor") {
       setLoading(false);
- 
-      return
-      }
-
+      return;
+    }
     setLoading(true);
     try {
       const response = await fetch(
@@ -100,7 +100,45 @@ const position = localStorage.getItem("owner")
   // Load regions on component mount
   useEffect(() => {
     fetchRegions();
+    
+    // Try to load previously selected location from localStorage
+    try {
+      const savedLocation = localStorage.getItem("selectedLocation");
+      if (savedLocation) {
+        const location = JSON.parse(savedLocation);
+        if (location.region) {
+          setSelectedRegion(location.region.code || "");
+          setSelectedRegionName(location.region.name || "");
+        }
+        if (location.province) {
+          setSelectedProvince(location.province.code || "");
+          setSelectedProvinceName(location.province.name || "");
+        }
+        if (location.city) {
+          setSelectedCity(location.city.code || "");
+          setSelectedCityName(location.city.name || "");
+        }
+        if (location.barangay) {
+          setSelectedBarangay(location.barangay.code || "");
+          setSelectedBarangayName(location.barangay.name || "");
+        }
+      }
+    } catch (error) {
+      console.error("Error loading saved location:", error);
+    }
   }, []);
+
+  // Handle confirmation animation
+  useEffect(() => {
+    if (confirmed) {
+      setShowCheck(true);
+      const timer = setTimeout(() => {
+        setShowCheck(false);
+        setConfirmed(false);
+      }, 2000);
+      return () => clearTimeout(timer);
+    }
+  }, [confirmed]);
 
   // Event Handlers
   const handleRegionSelect = (region) => {
@@ -115,7 +153,7 @@ const position = localStorage.getItem("owner")
     setProvinces([]);
     setCities([]);
     setBarangays([]);
-        fetchProvincesByRegion(region.code);
+    fetchProvincesByRegion(region.code);
     setCurrentView("province");
   };
 
@@ -128,11 +166,9 @@ const position = localStorage.getItem("owner")
     setSelectedBarangayName("");
     setCities([]);
     setBarangays([]);
-    if(position === "e-Senator"){
-
+    if (position === "e-Senator") {
       setCurrentView("Summary");
     }
-
     fetchCities(province.code);
     setCurrentView("city");
   };
@@ -143,7 +179,6 @@ const position = localStorage.getItem("owner")
     setSelectedBarangay("");
     setSelectedBarangayName("");
     setBarangays([]);
-    
     fetchBarangays(city.code);
     setCurrentView("barangay");
   };
@@ -152,6 +187,70 @@ const position = localStorage.getItem("owner")
     setSelectedBarangay(barangay.code);
     setSelectedBarangayName(barangay.name);
     setCurrentView("summary");
+  };
+  if (position === "e-World - Philippines") {
+    localStorage.setItem("selectedSpot", JSON.stringify({
+      code: "", 
+      name:"Philippines"
+    }));
+  return
+  }
+  if (position === "e-President") {
+    localStorage.setItem("selectedSpot", JSON.stringify({
+      code: "", 
+      name:"Philippines"
+    }));
+  return
+  }
+  if (position === "e-Vice President") {
+    localStorage.setItem("selectedSpot", JSON.stringify({
+      code: "", 
+      name:"Philippines"
+    }));
+  return
+  }
+  const handleConfirm = () => {
+    // Create the location object based on the selected values
+    const locationData = {
+      region: { code: selectedRegion, name: selectedRegionName },
+      province: { code: selectedProvince, name: selectedProvinceName },
+      city: { code: selectedCity, name: selectedCityName },
+      barangay: { code: selectedBarangay, name: selectedBarangayName }
+    };
+    
+    
+    // Also save specific location items based on position
+    if (position === "e-Senator" && selectedRegionName) {
+      localStorage.setItem("selectedSpot", JSON.stringify({
+        code: selectedRegion, 
+        name: selectedRegionName
+      }));
+    }
+    if (position === "e-World - Philippines") {
+      localStorage.setItem("selectedSpot", JSON.stringify({
+        code: "e-World - Philippines", 
+        name:"e-World - Philippines"
+      }));
+    }
+    else if (position === "e-Governor" && selectedProvinceName) {
+      localStorage.setItem("selectedSpot", JSON.stringify({
+        code: selectedProvince, 
+        name: selectedProvinceName
+      }));
+    } else if (position === "e-Mayor" && selectedCityName) {
+      localStorage.setItem("selectedSpot", JSON.stringify({
+        code: selectedCity, 
+        name: selectedCityName
+      }));
+    } else if (position === "e-Captain" && selectedBarangayName) {
+      localStorage.setItem("selectedSpot", JSON.stringify({
+        code: selectedBarangay, 
+        name: selectedBarangayName
+      }));
+    }
+    
+    console.log("Location selected and saved to localStorage:", locationData);
+    setConfirmed(true);
   };
 
   const goBack = () => {
@@ -244,6 +343,59 @@ const position = localStorage.getItem("owner")
     );
   };
 
+  // Function to render confirmation UI
+  const renderConfirmationUI = () => {
+    const locationInfo = position === "e-Senator" ? (
+      <p><span className="font-medium">Region:</span> {selectedRegionName}</p>
+    ) : position === "e-Governor" ? (
+      <p><span className="font-medium">Province:</span> {selectedProvinceName}</p>
+    ) : position === "e-Mayor" ? (
+      <p><span className="font-medium">City/Municipality:</span> {selectedCityName}</p>
+    ) : position === "e-Captain" ? (
+      <p><span className="font-medium">Barangay:</span> {selectedBarangayName}</p>
+    ) : (
+      <>
+        <p><span className="font-medium">Region:</span> {selectedRegionName}</p>
+        <p><span className="font-medium">Province:</span> {selectedProvinceName}</p>
+        <p><span className="font-medium">City/Municipality:</span> {selectedCityName}</p>
+        <p><span className="font-medium">Barangay:</span> {selectedBarangayName}</p>
+      </>
+    );
+
+    return (
+      <div className="bg-green-50 border border-green-200 rounded-lg p-6 relative">
+        <h3 className="text-lg font-medium mb-4">Selected Spot</h3>
+        <div className="space-y-2">
+          {locationInfo}
+        </div>
+        
+        {/* Conditional rendering of the button or check mark */}
+        {!showCheck ? (
+          <button 
+            className="mt-4 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 flex items-center justify-center"
+            onClick={handleConfirm}
+          >
+            Confirm Selection
+          </button>
+        ) : (
+          <div className="mt-4 flex items-center">
+            <div className="w-full flex justify-center">
+              <div className="bg-green-600 text-white rounded-full p-2 animate-bounce">
+                <Check className="h-6 w-6" />
+              </div>
+            </div>
+          </div>
+        )}
+        
+        {showCheck && (
+          <div className="text-center mt-2 text-green-600 font-medium">
+            Selection Confirmed and Saved!
+          </div>
+        )}
+      </div>
+    );
+  };
+
   return (
     <div className="p-4">
       <h2 className="text-xl font-semibold mb-2">Location Selector</h2>
@@ -292,88 +444,12 @@ const position = localStorage.getItem("owner")
             </div>
           )}
           
-          {position === "e-Senator" && (
-            <div className="bg-green-50 border border-green-200 rounded-lg p-6">
-              <h3 className="text-lg font-medium mb-4">Selected Spot </h3>
-              <div className="space-y-2">
-                <p><span className="font-medium">Region:</span> {selectedRegionName}</p>
-                {/* <p><span className="font-medium">Province:</span> {selectedProvinceName}</p>
-                <p><span className="font-medium">City/Municipality:</span> {selectedCityName}</p>
-                <p><span className="font-medium">Barangay:</span> {selectedBarangayName}</p> */}
-              </div>
-              <button 
-                className="mt-4 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
-                onClick={() => console.log("Location selected:", {
-                  region: { code: selectedRegion, name: selectedRegionName },
-                  province: { code: selectedProvince, name: selectedProvinceName },
-                  city: { code: selectedCity, name: selectedCityName },
-                  barangay: { code: selectedBarangay, name: selectedBarangayName }
-                })}
-              >
-                Confirm Selection
-              </button>
-            </div>
-          )}
-          {position === "e-Governor" && (
-            <div className="bg-green-50 border border-green-200 rounded-lg p-6">
-              <h3 className="text-lg font-medium mb-4">Selected Spot </h3>
-              <div className="space-y-2">
-                {/* <p><span className="font-medium">Region:</span> {selectedRegionName}</p> */}
-                <p><span className="font-medium">Province:</span> {selectedProvinceName}</p>
-                {/* <p><span className="font-medium">City/Municipality:</span> {selectedCityName}</p>
-                <p><span className="font-medium">Barangay:</span> {selectedBarangayName}</p> */}
-              </div>
-              <button 
-                className="mt-4 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
-                onClick={() => console.log("Location selected:", {
-                  region: { code: selectedRegion, name: selectedRegionName },
-                  province: { code: selectedProvince, name: selectedProvinceName },
-                  city: { code: selectedCity, name: selectedCityName },
-                  barangay: { code: selectedBarangay, name: selectedBarangayName }
-                })}
-              >
-                Confirm Selection
-              </button>
-            </div>
-          )}
-          {position === "e-Mayor" && (
-            <div className="bg-green-50 border border-green-200 rounded-lg p-6">
-              <h3 className="text-lg font-medium mb-4">Selected Spot </h3>
-              <div className="space-y-2">
-                 <p><span className="font-medium">City/Municipality:</span> {selectedCityName}</p>
-              </div>
-              <button 
-                className="mt-4 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
-                onClick={() => console.log("Location selected:", {
-                  region: { code: selectedRegion, name: selectedRegionName },
-                  province: { code: selectedProvince, name: selectedProvinceName },
-                  city: { code: selectedCity, name: selectedCityName },
-                  barangay: { code: selectedBarangay, name: selectedBarangayName }
-                })}
-              >
-                Confirm Selection
-              </button>
-            </div>
-          )}
-          {position === "e-Captain" && (
-            <div className="bg-green-50 border border-green-200 rounded-lg p-6">
-              <h3 className="text-lg font-medium mb-4">Selected Spot </h3>
-              <div className="space-y-2">
-                 <p><span className="font-medium">Barangay:</span> {selectedBarangayName}</p>
-              </div>
-              <button 
-                className="mt-4 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
-                onClick={() => console.log("Location selected:", {
-                  region: { code: selectedRegion, name: selectedRegionName },
-                  province: { code: selectedProvince, name: selectedProvinceName },
-                  city: { code: selectedCity, name: selectedCityName },
-                  barangay: { code: selectedBarangay, name: selectedBarangayName }
-                })}
-              >
-                Confirm Selection
-              </button>
-            </div>
-          )}
+          {/* Use position-based conditionals for the summary section */}
+          {((position === "e-Senator" && selectedRegionName) ||
+            (position === "e-Governor" && selectedProvinceName) ||
+            (position === "e-Mayor" && selectedCityName) ||
+            (position === "e-Captain" && selectedBarangayName) ||
+            currentView === "summary") && renderConfirmationUI()}
           
           {currentView !== "region" && (
             <button 

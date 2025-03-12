@@ -32,6 +32,10 @@ import SevenLayer from "./SevenLayer";
 import GoldenSeats from "./GoldenSeatsCommision";
 import Seatlist from "./SeatList";
 
+
+
+
+
 // const topProducts = [
 //   { id: 1, name: "X1 Package", sales: 150, revenue: 750000 },
 //   { id: 2, name: "X2 Package", sales: 120, revenue: 480000 },
@@ -114,7 +118,7 @@ const Dashboard = () => {
   const [selectedSeat, setSelectedSeat] = useState(null);
   const [paymentUrl, setPaymentUrl] = useState("");
   const [error, setError] = useState("");
-
+  const [totalCommission, setTotalCommission] = useState(0);
   useEffect(() => {
     checkAuth(setAuthState);
   }, []);
@@ -167,43 +171,49 @@ const Dashboard = () => {
       });
     }
   };
-  const seats = [
-    {
-      title: "e-World - Philippines",
-      availed: memberData?.memberType === "e-World" ? true : false, // Set availed to true if memberType is "e-President"
-      unlockAmount: "500,000",
-    },
-    {
-      title: "e-President - Christian Albert Viceo",
-      availed: memberData?.memberType === "e-President" ? true : false, // Set availed to true if memberType is "e-President"
-      unlockAmount: "500,000",
-    },
-    {
-      title: "e-Vice President",
-      availed: memberData?.memberType === "e-Vice President" ? true : false, // Set availed to true if memberType is "e-Vice President"
-      unlockAmount: "300,000",
-    },
-    {
-      title: "e-Senator",
-      availed: memberData?.memberType === "e-Senator" ? true : false, // Set availed to true if memberType is "e-Senator"
-      unlockAmount: "200,000",
-    },
-    {
-      title: "e-Governor",
-      availed: memberData?.memberType === "e-Governor" ? true : false, // Set availed to true if memberType is "e-Governor"
-      unlockAmount: "100,000",
-    },
-    {
-      title: "e-Mayor",
-      availed: memberData?.memberType === "e-Mayor" ? true : false, // Set availed to true if memberType is "e-Mayor"
-      unlockAmount: "50,000",
-    },
-    {
-      title: "e-Captain",
-      availed: memberData?.memberType === "e-Captain" ? true : false, // Set availed to true if memberType is "e-Captain"
-      unlockAmount: "25,000",
-    },
-  ];
+  const [positions, setPositions] = useState([]); // Store API positions
+  const [seats, setSeats] = useState([
+    { title: "e-World - Philippines", unlockAmount: "5,000,000", availed: false },
+    { title: "e-President", unlockAmount: "5,000,000", availed: false },
+    { title: "e-Vice President", unlockAmount: "300,000", availed: false },
+    { title: "e-Senator", unlockAmount: "2,000,000", availed: false },
+    { title: "e-Governor", unlockAmount: "750,000", availed: false },
+    { title: "e-Mayor", unlockAmount: "200,000", availed: false },
+    { title: "e-Captain", unlockAmount: "25,000", availed: false }
+  ]);
+
+  useEffect(() => {
+    async function fetchPositions() {
+      try {
+        const response = await fetch(import.meta.env.VITE_API_URL + "/api/golden/goldenowner",{ 
+           method: "GET",
+          headers: { "Content-Type": "application/json" },
+          credentials: "include",
+        });
+        const apiResponse = await response.json();
+
+        if (!apiResponse.success) {
+          console.error("API request failed.");
+          return;
+        }
+
+        const ownedPositions = apiResponse.members.map(member => member.position);
+        setPositions(ownedPositions); // Update state with owned positions
+
+        // Update seats based on owned positions
+        setSeats(prevSeats =>
+          prevSeats.map(seat => ({
+            ...seat,
+            availed: ownedPositions.includes(seat.title) // Unlock if owned
+          }))
+        );
+      } catch (error) {
+        console.error("Error fetching API:", error);
+      }
+    }
+
+    fetchPositions();
+  }, []);
   
   useEffect(() => {
     checkMember(setMemberData);
@@ -437,9 +447,10 @@ const Dashboard = () => {
                     <div className="flex items-center gap-3">
                       <h2 className="text-3xl font-bold">
                         {formatAmount(
-                          (MemberTransaction?.totalIncomeToday || 0) +
+                          totalCommission + (MemberTransaction?.totalIncomeToday || 0) +
                             (isNaN(
                               parseFloat(localStorage.getItem("totalEarnings"))
+                            
                             )
                               ? 0
                               : parseFloat(
@@ -492,14 +503,14 @@ const Dashboard = () => {
                       </p>
                     </div>
                     <div className="space-y-1">
-                      <GoldenSeats />
-                    </div>
+    <GoldenSeats onCommissionChange={setTotalCommission} />
+  </div>
                   </div>
                   <div className="space-y-2">
                     <div>
                       <p className="text-sm text-gray-600">Total Earnings</p>
                       <p className="text-2xl font-bold text-green-600">
-                        {formatAmount(MemberTransaction?.total || 0)}
+                      {formatAmount((MemberTransaction?.total || 0) + totalCommission)}
                       </p>
                     </div>
                   </div>

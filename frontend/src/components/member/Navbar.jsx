@@ -32,13 +32,13 @@ const Navigation = () => {
       );
 
       if (response.ok) {
+        window.location.href= "/";
         setAuthState({
           isAuthenticated: false,
           user: null,
           isCheckingAuth: false,
           error: null,
         });
-        navigate("/");
       }
     } catch (error) {
       console.error("Logout error:", error);

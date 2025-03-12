@@ -1,3 +1,4 @@
+import { GoldenSeatOwner } from "../models/golden-seat-owner.js";
 import { goldenseats } from "../models/golden-seats.js";
 import { MemberTransaction } from "../models/member-transactions.js";
 import { Member } from "../models/Member.js";
@@ -70,14 +71,14 @@ export const GoldenSeatsCommissions = async (request, response) => {
     // Verify the token
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
     const memberGoldenSeater = decoded.userId; // Extract userId from the token
-    const existingMember = await Member.findOne({
-      memberID: memberGoldenSeater,
+    const existingMember = await GoldenSeatOwner.findOne({
+      userId: memberGoldenSeater,
     });
     if (existingMember) {
-      const position = existingMember.memberType;
+      const position = existingMember.position;
       if (position === "e-Captain") {
-        console.log(existingMember.barangay);
-        const spot = existingMember.barangay;
+
+        const spot = existingMember.spot;
 
         const goldenSeatersSpot = await goldenseats.find({
           captain: spot,
@@ -98,8 +99,7 @@ export const GoldenSeatsCommissions = async (request, response) => {
           });
       }
       if (position === "e-Mayor") {
-        console.log(existingMember.city);
-        const spot = existingMember.city;
+        const spot = existingMember.spot;
 
         const goldenSeatersSpot = await goldenseats.find({
           mayor: spot,
@@ -120,8 +120,7 @@ export const GoldenSeatsCommissions = async (request, response) => {
           });
       }
       if (position === "e-Governor") {
-        console.log(existingMember.province);
-        const spot = existingMember.province;
+        const spot = existingMember.spot;
   
         const goldenSeatersSpot = await goldenseats.find({
           governor: spot,
@@ -142,8 +141,7 @@ export const GoldenSeatsCommissions = async (request, response) => {
           });
       }
       if (position === "e-Senator") {
-        console.log(existingMember.region);
-        const spot = existingMember.region;
+        const spot = existingMember.spot;
   
         const goldenSeatersSpot = await goldenseats.find({
           senator: spot,
