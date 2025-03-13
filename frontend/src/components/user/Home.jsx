@@ -71,7 +71,7 @@ const Home = () => {
     }, []);
 
     return (
-      <div className="fixed inset-0 w-full h-full bg-green-500/75 overflow-hidden">
+      <div className="fixed inset-0 w-full h-full bg-green-100/75 overflow-hidden">
         {items.map((item) => (
           <div
             key={item.id}

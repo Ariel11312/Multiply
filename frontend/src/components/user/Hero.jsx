@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import carousel1 from "../../assets/carousel1.png";
-import carousel2 from "../../assets/bg1.png";
+import carousel2 from "../../assets/weMultiply.png";
 import carousel3 from "../../assets/single.png";
 import carousel4 from "../../assets/cnergee.png";
 

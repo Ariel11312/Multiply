@@ -174,8 +174,8 @@ const Dashboard = () => {
   const [positions, setPositions] = useState([]); // Store API positions
   const [seats, setSeats] = useState([
     { title: "e-World - Philippines", unlockAmount: "5,000,000", availed: false },
-    { title: "e-President", unlockAmount: "5,000,000", availed: false },
-    { title: "e-Vice President", unlockAmount: "300,000", availed: false },
+    { title: "e-President",name:"Christian Albert Viceo", unlockAmount: "5,000,000", availed: false },
+    { title: "e-Vice President",name:"Christian Albert Viceo", unlockAmount: "3,000,000", availed: false },
     { title: "e-Senator", unlockAmount: "2,000,000", availed: false },
     { title: "e-Governor", unlockAmount: "750,000", availed: false },
     { title: "e-Mayor", unlockAmount: "200,000", availed: false },
@@ -541,7 +541,8 @@ const Dashboard = () => {
                     <div className="podluckIcon mr-3">
                       <PodluckIcon availed={seat.availed} />
                     </div>
-                    <p className="text-gray-800">{seat.title}</p>
+                    <p className="text-gray-800">{seat.title + " " + (seat.name || "")}</p>
+
                     {seat.availed && (
                       <div className="ml-auto">
                         <CheckCircle size={16} className="text-green-500" />
