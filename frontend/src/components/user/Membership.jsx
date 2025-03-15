@@ -73,6 +73,7 @@ const Membership = () => {
   if (memberType === "X2") memberAmount = 1000;
   if (memberType === "X3") memberAmount = 3000;
   if (memberType === "X5") memberAmount = 5000;
+  if (memberType === "Crown") memberAmount = 15000;
   const handlePackageSelect = (packageType) => {
     setMemberType(packageType);
     
@@ -161,36 +162,67 @@ const Membership = () => {
   const fetchProvinces = async () => {
     setLoading(true);
     try {
+      // Fetch regular provinces
       const response = await fetch("https://psgc.gitlab.io/api/provinces/");
-      const data = await response.json();
+      const provincesData = await response.json();
+      
+      // Fetch regions to get NCR
       const regionsResponse = await fetch("https://psgc.gitlab.io/api/regions/");
       const regionsData = await regionsResponse.json();
-      const regionMap = regionsData.reduce((acc, region) => {
-        acc[region.code] = region.name;
-        return acc;
-      }, {});
-      setProvinces(data);
-      setRegions(regionMap);
+      
+      // Find NCR in regions data
+      const ncrRegion = regionsData.find(region => region.code === "130000000");
+      
+      // Add NCR as a special "province" option
+      const allOptions = [
+        {
+          code: "NCR",
+          name: "National Capital Region (NCR)",
+          isSpecialRegion: true,
+          regionCode: "130000000"
+        },
+        ...provincesData
+      ];
+      
+      setProvinces(allOptions);
     } catch (error) {
       console.error("Error fetching provinces:", error);
     }
     setLoading(false);
   };
-
+  
+  // Fetch cities based on province or region code
   const fetchCities = async (provinceCode) => {
     setLoading(true);
     try {
-      const response = await fetch(
-        `https://psgc.gitlab.io/api/provinces/${provinceCode}/cities-municipalities/`
-      );
-      const data = await response.json();
-      setCities(data);
+      // Get the selected province object
+      const selectedProvinceObj = provinces.find(p => p.code === provinceCode);
+      
+      // Check if this is the special NCR case
+      if (selectedProvinceObj && selectedProvinceObj.isSpecialRegion) {
+        // Fetch cities directly from the region
+        const response = await fetch(
+          `https://psgc.gitlab.io/api/regions/${selectedProvinceObj.regionCode}/cities-municipalities/`
+        );
+        const data = await response.json();
+        setCities(data);
+      } else {
+        // Fetch cities from the province as normal
+        const response = await fetch(
+          `https://psgc.gitlab.io/api/provinces/${provinceCode}/cities-municipalities/`
+        );
+        const data = await response.json();
+        setCities(data);
+      }
+      // Clear barangays when city selection changes
+      setBarangays([]);
     } catch (error) {
       console.error("Error fetching cities:", error);
     }
     setLoading(false);
   };
-
+  
+  // Fetch barangays (works the same for all cities)
   const fetchBarangays = async (cityCode) => {
     setLoading(true);
     try {
@@ -204,6 +236,8 @@ const Membership = () => {
     }
     setLoading(false);
   };
+  
+  
 
   // Event Handlers
   const handleProvinceChange = (e) => {
@@ -360,6 +394,7 @@ const Membership = () => {
                     <option value="X2">X2 Package</option>
                     <option value="X3">X3 Package</option>
                     <option value="X5">X5 Package</option>
+                    <option value="Crown">Crown Package</option>
                   </select>
                   <ChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 pointer-events-none" />
                 </div>

@@ -48,7 +48,6 @@ const ReferralTreeTable = () => {
           // Function to recursively traverse the tree
           function traverseTree(node, currentLevel) {
             // Log the current node and level for debugging
-            console.log(`Level ${currentLevel} Node:`, node);
   
             // If the level is within our range of interest (1-7)
             if (currentLevel >= 1 && currentLevel <= 7) {
@@ -74,7 +73,6 @@ const ReferralTreeTable = () => {
   
           // Log the results
           for (let level = 1; level <= 7; level++) {
-            console.log(`Level ${level} Direct Referral Earnings: ${earningsByLevel[level]}`);
           }
         }
   

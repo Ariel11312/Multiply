@@ -8,6 +8,7 @@ const MemberCategory = ({ onSelectPackage, selectedType }) => {
     { name: "X2 PACKAGE", type: "X2", membership: 1000, bottles: 2 },
     { name: "X3 PACKAGE", type: "X3", membership: 3000, bottles: 6 },
     { name: "X5 PACKAGE", type: "X5", membership: 5000, bottles: 10 },
+    { name: "Crown PACKAGE", type: "Crown", membership: 15000, bottles: 40 },
   ];
 
   const handleClick = (pkg) => {
@@ -15,7 +16,7 @@ const MemberCategory = ({ onSelectPackage, selectedType }) => {
   };
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 p-4 pt-24">
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 p-4 pt-24">
       {packages.map((pkg, index) => (
         <Card
           key={index}

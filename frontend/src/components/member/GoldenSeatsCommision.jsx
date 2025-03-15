@@ -69,7 +69,7 @@ const GoldenSeats = ({ onCommissionChange }) => {
           for (const owner of userPositions) {
             const position = owner.position;
             const spot = owner.spot;
-            console.log(spot);
+
 
             if (processedSpots.has(spot)) continue; // Prevent duplicates
 
