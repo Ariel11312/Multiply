@@ -100,9 +100,17 @@ export const createMember = async (request, response) => {
                 'X1': 500,
                 'X2': 1000,
                 'X3': 3000,
-                'X5': 5000
+                'X5': 5000,
+                "Crown": 15000,
+                
             };
-            return (earningsMap[memberType] || 0) * 0.05;
+         
+         if(memberType === "Crown"){
+            return (earningsMap[memberType] || 0);
+         }else{
+
+             return (earningsMap[memberType] || 0) * 0.05;
+         }
         };
 
         // Calculate golden seats commission rates
@@ -110,7 +118,8 @@ export const createMember = async (request, response) => {
             'X1': 10, 
             'X2': 20, 
             'X3': 60,
-            'X5': 100 
+            'X5': 100, 
+            'Crown':5000
         };
 
         const commission = commissionRates[memberType] || 0;
@@ -133,34 +142,52 @@ export const createMember = async (request, response) => {
 
         // Handle referral transactions
         if (referredBy) {
+            // Find the referrer using the referral code
             const referrer = await Member.findOne({ referralCode: referredBy });
-
+        
             if (!referrer) {
                 return response.status(400).json({
                     success: false,
                     message: "Invalid referral code"
                 });
             }
-
+        
+            // Find all members referred by the referrer
+            const referredMembers = await Member.find({ referredBy: referrer.referralCode });
+        
+            // Count the number of Crown members among the referred members
+            const crownCount = referredMembers.filter(member => member.memberType === 'Crown').length;
+        
+            // Calculate referral earnings based on the memberType
             const referralEarnings = calculateReferralEarnings(memberType);
+        
+            // Generate a unique transaction ID
             const referralTransactionId = `TXN${Date.now()}${Math.floor(Math.random() * 1000)}`;
-
+        
             // Create referral transaction
             const referralTransaction = new MemberTransaction({
                 memberId: referrer.memberID,
                 transactionId: referralTransactionId,
                 productName: `${memberType} Referral Bonus`,
-                productImage,
+                productImage, // Ensure this variable is defined
                 quantity: 1,
                 price: referralEarnings,
                 total: referralEarnings,
-                paymentMethod,
-                transactionDate: formattedDate
+                paymentMethod, // Ensure this variable is defined
+                transactionDate: formattedDate // Ensure this variable is defined
             });
-
+        
+            // Save the referral transaction
             await referralTransaction.save();
+        
+            // Optionally, update the referrer's earnings or other fields
+            referrer.totalEarnings += referralEarnings;
+            await referrer.save();
+    
+            // Log or return success response
+            console.log(`Referral transaction created for ${referrer.memberID} with earnings: ${referralEarnings}`);
+            console.log(`Number of Crown members referred: ${crownCount}`);
         }
-
         // Calculate base amount for golden seats commission
                 // Save all records
         await Promise.all([

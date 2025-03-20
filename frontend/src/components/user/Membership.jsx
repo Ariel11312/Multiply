@@ -170,6 +170,13 @@ const Membership = () => {
       const regionsResponse = await fetch("https://psgc.gitlab.io/api/regions/");
       const regionsData = await regionsResponse.json();
       
+      // Store regions data in state
+      const regionsMap = regionsData.reduce((acc, region) => {
+        acc[region.code] = region.name;
+        return acc;
+      }, {});
+      setRegions(regionsMap);
+      
       // Find NCR in regions data
       const ncrRegion = regionsData.find(region => region.code === "130000000");
       
@@ -300,7 +307,6 @@ const Membership = () => {
         setIsLoading(false);
         return;
       }
-
       // Prepare membership data for storage
       const membershipData = {
         referralCode,
@@ -321,7 +327,7 @@ const Membership = () => {
       localStorage.setItem("membershipData", JSON.stringify(membershipData));
 
       // Redirect to payment page
-      window.location.href = paymentUrl;
+       window.location.href = paymentUrl;
     } catch (error) {
       console.error("Error during submission:", error);
       setError("An error occurred. Please try again.");
