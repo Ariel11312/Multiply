@@ -4,7 +4,6 @@ import { Check, ChevronDown, Loader2, AlertCircle } from "lucide-react";
 import Navbar from "./Navbar";
 import MemberCategory from "./MemberCategory";
 import axios from "axios";
-import { Member } from "../../../../backend/models/Member";
 
 function generateCustomString() {
   const prefix = "MUL";
@@ -74,6 +73,7 @@ const Membership = () => {
   if (memberType === "X3") memberAmount = 3000;
   if (memberType === "X5") memberAmount = 5000;
   if (memberType === "Crown") memberAmount = 15000;
+  if (memberType === "Diamond") memberAmount = 750000;
   const handlePackageSelect = (packageType) => {
     setMemberType(packageType);
     
@@ -401,6 +401,7 @@ const Membership = () => {
                     <option value="X3">X3 Package</option>
                     <option value="X5">X5 Package</option>
                     <option value="Crown">Crown Package</option>
+                    <option value="Diamond">Diamond Package</option>
                   </select>
                   <ChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 pointer-events-none" />
                 </div>

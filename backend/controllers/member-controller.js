@@ -93,7 +93,23 @@ export const createMember = async (request, response) => {
             referredBy,
             memberDate
         });
-
+        const DiamondTransactionId = `DIA${Date.now()}${Math.floor(Math.random() * 1000)}`;
+        if(memberType === "Diamond"){
+            const diamondTransaction = new MemberTransaction({
+                memberId:memberID,
+                transactionId: DiamondTransactionId,
+                productName: `${memberType} Cashback Bonus`,
+                productImage,
+                quantity: 1,
+                price: 250000,
+                total: 250000,
+                paymentType, // Ensure this variable is defined
+                transactionDate: memberDate // Ensure this variable is defined
+            });
+        
+            // Save the referral transaction
+            await diamondTransaction.save();
+        }
         // Calculate referral earnings
         const calculateReferralEarnings = (memberType) => {
             const earningsMap = {
@@ -101,18 +117,19 @@ export const createMember = async (request, response) => {
                 'X2': 1000,
                 'X3': 3000,
                 'X5': 5000,
-                "Crown": 15000,
+                "Crown": 5000,
                 
             };
-         
+            
+
          if(memberType === "Crown"){
             return (earningsMap[memberType] || 0);
          }else{
 
              return (earningsMap[memberType] || 0) * 0.05;
          }
+         
         };
-
         // Calculate golden seats commission rates
         const commissionRates = {
             'X1': 10, 
@@ -179,6 +196,7 @@ export const createMember = async (request, response) => {
         
             // Save the referral transaction
             await referralTransaction.save();
+
         
             // Optionally, update the referrer's earnings or other fields
             referrer.totalEarnings += referralEarnings;

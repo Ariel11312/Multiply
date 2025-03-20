@@ -9,6 +9,14 @@ const MemberCategory = ({ onSelectPackage, selectedType }) => {
     { name: "X3 PACKAGE", type: "X3", membership: 3000, bottles: 6 },
     { name: "X5 PACKAGE", type: "X5", membership: 5000, bottles: 10 },
     { name: "Crown PACKAGE", type: "Crown", membership: 15000, bottles: 40 },
+    { 
+      name: "Diamond PACKAGE", 
+      type: "Diamond", 
+      membership: 750000, 
+      bottles: 0, // Added bottles property (adjust as needed)
+      cashback: 250000, 
+      commission: 2000 
+    },
   ];
 
   const handleClick = (pkg) => {
@@ -16,14 +24,14 @@ const MemberCategory = ({ onSelectPackage, selectedType }) => {
   };
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 p-4 pt-24">
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 p-4 pt-24">
       {packages.map((pkg, index) => (
         <Card
           key={index}
           onClick={() => handleClick(pkg)}
           className={`relative transition-all duration-200 cursor-pointer hover:shadow-md ${
-            selectedType === pkg.type 
-              ? "bg-green-500 text-white shadow-lg border-green-500" 
+            selectedType === pkg.type
+              ? "bg-green-500 text-white shadow-lg border-green-500"
               : "bg-white"
           }`}
         >
@@ -43,10 +51,23 @@ const MemberCategory = ({ onSelectPackage, selectedType }) => {
                 Membership Value
               </div>
               <div className={`border-t ${selectedType === pkg.type ? "border-white/30" : ""} pt-4`}>
-                <div className="flex justify-between items-center">
-                  <span className="font-medium">Bottles</span>
-                  <span className="font-bold text-lg">{pkg.bottles}</span>
-                </div>
+                {pkg.type === "Diamond" ? (
+                  <>
+                    <div className="flex justify-between items-center mb-2">
+                      <span className="font-medium">Cashback</span>
+                      <span className="font-bold text-lg">₱{pkg.cashback.toLocaleString()}</span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className="font-medium">Commission</span>
+                      <span className="font-bold text-lg">₱{pkg.commission.toLocaleString()}</span>
+                    </div>
+                  </>
+                ) : (
+                  <div className="flex justify-between items-center">
+                    <span className="font-medium">Bottles</span>
+                    <span className="font-bold text-lg">{pkg.bottles}</span>
+                  </div>
+                )}
               </div>
             </div>
           </CardContent>
