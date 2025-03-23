@@ -9,6 +9,7 @@ import {
   Download,
   Calendar,
   Filter,
+   X 
 } from "lucide-react";
 import Navigation from "../member/Navbar";
 import { checkTransaction } from "../../middleware/transaction";
@@ -23,7 +24,78 @@ const TransactionHistory = () => {
   const [priceRange, setPriceRange] = useState({ min: "", max: "" });
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [showModal, setShowModal] = useState(false);
+  const [selectedTransaction, setSelectedTransaction] = useState(null);
+  const [isUpdating, setIsUpdating] = useState(false);
+  const [updateStatus, setUpdateStatus] = useState(null);
 
+  const handleClaimClick = (transaction) => {
+    setSelectedTransaction(transaction);
+    console.log(selectedTransaction)
+    setShowModal(true);
+  };
+
+  const handleCloseModal = () => {
+    setShowModal(false);
+    setSelectedTransaction(null);
+  };
+
+
+  const handleOptionSelect = async (option) => {
+    // Set loading state
+    setIsUpdating(true);
+    
+    // Determine the value to update based on selection
+    const updateData = {
+      transactionId: selectedTransaction.transactionId,
+      claimOption: option,
+      // Set amount based on selected option
+      amount: option === "5000 pesos" ? 5000 : "40 bottles"
+    };
+    
+    try {
+      // Make the PUT request to your API
+      const response = await fetch(`/api/trans/transaction/${selectedTransaction.transactionId}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(updateData),
+      });
+      
+      if (!response.ok) {
+        throw new Error('Failed to update transaction');
+      }
+      
+      const result = await response.json();
+      console.log('Update successful:', result);
+      
+      // Set success status
+      setUpdateStatus({
+        success: true,
+        message: `Successfully claimed ${option} for transaction #${selectedTransaction.transactionId}`
+      });
+      
+      // Close modal after a short delay to show success message
+      setTimeout(() => {
+        handleCloseModal();
+        // Optionally refresh the transaction list here
+        // refreshTransactions();
+      }, 2000);
+      
+    } catch (error) {
+      console.error('Error updating transaction:', error);
+      
+      // Set error status
+      setUpdateStatus({
+        success: false,
+        message: `Failed to claim reward: ${error.message}`
+      });
+      
+      // Don't close the modal on error
+      setIsUpdating(false);
+    }
+  };
   // Mock data - In real app, this would come from an API
   useEffect(() => {
     // Define an async function to handle the transaction check and state updates
@@ -328,6 +400,7 @@ const TransactionHistory = () => {
                         <th className="text-left pb-3">Amount</th>
                         <th className="text-left pb-3">Date</th>
                         <th className="text-left pb-3">ID</th>
+                        <th className="text-left pb-3">Action</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -355,10 +428,79 @@ const TransactionHistory = () => {
                           <td className="py-3 text-gray-400">
                             #{transaction.transactionId}
                           </td>
+                          <td className="py-3">
+  {transaction.productName === "Crown Referral Bonus" && 
+   transaction.claimStatus !== "claimed" && (
+    <button
+      className="bg-green-600 hover:bg-green-700 text-white font-medium py-2 px-4 rounded-lg"
+      onClick={() => handleClaimClick(transaction)}
+    >
+      Claim
+    </button>
+  )}
+</td>
                         </tr>
                       ))}
                     </tbody>
                   </table>
+                  
+      {showModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 max-w-md w-full">
+            <div className="flex justify-between items-center mb-6">
+              <h2 className="text-xl font-bold">Choose Your Reward</h2>
+              <button 
+                onClick={handleCloseModal}
+                className="text-gray-500 hover:text-gray-700"
+                disabled={isUpdating}
+              >
+                <X size={24} />
+              </button>
+            </div>
+            
+            {updateStatus ? (
+              <div className={`p-4 mb-4 rounded-lg ${updateStatus.success ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
+                {updateStatus.message}
+              </div>
+            ) : (
+              <>
+                <p className="mb-4">
+                  Select one of the following options to claim your Crown Referral Bonus:
+                </p>
+                
+                <div className="space-y-4">
+                  <button
+                    onClick={() => handleOptionSelect("5000 pesos")}
+                    className="w-full bg-green-600 hover:bg-green-700 text-white font-medium py-3 px-4 rounded-lg flex justify-between items-center"
+                    disabled={isUpdating}
+                  >
+                    <span>₱5,000 Cash</span>
+                    <span className="text-sm bg-green-500 px-2 py-1 rounded">Recommended</span>
+                  </button>
+                  
+                  <button
+                    onClick={() => handleOptionSelect("40 bottles")}
+                    className="w-full border border-green-600 text-green-600 hover:bg-green-50 font-medium py-3 px-4 rounded-lg"
+                    disabled={isUpdating}
+                  >
+                    40 Bottles of Crown
+                  </button>
+                </div>
+                
+                <p className="text-sm text-gray-500 mt-4">
+                  Your selection is final and cannot be changed later.
+                </p>
+              </>
+            )}
+            
+            {isUpdating && (
+              <div className="flex justify-center my-4">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-600"></div>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
                 </div>
               </div>
             </div>

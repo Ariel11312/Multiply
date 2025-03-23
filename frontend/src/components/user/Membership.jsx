@@ -401,7 +401,7 @@ const Membership = () => {
                     <option value="X3">X3 Package</option>
                     <option value="X5">X5 Package</option>
                     <option value="Crown">Crown Package</option>
-                    <option value="Diamond">Diamond Package</option>
+                    <option value="Diamond">Crown Diamond Package</option>
                   </select>
                   <ChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 pointer-events-none" />
                 </div>

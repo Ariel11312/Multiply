@@ -37,6 +37,24 @@ const MemberTransactionSchema = new mongoose.Schema({
         type: String,
         required: false
     },
-})
+    // Add new fields for claim functionality
+    claimStatus: {
+        type: String,
+        enum: ['pending', 'claimed', 'rejected'],
+        default: 'pending'
+    },
+    claimOption: {
+        type: String,
+        required: false
+    },
+    claimedAmount: {
+        type: mongoose.Schema.Types.Mixed, // Can store number (5000) or string ("40 bottles")
+        required: false
+    },
+    claimDate: {
+        type: Date,
+        required: false
+    }
+});
 
 export const MemberTransaction = mongoose.model('MemberTransaction', MemberTransactionSchema);

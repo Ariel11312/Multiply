@@ -123,7 +123,7 @@ export const createMember = async (request, response) => {
             
 
          if(memberType === "Crown"){
-            return (earningsMap[memberType] || 0);
+            return (0);
          }else{
 
              return (earningsMap[memberType] || 0) * 0.05;
@@ -171,15 +171,33 @@ export const createMember = async (request, response) => {
         
             // Find all members referred by the referrer
             const referredMembers = await Member.find({ referredBy: referrer.referralCode });
-        
+            const referralTransactionId = `TXN${Date.now()}${Math.floor(Math.random() * 1000)}`;
+            
             // Count the number of Crown members among the referred members
             const crownCount = referredMembers.filter(member => member.memberType === 'Crown').length;
+            console.log( referrer.memberType + " " + crownCount)
+            
+            if(referrer.memberType === "Diamond" && crownCount > 0){
+                const indirect = new MemberTransaction({
+                    memberId: referrer.memberID,
+                    transactionId: referralTransactionId,
+                    productName: `Indirect Referral Bonus`,
+                    productImage, // Ensure this variable is defined
+                    quantity: 1,
+                    price: 2000,
+                    total: 2000,
+                    paymentMethod, // Ensure this variable is defined
+                    transactionDate: formattedDate // Ensure this variable is defined
+                });
+               await indirect.save()
+    
+
+            }
         
             // Calculate referral earnings based on the memberType
             const referralEarnings = calculateReferralEarnings(memberType);
         
             // Generate a unique transaction ID
-            const referralTransactionId = `TXN${Date.now()}${Math.floor(Math.random() * 1000)}`;
         
             // Create referral transaction
             const referralTransaction = new MemberTransaction({
