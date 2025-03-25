@@ -9,7 +9,7 @@ import {
   Download,
   Calendar,
   Filter,
-   X 
+  X,
 } from "lucide-react";
 import Navigation from "../member/Navbar";
 import { checkTransaction } from "../../middleware/transaction";
@@ -31,67 +31,67 @@ const TransactionHistory = () => {
 
   const handleClaimClick = (transaction) => {
     setSelectedTransaction(transaction);
-    console.log(selectedTransaction)
     setShowModal(true);
-  };
-
+    };
+  
   const handleCloseModal = () => {
     setShowModal(false);
     setSelectedTransaction(null);
   };
 
-
   const handleOptionSelect = async (option) => {
     // Set loading state
     setIsUpdating(true);
-    
+
     // Determine the value to update based on selection
     const updateData = {
       transactionId: selectedTransaction.transactionId,
       claimOption: option,
       // Set amount based on selected option
-      amount: option === "5000 pesos" ? 5000 : "40 bottles"
+      amount: option === "5000 pesos" ? 5000 : "40 bottles",
     };
-    
+
     try {
       // Make the PUT request to your API
-      const response = await fetch(`/api/trans/transaction/${selectedTransaction.transactionId}`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(updateData),
-      });
-      
+      const response = await fetch(
+        `/api/trans/transaction/${selectedTransaction.transactionId}`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(updateData),
+        }
+      );
+
       if (!response.ok) {
-        throw new Error('Failed to update transaction');
+        throw new Error("Failed to update transaction");
       }
-      
+
       const result = await response.json();
-      console.log('Update successful:', result);
-      
+      console.log("Update successful:", result);
+      window.location.href ="./member-transactions"
       // Set success status
       setUpdateStatus({
         success: true,
-        message: `Successfully claimed ${option} for transaction #${selectedTransaction.transactionId}`
+        message: `Successfully claimed ${option} for transaction #${selectedTransaction.transactionId}`,
       });
-      
+
       // Close modal after a short delay to show success message
       setTimeout(() => {
         handleCloseModal();
         // Optionally refresh the transaction list here
         // refreshTransactions();
       }, 2000);
-      
     } catch (error) {
-      console.error('Error updating transaction:', error);
-      
+      console.error("Error updating transaction:", error);
+
       // Set error status
       setUpdateStatus({
         success: false,
-        message: `Failed to claim reward: ${error.message}`
+        message: `Failed to claim reward: ${error.message}`,
       });
-      
+
       // Don't close the modal on error
       setIsUpdating(false);
     }
@@ -276,70 +276,94 @@ const TransactionHistory = () => {
     <div className="min-h-screen bg-gray-100">
       <Navigation />
 
-      {/* Mobile Layout */}
-      <div className="lg:hidden w-full bg-white border border-green-500">
-        <div className="p-4 border-b border-green-100">
-          <div className="flex justify-between items-center mb-4">
-            <button
-              onClick={() => exportData("csv")}
-              className="flex items-center gap-2 px-4 py-2 text-green-600 hover:bg-green-50 rounded-lg"
-            >
-              <Download size={20} />
-            </button>
-            <div className="flex gap-2">
-              <button onClick={shareData}>
-                <Share2 className="text-green-600" size={24} />
-              </button>
-              <button onClick={() => setIsFilterOpen(!isFilterOpen)}>
-                <Filter className="text-green-600" size={24} />
-              </button>
-            </div>
-          </div>
-
-          <div className="relative mb-4">
-            <Search
-              className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"
-              size={20}
-            />
-            <input
-              type="text"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Search transactions..."
-              className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-green-500"
-            />
-          </div>
-
-          {isFilterOpen && <FilterPanel isMobile={true} />}
-        </div>
-
-        <div className="space-y-4 p-4">
-          {filteredTransactions.map((transaction) => (
-            <div key={transaction.id} className="flex items-start gap-3">
-              <div className="bg-green-50 p-2 rounded-lg">
-                <Camera size={20} className="text-green-600" />
-              </div>
-              <div className="flex-1">
-                <div className="flex justify-between">
-                  <span className="font-medium">₱{transaction.price}</span>
-                  <span className="text-gray-400">
-                    {transaction.transactionDate}
-                  </span>
-                </div>
-                <span className="text-gray-400 text-sm block">
-                  {transaction.user?.firstName} {transaction.user?.lastName}
-                </span>
-                <span className="text-gray-600 block mt-1">
-                  {transaction.productName}
-                </span>
-                <span className="text-gray-400 text-sm">
-                  #{transaction.transactionId}
-                </span>
-              </div>
-            </div>
-          ))}
-        </div>
+{/* Mobile Layout */}
+<div className="lg:hidden w-full bg-white border border-green-500">
+  <div className="p-4 border-b border-green-100">
+    <div className="flex justify-between items-center mb-4">
+      <div className="flex space-x-2">
+        <button
+          onClick={() => exportData("csv")}
+          className="flex items-center justify-center w-10 h-10 text-green-600 hover:bg-green-50 rounded-lg"
+        >
+          <Download size={20} />
+        </button>
+        <button 
+          onClick={shareData}
+          className="flex items-center justify-center w-10 h-10 text-green-600 hover:bg-green-50 rounded-lg"
+        >
+          <Share2 size={20} />
+        </button>
+        <button 
+          onClick={() => setIsFilterOpen(!isFilterOpen)}
+          className="flex items-center justify-center w-10 h-10 text-green-600 hover:bg-green-50 rounded-lg"
+        >
+          <Filter size={20} />
+        </button>
       </div>
+    </div>
+
+    <div className="relative mb-4">
+      <Search
+        className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"
+        size={20}
+      />
+      <input
+        type="text"
+        value={searchQuery}
+        onChange={(e) => setSearchQuery(e.target.value)}
+        placeholder="Search transactions..."
+        className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-green-500"
+      />
+    </div>
+
+    {isFilterOpen && <FilterPanel isMobile={true} />}
+  </div>
+
+  <div className="space-y-4 p-4">
+    {filteredTransactions.length > 0 ? (
+      filteredTransactions.map((transaction) => (
+        <div 
+          key={transaction.id} 
+          className="flex items-center gap-3 bg-white shadow-sm rounded-lg p-3 border border-gray-100"
+        >
+          <div className="bg-green-50 p-2 rounded-lg">
+            <Camera size={20} className="text-green-600" />
+          </div>
+          <div className="flex-1 overflow-hidden">
+            <div className="flex justify-between items-center mb-1">
+              <span className="font-semibold text-green-700">₱{transaction.price}</span>
+              <span className="text-xs text-gray-400">
+                {transaction.transactionDate}
+              </span>
+            </div>
+            <div className="text-sm text-gray-600 truncate">
+              {transaction.productName}
+            </div>
+            <div className="text-xs text-gray-500 mt-1">
+              {transaction.user?.firstName} {transaction.user?.lastName}
+            </div>
+            <div className="text-xs text-gray-400 mt-1">
+              #{transaction.transactionId}
+            </div>
+            {transaction.productName === "Crown Referral Bonus" &&
+              transaction.claimStatus !== "claimed" && (
+                <button
+                  className="mt-2 w-full bg-green-600 hover:bg-green-700 text-white font-medium py-2 px-4 rounded-lg"
+                  onClick={() => handleClaimClick(transaction)}
+                >
+                  Claim Bonus
+                </button>
+              )}
+          </div>
+        </div>
+      ))
+    ) : (
+      <div className="text-center text-gray-500 py-4">
+        No transactions found
+      </div>
+    )}
+  </div>
+</div>
 
       {/* Desktop Layout */}
       <div className="hidden lg:block">
@@ -429,84 +453,95 @@ const TransactionHistory = () => {
                             #{transaction.transactionId}
                           </td>
                           <td className="py-3">
-  {transaction.productName === "Crown Referral Bonus" && 
-   transaction.claimStatus !== "claimed" && (
-    <button
-      className="bg-green-600 hover:bg-green-700 text-white font-medium py-2 px-4 rounded-lg"
-      onClick={() => handleClaimClick(transaction)}
-    >
-      Claim
-    </button>
-  )}
-</td>
+                            {transaction.productName ===
+                              "Crown Referral Bonus" &&
+                              transaction.claimStatus !== "claimed" && (
+                                <button
+                                  className="bg-green-600 hover:bg-green-700 text-white font-medium py-2 px-4 rounded-lg"
+                                  onClick={() => handleClaimClick(transaction)}
+                                >
+                                  Claim
+                                </button>
+                              )}
+                          </td>
                         </tr>
                       ))}
                     </tbody>
                   </table>
-                  
-      {showModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 max-w-md w-full">
-            <div className="flex justify-between items-center mb-6">
-              <h2 className="text-xl font-bold">Choose Your Reward</h2>
-              <button 
-                onClick={handleCloseModal}
-                className="text-gray-500 hover:text-gray-700"
-                disabled={isUpdating}
-              >
-                <X size={24} />
-              </button>
-            </div>
-            
-            {updateStatus ? (
-              <div className={`p-4 mb-4 rounded-lg ${updateStatus.success ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
-                {updateStatus.message}
-              </div>
-            ) : (
-              <>
-                <p className="mb-4">
-                  Select one of the following options to claim your Crown Referral Bonus:
-                </p>
-                
-                <div className="space-y-4">
-                  <button
-                    onClick={() => handleOptionSelect("5000 pesos")}
-                    className="w-full bg-green-600 hover:bg-green-700 text-white font-medium py-3 px-4 rounded-lg flex justify-between items-center"
-                    disabled={isUpdating}
-                  >
-                    <span>₱5,000 Cash</span>
-                    <span className="text-sm bg-green-500 px-2 py-1 rounded">Recommended</span>
-                  </button>
-                  
-                  <button
-                    onClick={() => handleOptionSelect("40 bottles")}
-                    className="w-full border border-green-600 text-green-600 hover:bg-green-50 font-medium py-3 px-4 rounded-lg"
-                    disabled={isUpdating}
-                  >
-                    40 Bottles of Crown
-                  </button>
-                </div>
-                
-                <p className="text-sm text-gray-500 mt-4">
-                  Your selection is final and cannot be changed later.
-                </p>
-              </>
-            )}
-            
-            {isUpdating && (
-              <div className="flex justify-center my-4">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-600"></div>
-              </div>
-            )}
-          </div>
-        </div>
-      )}
+
+
                 </div>
               </div>
             </div>
           </div>
         </div>
       </div>
+      {showModal && (
+  <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+    <div className="bg-white rounded-lg p-6 max-w-md w-full">
+      <div className="flex justify-between items-center mb-6">
+        <h2 className="text-xl font-bold">
+          Choose Your Reward
+        </h2>
+        <button
+          onClick={handleCloseModal}
+          className="text-gray-500 hover:text-gray-700"
+          disabled={isUpdating}
+        >
+          <X size={24} />
+        </button>
+      </div>
+
+      {updateStatus ? (
+        <div
+          className={`p-4 mb-4 rounded-lg ${
+            updateStatus.success
+              ? "bg-green-100 text-green-800"
+              : "bg-red-100 text-red-800"
+          }`}
+        >
+          {updateStatus.message}
+        </div>
+      ) : (
+        <>
+          <p className="mb-4">
+            Select one of the following options to claim your
+            Crown Referral Bonus:
+          </p>
+
+          <div className="space-y-4">
+            <button
+              onClick={() => handleOptionSelect("5000 pesos")}
+              className="w-full bg-green-600 hover:bg-green-700 text-white font-medium py-3 px-4 rounded-lg flex justify-center items-center"
+              disabled={isUpdating}
+            >
+              <span>₱5,000 Cash</span>
+            </button>
+
+            <button
+              onClick={() => handleOptionSelect("40 bottles")}
+              className="w-full border border-green-600 text-green-600 hover:bg-green-50 font-medium py-3 px-4 rounded-lg"
+              disabled={isUpdating}
+            >
+              40 Bottles of Crown
+            </button>
+          </div>
+
+          <p className="text-sm text-gray-500 mt-4">
+            Your selection is final and cannot be changed
+            later.
+          </p>
+        </>
+      )}
+
+      {isUpdating && (
+        <div className="flex justify-center my-4">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-600"></div>
+        </div>
+      )}
+    </div>
+  </div>
+)}
     </div>
   );
 };

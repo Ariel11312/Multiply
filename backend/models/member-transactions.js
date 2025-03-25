@@ -54,7 +54,8 @@ const MemberTransactionSchema = new mongoose.Schema({
     claimDate: {
         type: Date,
         required: false
-    }
+    },
+
 });
 
 export const MemberTransaction = mongoose.model('MemberTransaction', MemberTransactionSchema);

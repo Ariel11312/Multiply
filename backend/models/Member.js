@@ -61,7 +61,12 @@ const MemberSchema = new mongoose.Schema({
         type: String,
         required: true,
     },
-
+    memberRoot: {type:String,
+        required: false
+    },
+    referredRoot: {type:String,
+        required: false
+    }
 })
 
 export const Member = mongoose.model("Member", MemberSchema)

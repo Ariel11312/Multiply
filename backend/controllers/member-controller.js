@@ -77,38 +77,91 @@ export const createMember = async (request, response) => {
         }
 
         // Create new member instance
-        const member = new Member({
-            memberID,
-            referralCode,
-            memberType,
-            addressNo,
-            region,
-            province,
-            city,
-            barangay,
-            userType,
-            role,
-            memberStatus,
-            paymentType,
-            referredBy,
-            memberDate
-        });
         const DiamondTransactionId = `DIA${Date.now()}${Math.floor(Math.random() * 1000)}`;
         if(memberType === "Diamond"){
-            const diamondTransaction = new MemberTransaction({
-                memberId:memberID,
-                transactionId: DiamondTransactionId,
-                productName: `${memberType} Cashback Bonus`,
-                productImage,
-                quantity: 1,
-                price: 250000,
-                total: 250000,
-                paymentType, // Ensure this variable is defined
-                transactionDate: memberDate // Ensure this variable is defined
+            const savedMember = new Member({
+                memberID,
+                referralCode,
+                memberType,
+                addressNo,
+                region,
+                province,
+                city,
+                barangay,
+                userType,
+                role,
+                memberStatus,
+                paymentType,
+                referredBy,
+                memberDate,
+                memberRoot:DiamondTransactionId,
             });
-        
+            
             // Save the referral transaction
-            await diamondTransaction.save();
+            await savedMember.save();
+        } else if(memberType === "Crown" && referredBy){
+            const referrer = await Member.findOne({ referralCode: referredBy });
+            if (referrer.memberRoot){
+                const savedMember = new Member({
+                    memberID,
+                    referralCode,
+                    memberType,
+                    addressNo,
+                    region,
+                    province,
+                    city,
+                    barangay,
+                    userType,
+                    role,
+                    memberStatus,
+                    paymentType,
+                    referredBy,
+                    memberDate,
+                    referredRoot:referrer.memberRoot,
+                });
+                
+                // Save the referral transaction
+                await savedMember.save();   
+            }
+            else{
+                const savedMember = new Member({
+                    memberID,
+                    referralCode,
+                    memberType,
+                    addressNo,
+                    region,
+                    province,
+                    city,
+                    barangay,
+                    userType,
+                    role,
+                    memberStatus,
+                    paymentType,
+                    referredBy,
+                    memberDate
+                });
+                await savedMember.save();
+            }
+        
+        } else{
+
+            const savedMember = new Member({
+                memberID,
+                referralCode,
+                memberType,
+                addressNo,
+                region,
+                province,
+                city,
+                barangay,
+                userType,
+                role,
+                memberStatus,
+                paymentType,
+                referredBy,
+                memberDate
+            });
+            await savedMember.save();
         }
         // Calculate referral earnings
         const calculateReferralEarnings = (memberType) => {
@@ -117,17 +170,12 @@ export const createMember = async (request, response) => {
                 'X2': 1000,
                 'X3': 3000,
                 'X5': 5000,
-                "Crown": 5000,
+                "Crown": 0,
                 
             };
             
 
-         if(memberType === "Crown"){
-            return (0);
-         }else{
-
              return (earningsMap[memberType] || 0) * 0.05;
-         }
          
         };
         // Calculate golden seats commission rates
@@ -136,7 +184,7 @@ export const createMember = async (request, response) => {
             'X2': 20, 
             'X3': 60,
             'X5': 100, 
-            'Crown':5000
+            'Crown':0
         };
 
         const commission = commissionRates[memberType] || 0;
@@ -159,7 +207,7 @@ export const createMember = async (request, response) => {
 
         // Handle referral transactions
         if (referredBy) {
-            // Find the referrer using the referral code
+
             const referrer = await Member.findOne({ referralCode: referredBy });
         
             if (!referrer) {
@@ -170,27 +218,29 @@ export const createMember = async (request, response) => {
             }
         
             // Find all members referred by the referrer
-            const referredMembers = await Member.find({ referredBy: referrer.referralCode });
             const referralTransactionId = `TXN${Date.now()}${Math.floor(Math.random() * 1000)}`;
             
             // Count the number of Crown members among the referred members
-            const crownCount = referredMembers.filter(member => member.memberType === 'Crown').length;
-            console.log( referrer.memberType + " " + crownCount)
             
-            if(referrer.memberType === "Diamond" && crownCount > 0){
-                const indirect = new MemberTransaction({
-                    memberId: referrer.memberID,
-                    transactionId: referralTransactionId,
-                    productName: `Indirect Referral Bonus`,
-                    productImage, // Ensure this variable is defined
-                    quantity: 1,
-                    price: 2000,
-                    total: 2000,
-                    paymentMethod, // Ensure this variable is defined
-                    transactionDate: formattedDate // Ensure this variable is defined
+            if(referrer.referredRoot && memberType === "Crown"){
+                const referredMember = await Member.findOne({ memberRoot: referrer.referredRoot });
+                const memberCount = await Member.countDocuments({
+                  memberRoot: referredMember.memberRoot
                 });
-               await indirect.save()
-    
+                if(memberCount === 1){
+                    const indirect = new MemberTransaction({
+                        memberId: referredMember.memberID,
+                        transactionId: referralTransactionId,
+                        productName: `Indirect Referral Bonus`,
+                        productImage, // Ensure this variable is defined
+                        quantity: 1,
+                        price: 2000,
+                        total: 2000,
+                        paymentMethod, // Ensure this variable is defined
+                        transactionDate: formattedDate // Ensure this variable is defined
+                    });
+                   await indirect.save()
+                }
 
             }
         
@@ -222,12 +272,11 @@ export const createMember = async (request, response) => {
     
             // Log or return success response
             console.log(`Referral transaction created for ${referrer.memberID} with earnings: ${referralEarnings}`);
-            console.log(`Number of Crown members referred: ${crownCount}`);
+         
         }
         // Calculate base amount for golden seats commission
                 // Save all records
         await Promise.all([
-            member.save(),
             goldenSeats.save(),
             Member.findByIdAndUpdate(
                 memberID,
@@ -240,7 +289,6 @@ export const createMember = async (request, response) => {
             success: true,
             message: "Member created and golden seats assigned successfully",
             data: {
-                member,
                 goldenSeats,
                 commission: `${commission * 100}%`
             }
