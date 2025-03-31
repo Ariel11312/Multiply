@@ -227,7 +227,7 @@ export const createMember = async (request, response) => {
                 const memberCount = await Member.countDocuments({
                   memberRoot: referredMember.memberRoot
                 });
-                if(memberCount === 1){
+                if(memberCount > 1){
                     const indirect = new MemberTransaction({
                         memberId: referredMember.memberID,
                         transactionId: referralTransactionId,

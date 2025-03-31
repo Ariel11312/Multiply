@@ -1,6 +1,9 @@
 import React, { useEffect, useState } from "react";
 import Navbar from "../user/Navbar";
 import { fetchItems } from "../../middleware/shopItems";
+import { Card, CardContent } from "../../components/ui/card";
+import { Diamond, Crown } from "lucide-react";
+
 
 const EcommerceShop = () => {
   const [cartItems, setCartItems] = useState([]);
@@ -51,7 +54,16 @@ const EcommerceShop = () => {
       console.error("Error adding item to cart:", error.message);
     }
   };
+
+    const diamondPackage = {
+      name: "Crown Diamond PACKAGE",
+      type: "Diamond",
+      membership: 750000,
+      cashback: 250000,
+      commission: 2000
+    };
   
+
   const removeFromCart = (productId) => {
     const index = cartItems.findIndex((item) => item._id === productId);
     if (index !== -1) {
@@ -98,7 +110,9 @@ const EcommerceShop = () => {
   const goToSlide = (index) => {
     setCurrentSlide(index);
   };
-  
+  const HandlDiamond = () => {
+    window.location.href = "./member-registration"
+  }
   return (
     <>
   
@@ -148,14 +162,62 @@ const EcommerceShop = () => {
 
       {/* Side Content */}
       <div className="space-y-4 md:space-y-6 mt-4 md:mt-0">
-        <div className="bg-green-500 rounded p-4 text-white">
-          <p className="font-medium mb-2">Previous Product</p>
-          <img
-            className="w-full h-96 bg-white"
-            src={import.meta.env.VITE_API_URL + "/uploads/product2.png"}
-            alt="Feature promotion"
-          />
+      <Card
+        onClick={() => onSelect && onSelect(diamondPackage.type)}
+        className="relative transition-all duration-300 cursor-pointer hover:shadow-xl bg-gradient-to-br from-blue-300 via-blue-500 to-blue-700 text-white border-0 transform hover:scale-105 shadow-xl ring-2 ring-blue-300"
+      >
+        <div className="absolute -top-3 -right-3 bg-blue-700 text-white text-xs font-bold px-2 py-1 rounded-full">
+          EXCLUSIVE
         </div>
+        <div className="absolute top-0 left-0 w-full h-full bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI1MCIgaGVpZ2h0PSI1MCIgdmlld0JveD0iMCAwIDUwIDUwIiBvcGFjaXR5PSIwLjIiPjxwYXRoIGQ9Ik0yNSAwIEwzMCAyMCBMNTAgMjUgTDMwIDMwIEwyNSA1MCBMMjAgMzAgTDAgMjUgTDIwIDIwIFoiIGZpbGw9IndoaXRlIi8+PC9zdmc+')] opacity-50 animate-pulse"></div>
+        <div className="absolute -top-1 -left-1 w-6 h-6 bg-blue-300 transform rotate-45 animate-pulse"></div>
+        <div className="absolute -bottom-1 -right-1 w-6 h-6 bg-blue-300 transform rotate-45 animate-pulse"></div>
+        
+        {/* Additional sparkle elements */}
+        <div className="absolute top-1/4 left-1/4 w-2 h-2 bg-white rounded-full animate-ping"></div>
+        <div className="absolute top-3/4 right-1/4 w-2 h-2 bg-white rounded-full animate-ping delay-75"></div>
+        <div className="absolute top-1/3 right-1/3 w-1 h-1 bg-white rounded-full animate-ping delay-150"></div>
+        <div className="absolute bottom-1/4 left-1/3 w-1 h-1 bg-white rounded-full animate-ping delay-200"></div>
+        <div className="absolute top-1/2 right-1/2 w-3 h-3 bg-white rounded-full animate-ping delay-300 opacity-75"></div>
+        
+        <CardContent onClick={HandlDiamond} className="p-6 relative pt-8">
+          <div className="absolute top-0 left-1/2 transform -translate-x-1/2 -translate-y-1/2 px-4 py-1 bg-blue-600 text-white text-xs font-bold uppercase tracking-wider rounded-full border-2 border-blue-300 animate-pulse">
+            Ultimate Luxury
+          </div>
+          <div className="mb-4"></div>
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <div className="flex gap-2 items-center">
+                <div className="relative">
+                  <div className="absolute -inset-1 bg-blue-300 rounded-full opacity-50 animate-pulse"></div>
+                  <Diamond className="h-6 w-6 text-white relative" />
+                  <div className="absolute -top-1 -right-1">
+                    <Crown className="h-4 w-4 text-white" />
+                  </div>
+                </div>
+                <span className="font-bold text-lg text-white tracking-wide">{diamondPackage.name}</span>
+              </div>
+              <span className="font-bold text-xl text-white">
+                ₱{diamondPackage.membership.toLocaleString()}
+              </span>
+            </div>
+            <div className="text-sm text-white/80">
+              Membership Value
+            </div>
+            <div className="border-t border-blue-300/50 pt-4">
+              <div className="flex justify-between items-center mb-2">
+                <span className="font-medium">Buy 50 Crown Accounts</span>
+                <span className="font-bold text-lg text-white">₱{diamondPackage.cashback.toLocaleString()}</span>
+              </div>
+              <span>AND</span>
+              <div className="flex justify-between items-center">
+                <span className="font-medium">Get Indirect Referral Commission</span>
+                <span className="font-bold text-lg text-white">₱{diamondPackage.commission.toLocaleString()}</span>
+              </div>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
         <div className="bg-white rounded p-4 shadow relative">
       <p className="font-medium text-green-600 mb-2">Recommended Product</p>
       

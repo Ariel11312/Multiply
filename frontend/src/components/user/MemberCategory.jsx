@@ -105,11 +105,12 @@ const MemberCategory = ({ onSelectPackage, selectedType }) => {
                   {isDiamond ? (
                     <>
                       <div className="flex justify-between items-center mb-2">
-                        <span className="font-medium">Cashback</span>
+                        <span className="font-medium">Buy 50 Crown Accounts</span>
                         <span className="font-bold text-lg text-white">₱{pkg.cashback.toLocaleString()}</span>
                       </div>
+                      <span>AND</span>
                       <div className="flex justify-between items-center">
-                        <span className="font-medium">Indirect Referral Commission</span>
+                        <span className="font-medium">Get Indirect Referral Commission</span>
                         <span className="font-bold text-lg text-white">₱{pkg.commission.toLocaleString()}</span>
                       </div>
                     </>
@@ -123,7 +124,7 @@ const MemberCategory = ({ onSelectPackage, selectedType }) => {
                         <span className="font-bold text-lg">{pkg.bottles}</span>
                       </div>
                       <div className="flex justify-between items-center">
-                        <span className="font-medium">Cash Value</span>
+                        <span className="font-medium">Cash Commission</span>
                         <span className="font-bold text-lg">₱{pkg.cashValue.toLocaleString()}</span>
                       </div>
                     </>
