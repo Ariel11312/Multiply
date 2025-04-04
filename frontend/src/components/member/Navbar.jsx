@@ -17,7 +17,7 @@ const Navigation = () => {
 
   const navItems = [
     { icon: Home, label: "Home", path: "/" },
-    { icon: Package, label: "Products", path: "/products" },
+    { icon: Package, label: "Transactions", path: "/member-transactions " },
     { icon: Users, label: "Customers", path: "/customers" },
     { icon: Settings, label: "Settings", path: "/settings" },
   ];

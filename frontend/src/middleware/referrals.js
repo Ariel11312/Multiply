@@ -1,3 +1,5 @@
+import { Crown } from "lucide-react";
+
 export const fetchReferrals = async (setReferralList, setReferralStats) => {
     try {
         // Make API request to fetch referrals
@@ -25,7 +27,9 @@ export const fetchReferrals = async (setReferralList, setReferralStats) => {
             X1: 0,
             X2: 0,
             X3: 0,
-            X5: 0
+            X5: 0,
+            Crown: 0,
+            Diamond: 0,
         };
 
         // Map through the referral data and extract user details

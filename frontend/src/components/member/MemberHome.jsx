@@ -152,6 +152,9 @@ const Dashboard = () => {
     X2: 0,
     X3: 0,
     X5: 0,
+    Crown: 0,
+    Diamond: 0,
+
   });
   const toggleVisibility = () => {
     setIsVisible(!isVisible);
@@ -408,10 +411,24 @@ const Dashboard = () => {
                   </div>
                   <div className="space-y-3">
                     <div className="flex items-center gap-3">
+                      <Users className="h-6 w-6 text-green-500" />
+                      <span className="text-sm text-gray-600">Crown</span>
+                    </div>
+                    <p className="text-2xl font-bold">{referralStats.Crown}</p>
+                  </div>
+                  <div className="space-y-3">
+                    <div className="flex items-center gap-3">
+                      <Users className="h-6 w-6 text-green-500" />
+                      <span className="text-sm text-gray-600">Crown Diamond</span>
+                    </div>
+                    <p className="text-2xl font-bold">{referralStats.Diamond}</p>
+                  </div>
+                  <div className="space-y-3">
+                    <div className="flex items-center gap-3">
                       <Package className="h-6 w-6 text-blue-500" />
                       <span className="text-sm text-gray-600">Reapers</span>
                     </div>
-                    <p className="text-2xl font-bold">0</p>
+                    <p className="text-2xl font-bold">{referralList.length}</p>
                   </div>
                   <div className="space-y-3">
                     <div className="flex items-center gap-3">
@@ -447,7 +464,7 @@ const Dashboard = () => {
                     <div className="flex items-center gap-3">
                       <h2 className="text-3xl font-bold">
                         {formatAmount(
-                          totalCommission + (MemberTransaction?.totalIncomeToday || 0) +
+                          totalCommission + (MemberTransaction?.total || 0) +
                             (isNaN(
                               parseFloat(localStorage.getItem("totalEarnings"))
                             

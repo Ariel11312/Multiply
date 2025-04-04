@@ -184,7 +184,8 @@ export const createMember = async (request, response) => {
             'X2': 20, 
             'X3': 60,
             'X5': 100, 
-            'Crown':0
+            'Crown':0,
+            'Diamond': 250000,
         };
 
         const commission = commissionRates[memberType] || 0;
@@ -236,6 +237,27 @@ export const createMember = async (request, response) => {
                         quantity: 1,
                         price: 2000,
                         total: 2000,
+                        paymentMethod, // Ensure this variable is defined
+                        transactionDate: formattedDate // Ensure this variable is defined
+                    });
+                   await indirect.save()
+                }
+
+            }
+            if(referrer.referredRoot && memberType === "Diamond"){
+                const referredMember = await Member.findOne({ memberRoot: referrer.referredRoot });
+                const memberCount = await Member.countDocuments({
+                  memberRoot: referredMember.memberRoot
+                });
+                if(memberCount > 1){
+                    const indirect = new MemberTransaction({
+                        memberId: referredMember.memberID,
+                        transactionId: referralTransactionId,
+                        productName: `Indirect Referral Bonus`,
+                        productImage, // Ensure this variable is defined
+                        quantity: 1,
+                        price: 100000,
+                        total: 100000,
                         paymentMethod, // Ensure this variable is defined
                         transactionDate: formattedDate // Ensure this variable is defined
                     });
