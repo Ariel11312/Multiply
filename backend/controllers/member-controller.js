@@ -166,16 +166,17 @@ export const createMember = async (request, response) => {
         // Calculate referral earnings
         const calculateReferralEarnings = (memberType) => {
             const earningsMap = {
-                'X1': 500,
-                'X2': 1000,
-                'X3': 3000,
-                'X5': 5000,
+                'X1': 500 * 0.05,
+                'X2': 1000 * 0.05,
+                'X3': 3000 * 0.05,
+                'X5': 5000 * 0.05,
                 "Crown": 0,
+                "Diamond": 250000,
                 
             };
             
 
-             return (earningsMap[memberType] || 0) * 0.05;
+             return (earningsMap[memberType] || 0);
          
         };
         // Calculate golden seats commission rates
