@@ -81,7 +81,8 @@ export const createMember = async (request, response) => {
     )}`;
     if (memberType === "Diamond") {
       const referrer = await Member.findOne({ referralCode: referredBy });
-      if (referrer.referredRoot) {
+      if (referrer) {
+        if(referrer.memberRoot) {
         const savedMember = new Member({
           memberID,
           referralCode,
@@ -100,6 +101,7 @@ export const createMember = async (request, response) => {
           memberRoot: DiamondTransactionId,
           referredRoot: referrer.referredRoot,
         });
+    }
         savedMember.save();
       } else {
         const savedMember = new Member({
@@ -118,7 +120,7 @@ export const createMember = async (request, response) => {
           referredBy,
           memberDate,
           memberRoot: DiamondTransactionId,
-          referredRoot: referrer.memberRoot,
+
         });
         await savedMember.save();
       }
