@@ -207,9 +207,6 @@ export const GoldenSeatsCommissions = async (request, response) => {
 
 export const UpdateTransaction = async (req, res) => {
   try {
-    const Token = req.cookies.token;
-    const decoded = jwt.verify(Token, process.env.JWT_SECRET);
-    const userId = decoded.userId;
     
     // Get transactionId from the request body, not from the token
     const { transactionId, claimOption, amount, claimStatus, claimDate } = req.body;

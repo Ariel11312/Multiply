@@ -47,16 +47,17 @@ const TransactionHistory = () => {
     const updateData = {
       transactionId: selectedTransaction.transactionId,
       claimOption: option,
-      // Set amount based on selected option
-      amount: option === "5000 pesos" ? 5000 : "40 bottles",
+      // Set amount correctly based on selected option
+      amount: option === "5000 pesos" ? 5000 : 0, // Use 0 or another appropriate value for "40 bottles"
+      claimStatus: "claimed",
+      claimDate: new Date().toISOString()
     };
     
     try {
-      // Changed from POST to PUT to match the router
       const response = await fetch(
-        `/api/trans/transaction/claim`,
+        import.meta.env.VITE_API_URL +"/api/trans/transaction/claim",
         {
-          method: "PUT", // Changed from POST to PUT
+          method: "PUT", 
           headers: {
             "Content-Type": "application/json",
           },
@@ -65,13 +66,14 @@ const TransactionHistory = () => {
         }
       );
       
+      // First check if response is ok
       if (!response.ok) {
-        throw new Error("Failed to update transaction");
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.message || `Request failed with status ${response.status}`);
       }
       
       const result = await response.json();
       console.log("Update successful:", result);
-      window.location.href = "./member-transactions";
       
       // Set success status
       setUpdateStatus({
@@ -82,8 +84,8 @@ const TransactionHistory = () => {
       // Close modal after a short delay to show success message
       setTimeout(() => {
         handleCloseModal();
-        // Optionally refresh the transaction list here
-        // refreshTransactions();
+        // Refresh the page only after success
+        window.location.href = "./member-transactions";
       }, 2000);
     } catch (error) {
       console.error("Error updating transaction:", error);

@@ -4,6 +4,7 @@ const router = express.Router();
 
 router.get("/transaction", GetAllTransaction);
 router.get("/commisions", GoldenSeatsCommissions);
-router.put("/transaction/claim", UpdateTransaction);
+// In your routes file
+router.put('/transaction/claim', UpdateTransaction);
 
 export default router;
