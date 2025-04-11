@@ -207,52 +207,55 @@ export const GoldenSeatsCommissions = async (request, response) => {
 
 export const UpdateTransaction = async (req, res) => {
   try {
-    const { transactionId } = req.params;
-    const { claimOption, amount, claimStatus, claimDate } = req.body;
-
-    // Find and update the transaction
+    const Token = req.cookies.token;
+    const decoded = jwt.verify(Token, process.env.JWT_SECRET);
+    const userId = decoded.userId;
+    
+    // Get transactionId from the request body, not from the token
+    const { transactionId, claimOption, amount, claimStatus, claimDate } = req.body;
+  
     const transaction = await MemberTransaction.findOne({ transactionId: transactionId });
-
+    console.log(transaction)
     if (!transaction) {
       return res.status(404).json({
         success: false,
         message: "Transaction not found"
       });
     }
-
+    
     // Update the transaction fields
     transaction.claimOption = claimOption;
     transaction.claimedAmount = amount;
     transaction.claimStatus = claimStatus || 'claimed';
     transaction.claimDate = claimDate || new Date();
-
+    
     // Handle claimOption logic
     if (claimOption === "5000 pesos") {
-      transaction.price = 5000; // Set price to 500
-      transaction.total = 5000; // Set total to 500
-    } else if (claimOption === "40 bottles") {
-      transaction.productName = "40 Bottles"; // Update productName to "40 Bottles"
-    }
+      transaction.price = 5000;
+      transaction.total = 5000;
 
+    } else if (claimOption === "40 bottles") {
+      transaction.productName = "40 Bottles";
+    }
+    
     // Save the updated transaction
     await transaction.save();
-
-    // Return a safe response without circular references
+    
+    // Return a safe response
     return res.status(200).json({
       success: true,
       message: "Transaction updated successfully",
       transaction: {
         transactionId: transaction.transactionId,
         productName: transaction.productName,
-        price: transaction.price, // Ensure this is the correct field from your schema
-        total: transaction.total, // Ensure this is the correct field from your schema
+        price: transaction.price,
+        total: transaction.total,
         claimOption: transaction.claimOption,
         claimedAmount: transaction.claimedAmount,
         claimStatus: transaction.claimStatus,
         claimDate: transaction.claimDate
       }
     });
-
   } catch (error) {
     console.error("Error updating transaction:", error);
     return res.status(500).json({

@@ -42,7 +42,7 @@ const TransactionHistory = () => {
   const handleOptionSelect = async (option) => {
     // Set loading state
     setIsUpdating(true);
-
+    
     // Determine the value to update based on selection
     const updateData = {
       transactionId: selectedTransaction.transactionId,
@@ -50,34 +50,35 @@ const TransactionHistory = () => {
       // Set amount based on selected option
       amount: option === "5000 pesos" ? 5000 : "40 bottles",
     };
-
+    
     try {
-      // Make the PUT request to your API
+      // Changed from POST to PUT to match the router
       const response = await fetch(
-        `/api/trans/transaction/${selectedTransaction.transactionId}`,
+        `/api/trans/transaction/claim`,
         {
-          method: "PUT",
+          method: "PUT", // Changed from POST to PUT
           headers: {
             "Content-Type": "application/json",
           },
-          credentials: "include", // Include cookies for authentication
+          credentials: "include",
           body: JSON.stringify(updateData),
         }
       );
-
+      
       if (!response.ok) {
         throw new Error("Failed to update transaction");
       }
-
+      
       const result = await response.json();
       console.log("Update successful:", result);
-      window.location.href ="./member-transactions"
+      window.location.href = "./member-transactions";
+      
       // Set success status
       setUpdateStatus({
         success: true,
         message: `Successfully claimed ${option} for transaction #${selectedTransaction.transactionId}`,
       });
-
+      
       // Close modal after a short delay to show success message
       setTimeout(() => {
         handleCloseModal();
@@ -86,13 +87,13 @@ const TransactionHistory = () => {
       }, 2000);
     } catch (error) {
       console.error("Error updating transaction:", error);
-
+      
       // Set error status
       setUpdateStatus({
         success: false,
         message: `Failed to claim reward: ${error.message}`,
       });
-
+      
       // Don't close the modal on error
       setIsUpdating(false);
     }

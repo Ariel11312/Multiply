@@ -79,6 +79,9 @@ export const createMember = async (request, response) => {
     const DiamondTransactionId = `DIA${Date.now()}${Math.floor(
       Math.random() * 1000
     )}`;
+    const CrownTransactionId = `CRO${Date.now()}${Math.floor(
+      Math.random() * 1000
+    )}`;
     if (memberType === "Diamond") {
       const referrer = await Member.findOne({ referralCode: referredBy });
       if (referrer) {
@@ -99,10 +102,11 @@ export const createMember = async (request, response) => {
           referredBy,
           memberDate,
           memberRoot: DiamondTransactionId,
-          referredRoot: referrer.referredRoot,
+          referredRoot: referrer.memberRoot,
         });
-    }
         savedMember.save();
+    }
+
       } else {
         const savedMember = new Member({
           memberID,
@@ -142,12 +146,13 @@ export const createMember = async (request, response) => {
           paymentType,
           referredBy,
           memberDate,
-          referredRoot: referrer.referredRoot,
+          memberRoot: CrownTransactionId,
+          referredRoot: referrer.memberRoot,
         });
 
         // Save the referral transaction
         await savedMember.save();
-      } else {
+      }if (referrer.memberRoot &&  referrer.referredRoot){
         const savedMember = new Member({
           memberID,
           referralCode,
@@ -163,7 +168,11 @@ export const createMember = async (request, response) => {
           paymentType,
           referredBy,
           memberDate,
+          memberRoot: CrownTransactionId,
+          referredRoot: referrer.referredRoot,
         });
+
+        // Save the referral transaction
         await savedMember.save();
       }
     } else {
@@ -181,6 +190,7 @@ export const createMember = async (request, response) => {
         memberStatus,
         paymentType,
         referredBy,
+        memberRoot: CrownTransactionId,
         memberDate,
       });
       await savedMember.save();
@@ -238,10 +248,12 @@ export const createMember = async (request, response) => {
       }
 
       // Find all members referred by the referrer
+      const referralsTransactionId = `TXN${Date.now()}${Math.floor(
+        Math.random() * 1000
+      )}`;
       const referralTransactionId = `TXN${Date.now()}${Math.floor(
         Math.random() * 1000
       )}`;
-
       // Count the number of Crown members among the referred members
 
       if (referrer.referredRoot && memberType === "Crown") {
@@ -249,12 +261,13 @@ export const createMember = async (request, response) => {
           memberRoot: referrer.referredRoot,
         });
         const memberCount = await Member.countDocuments({
-          memberRoot: referredMember.memberRoot,
+          referredRoot: referredMember.memberRoot,
         });
+        console.log(memberCount)
         if (memberCount > 1) {
           const indirect = new MemberTransaction({
             memberId: referredMember.memberID,
-            transactionId: referralTransactionId,
+            transactionId: referralsTransactionId,
             productName: `Indirect Referral Bonus`,
             productImage, // Ensure this variable is defined
             quantity: 1,

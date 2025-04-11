@@ -1,12 +1,9 @@
-import express from "express"
-import { GetAllTransaction, GoldenSeatsCommissions, UpdateTransaction } from "../controllers/transaction-controller.js"
-const router = express.Router()
+import express from "express";
+import { GetAllTransaction, GoldenSeatsCommissions, UpdateTransaction } from "../controllers/transaction-controller.js";
+const router = express.Router();
 
-
-router.get("/transaction", GetAllTransaction)
-router.get("/commisions",GoldenSeatsCommissions)
-router.put("/transaction/:transactionId", UpdateTransaction)
-
-
+router.get("/transaction", GetAllTransaction);
+router.get("/commisions", GoldenSeatsCommissions);
+router.put("/transaction/claim", UpdateTransaction);
 
 export default router;
