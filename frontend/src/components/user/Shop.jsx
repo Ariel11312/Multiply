@@ -3,7 +3,7 @@ import Navbar from "../user/Navbar";
 import { fetchItems } from "../../middleware/shopItems";
 import { Card, CardContent } from "../../components/ui/card";
 import { Diamond, Crown } from "lucide-react";
-
+import { useNavigate } from 'react-router-dom';
 
 const EcommerceShop = () => {
   const [cartItems, setCartItems] = useState([]);
@@ -33,27 +33,6 @@ const EcommerceShop = () => {
 
   const [showModal, setShowModal] = useState(false); // Modal state
   // Add to cart function for frontend
-  const addToCart = async (productId) => {
-    setShowModal(true);
-    setTimeout(() => setShowModal(false), 3000);
-    const id = productId._id;
-    try {
-      const response = await fetch(import.meta.env.VITE_API_URL + `/api/cart/addcart`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
-        body: JSON.stringify({itemId: id, quantity: 1})
-      });
-  
-      if (!response.ok) {
-        throw new Error('Failed to add item to cart');
-      }
-      setShowModal(true); // Show modal after adding item
-
-    } catch (error) {
-      console.error("Error adding item to cart:", error.message);
-    }
-  };
 
     const diamondPackage = {
       name: "Crown Diamond PACKAGE",
@@ -63,7 +42,13 @@ const EcommerceShop = () => {
       commission: 2000
     };
   
+    const navigate = useNavigate();
 
+    const HandleItemClick = (productId) => () => {
+      window.location.href = `${import.meta.env.VITE_URL}/Items?productId=${productId}`;
+
+    };
+        
   const removeFromCart = (productId) => {
     const index = cartItems.findIndex((item) => item._id === productId);
     if (index !== -1) {
@@ -76,11 +61,16 @@ const EcommerceShop = () => {
     return cartItems.reduce((total, item) => total + item.price, 0).toFixed(2);
   };
   const API_BASE_URL = import.meta.env.VITE_API_URL;
-  const getImageUrl = (imageUrl) => {
-    if (!imageUrl) return "/default-product-image.jpg"; // Default image if none provided
-    if (imageUrl.startsWith("http")) return imageUrl; // If URL is already a full URL, return as is
-    return `${API_BASE_URL}${imageUrl}`; // If it's a relative path, prepend the base API URL
+
+  const getImageUrl = (product) => {
+    const image =
+    product.images?.[0] || product.imageUrl || null; // Use first image from `images`, or fallback to `imageUrl`
+  
+    if (!image) return "/default-product-image.jpg"; // Default image if none found
+    if (image.startsWith("http")) return image;      // Already full URL
+    return `${API_BASE_URL}${image}`;                // Prepend base API URL
   };
+  
   const recommendedProducts = [
     {
       id: 1,
@@ -222,7 +212,7 @@ const EcommerceShop = () => {
       <p className="font-medium text-green-600 mb-2">Recommended Product</p>
       
       {/* Slider container */}
-      <div className="relative overflow-hidden h-96">
+      <div className="relative overflow-hidden h-96 ">
         <div 
           className="flex transition-transform duration-500 ease-in-out h-full"
           style={{ transform: `translateX(-${currentSlide * 100}%)` }}
@@ -277,11 +267,12 @@ const EcommerceShop = () => {
         {items.map((product) => (
           <div
             key={product._id}
-            className="bg-white rounded shadow overflow-hidden flex flex-col h-full"
+            onClick={HandleItemClick(product._id)}
+            className="bg-white rounded shadow overflow-hidden flex flex-col h-full cursor-pointer"
           >
             <div className="relative pt-[100%]">
               <img
-                src={getImageUrl(product.imageUrl)}
+                src={getImageUrl(product)}
                 alt={product.name}
                 className="absolute top-0 left-0 w-full h-full object-cover"
                 onError={(e) => {
@@ -297,12 +288,7 @@ const EcommerceShop = () => {
               <h3 className="font-medium text-sm md:text-base line-clamp-2">{product.name}</h3>
               <div className="flex justify-between items-center mt-2">
                 <p className="font-bold">₱ {parseFloat(product.price).toFixed(2)}</p>
-                <button
-                  onClick={() => addToCart(product)}
-                  className="bg-white text-green-600 px-3 py-1 rounded hover:bg-gray-100 text-sm"
-                >
-                  Add
-                </button>
+                
               </div>
             </div>
           </div>

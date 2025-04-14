@@ -26,10 +26,16 @@ const itemSchema = new mongoose.Schema({
         ref: 'Member',
         required: true
     },
-    imageUrl: {
-        type: String,
-        required: true
-    },
+    images: {
+        type: [String],
+        required: true,
+        validate: {
+            validator: function(v) {
+                return v.length > 0; // At least one image is required
+            },
+            message: 'At least one image URL must be provided'
+        }
+    }
 });
 
 export const Item = mongoose.model('Item', itemSchema);

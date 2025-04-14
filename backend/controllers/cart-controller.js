@@ -14,7 +14,7 @@ export const addCart = async (req, res) => {
 
         const decoded = jwt.verify(token, process.env.JWT_SECRET);
         const { userId } = decoded;
-        const { itemId, quantity = 1 } = req.body;
+        const { itemId, quantity = 1,imageUrl } = req.body;
 
         if (!itemId) {
             return res.status(400).json({ message: 'Item ID is required' });
@@ -49,8 +49,8 @@ export const addCart = async (req, res) => {
                 itemId: item._id,
                 name: item.name,
                 quantity,
+                imageUrl,
                 price: item.price,
-                imageUrl: item.imageUrl
             });
         }
 

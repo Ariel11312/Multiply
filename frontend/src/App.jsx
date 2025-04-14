@@ -25,6 +25,7 @@ import GoldenSeats from "./components/member/GoldenSeatsCommision";
 import EcommerceShop from "./components/user/Shop";
 import ReferralCode from "./components/user/ReferralCode";
 import Seatlist from "./components/member/SeatList";
+import AddToCart from "./components/user/AddToCart";
 
 const App = () => {
   const [authState, setAuthState] = useState({
@@ -172,6 +173,7 @@ const App = () => {
         <Route path="/member-registration" element={<Membership />} />
         <Route path="/verify-payment" element={<PaymentStatus />} />
         <Route path="/" element={<Home />} />
+        <Route path="/items" element={<AddToCart />} />
         <Route path="/shop" element={<EcommerceShop />} />
 
         <Route

@@ -1,3 +1,4 @@
+// controllers/itemController.js
 import { Item } from "../models/item.js";
 import multer from "multer";
 import path from "path";
@@ -21,7 +22,7 @@ const storage = multer.diskStorage({
         cb(null, uploadsDir); // Use absolute path to uploads folder
     },
     filename: (req, file, cb) => {
-        cb(null, Date.now() + path.extname(file.originalname)); // Unique file name
+        cb(null, Date.now() + '-' + Math.round(Math.random() * 1E9) + path.extname(file.originalname)); // More unique file name
     },
 });
 
@@ -38,33 +39,47 @@ const fileFilter = (req, file, cb) => {
 const upload = multer({ 
     storage,
     fileFilter,
-    limits: { fileSize: 5 * 1024 * 1024 } // 5MB limit
+    limits: { fileSize: 5 * 1024 * 1024 } // 5MB limit per file
 });
 
-// Create a new item
+// Create a new item with multiple images
 export const CreateItem = async (req, res) => {
-    // Use multer to handle the uploaded image
-    const uploadSingleImage = upload.single("image"); // "image" is the field name in the form
+    // Use multer to handle multiple uploaded images (up to 5)
+    const uploadMultipleImages = upload.array("images", 5); // "images" is the field name in the form, max 5 files
 
-    uploadSingleImage(req, res, async (err) => {
+    uploadMultipleImages(req, res, async (err) => {
         if (err) {
             console.log("Error during image upload:", err);
-            return res.status(400).json({ message: "Error uploading image: " + err.message });
+            return res.status(400).json({ message: "Error uploading images: " + err.message });
         }
 
         const { name, price, description, category, inStock, memberId } = req.body;
 
-        // Ensure the image is uploaded and file exists
-        const imageUrl = req.file ? `/uploads/${req.file.filename}` : null;
+        // Ensure at least one image is uploaded
+        if (!req.files || req.files.length === 0) {
+            return res.status(400).json({ message: 'At least one image is required' });
+        }
+
+        // Create array of image URLs
+        const imagePaths = req.files.map(file => `/uploads/${file.filename}`);
 
         // Check if all required fields are present
-        if (!name || !price || !description || !category || !inStock || !memberId || !imageUrl) {
+        if (!name || !price || !description || !category || inStock === undefined || !memberId) {
             console.log("All fields are required");
+            
+            // Clean up uploaded files if validation fails
+            imagePaths.forEach(imagePath => {
+                const fullPath = path.join(__dirname, '..', imagePath.substring(1));
+                if (fs.existsSync(fullPath)) {
+                    fs.unlinkSync(fullPath);
+                }
+            });
+            
             return res.status(400).json({ message: 'All fields are required' });
         }
 
         try {
-            // Prepare the item object, including the image URL
+            // Prepare the item object with multiple images
             const item = new Item({
                 name,
                 price,
@@ -72,7 +87,8 @@ export const CreateItem = async (req, res) => {
                 category,
                 inStock,
                 memberId,
-                imageUrl,
+                images: imagePaths,
+                imageUrl: imagePaths[0] // Set the first image as the main imageUrl for backward compatibility
             });
 
             // Save the item to the database
@@ -81,12 +97,140 @@ export const CreateItem = async (req, res) => {
 
         } catch (err) {
             console.log("Error saving item:", err);
+            
+            // Clean up uploaded files if database operation fails
+            imagePaths.forEach(imagePath => {
+                const fullPath = path.join(__dirname, '..', imagePath.substring(1));
+                if (fs.existsSync(fullPath)) {
+                    fs.unlinkSync(fullPath);
+                }
+            });
+            
             res.status(400).json({ message: err.message });
         }
     });
 };
 
-// Get all items
+// Update an item by ID with multiple images
+export const updateItems = async (req, res) => {
+    // Use multer to handle multiple uploaded images
+    const uploadMultipleImages = upload.array("images", 5);
+
+    uploadMultipleImages(req, res, async (err) => {
+        if (err) {
+            console.log("Error during image upload:", err);
+            return res.status(400).json({ message: "Error uploading images: " + err.message });
+        }
+
+        try {
+            // Find the item by ID
+            const item = await Item.findById(req.params.id);
+            if (!item) {
+                // Clean up any uploaded files since we won't be using them
+                if (req.files && req.files.length > 0) {
+                    req.files.forEach(file => {
+                        const fullPath = path.join(__dirname, '..', 'uploads', file.filename);
+                        if (fs.existsSync(fullPath)) {
+                            fs.unlinkSync(fullPath);
+                        }
+                    });
+                }
+                return res.status(404).json({ message: 'Item not found' });
+            }
+
+            // Update fields
+            if (req.body.name != null) {
+                item.name = req.body.name;
+            }
+            if (req.body.description != null) {
+                item.description = req.body.description;
+            }
+            if (req.body.price != null) {
+                item.price = req.body.price;
+            }
+            if (req.body.category != null) {
+                item.category = req.body.category;
+            }
+            if (req.body.inStock != null) {
+                item.inStock = req.body.inStock;
+            }
+
+            // If new images are uploaded, handle them
+            if (req.files && req.files.length > 0) {
+                // Get new image paths
+                const newImagePaths = req.files.map(file => `/uploads/${file.filename}`);
+                
+                // Delete old image files if they exist
+                if (item.images && item.images.length > 0) {
+                    item.images.forEach(imagePath => {
+                        const fullPath = path.join(__dirname, '..', imagePath.substring(1));
+                        if (fs.existsSync(fullPath)) {
+                            fs.unlinkSync(fullPath);
+                        }
+                    });
+                } else if (item.imageUrl) {
+                    // Handle legacy single imageUrl
+                    const imagePath = path.join(__dirname, '..', item.imageUrl.substring(1));
+                    if (fs.existsSync(imagePath)) {
+                        fs.unlinkSync(imagePath);
+                    }
+                }
+                
+                // Update both images array and main imageUrl
+                item.images = newImagePaths;
+                item.imageUrl = newImagePaths[0]; // Set the first image as the main imageUrl
+            }
+
+            // Save the updated item
+            const updatedItem = await item.save();
+            res.json(updatedItem);
+        } catch (err) {
+            // Clean up any uploaded files since we won't be using them due to error
+            if (req.files && req.files.length > 0) {
+                req.files.forEach(file => {
+                    const fullPath = path.join(__dirname, '..', 'uploads', file.filename);
+                    if (fs.existsSync(fullPath)) {
+                        fs.unlinkSync(fullPath);
+                    }
+                });
+            }
+            res.status(400).json({ message: err.message });
+        }
+    });
+};
+
+// Delete an item by ID
+export const deleteItem = async (req, res) => {
+    try {
+        const item = await Item.findById(req.params.id);
+        if (!item) {
+            return res.status(404).json({ message: 'Item not found' });
+        }
+
+        // Delete all associated image files if they exist
+        if (item.images && item.images.length > 0) {
+            item.images.forEach(imagePath => {
+                const fullPath = path.join(__dirname, '..', imagePath.substring(1));
+                if (fs.existsSync(fullPath)) {
+                    fs.unlinkSync(fullPath);
+                }
+            });
+        } else if (item.imageUrl) {
+            // Handle legacy single imageUrl
+            const imagePath = path.join(__dirname, '..', item.imageUrl.substring(1));
+            if (fs.existsSync(imagePath)) {
+                fs.unlinkSync(imagePath);
+            }
+        }
+
+        await Item.findByIdAndDelete(req.params.id);
+        res.json({ message: 'Item deleted successfully' });
+    } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
+};
+
+// Keep other functions the same
 export const fetchItems = async (req, res) => {
     try {
         const items = await Item.find({}); // Fetch all documents
@@ -107,68 +251,6 @@ export const fetchItems = async (req, res) => {
             success: false,
             message: err.message,
         });
-    }
-};
-
-// Update an item by ID
-export const updateItems = async (req, res) => {
-    try {
-        // Find the item by ID
-        const item = await Item.findById(req.params.id);
-        if (!item) {
-            return res.status(404).json({ message: 'Item not found' });
-        }
-
-        // Update fields
-        if (req.body.name != null) {
-            item.name = req.body.name;
-        }
-        if (req.body.description != null) {
-            item.description = req.body.description;
-        }
-        if (req.body.price != null) {
-            item.price = req.body.price;
-        }
-        if (req.body.category != null) {
-            item.category = req.body.category;
-        }
-        if (req.body.inStock != null) {
-            item.inStock = req.body.inStock;
-        }
-
-        // If an image is uploaded, handle that too
-        if (req.file) {
-            item.imageUrl = `/uploads/${req.file.filename}`;
-        }
-
-        // Save the updated item
-        const updatedItem = await item.save();
-        res.json(updatedItem);
-    } catch (err) {
-        res.status(400).json({ message: err.message });
-    }
-};
-
-// Delete an item by ID
-export const deleteItem = async (req, res) => {
-    try {
-        const item = await Item.findById(req.params.id);
-        if (!item) {
-            return res.status(404).json({ message: 'Item not found' });
-        }
-
-        // Delete the associated image file if it exists
-        if (item.imageUrl) {
-            const imagePath = path.join(__dirname, '..', item.imageUrl.substring(1));
-            if (fs.existsSync(imagePath)) {
-                fs.unlinkSync(imagePath);
-            }
-        }
-
-        await Item.findByIdAndDelete(req.params.id);
-        res.json({ message: 'Item deleted successfully' });
-    } catch (err) {
-        res.status(500).json({ message: err.message });
     }
 };
 
