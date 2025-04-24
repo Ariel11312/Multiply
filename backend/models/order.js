@@ -1,47 +1,46 @@
 import mongoose from "mongoose";
 
-import mongoose from "mongoose";
-// Order Schema
+const orderItemSchema = new mongoose.Schema({
+  productId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Product',
+    required: false
+  },
+  customerId: String,
+  name: String,
+  price: Number,
+  quantity: Number,
+  image: String
+});
+
 const orderSchema = new mongoose.Schema({
-    customer: {
-      name: { type: String, required: true },
-      email: { type: String, required: true },
-      address: { type: String, required: true }
-    },
-    products: [{
-      productId: { 
-        type: mongoose.Schema.Types.ObjectId, 
-        ref: 'Product',
-        required: true
-      },
-      quantity: { 
-        type: Number, 
-        required: true,
-        min: 1
-      },
-      price: { 
-        type: Number, 
-        required: true 
-      }
-    }],
-    totalAmount: {
-      type: Number,
-      required: true
-    },
-    status: {
-      type: String,
-      enum: ['pending', 'processing', 'shipped', 'delivered', 'cancelled'],
-      default: 'pending'
-    },
-    paymentMethod: {
-      type: String,
-      required: true
-    },
-    createdAt: {
-      type: Date,
-      default: Date.now
-    }
-  });
-  
-  // Order Model
+  customerId: { type:String, required: false },
+  email: { type: String, required: false },
+  name: { type: String, required: false },
+  phone: { type: String, required: false },
+  address: { type: String, required: false },
+  region: { type: String, required: false },
+  province: { type: String, required: false },
+  city: { type: String, required: false },
+  barangay: { type: String, required: false },
+  postalCode: { type: String },
+  landmark: { type: String },
+  paymentMethod: { type: String, required: false },
+
+  // Names for display
+  region: { type: String },
+  province: { type: String },
+  city: { type: String },
+  barangay: { type: String },
+
+  // Cart items
+  orderItems: [orderItemSchema],
+  status: {
+    type: String,
+    enum: ['pending', 'processing', 'shipped', 'delivered', 'cancelled'],
+    default: 'pending'
+  },
+  // Optional fields like createdAt/updatedAt
+}, { timestamps: false });
+
 export const Order = mongoose.model('Order', orderSchema);

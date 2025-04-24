@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import logo from "../../assets/MULTIPLY-1 remove back.png";
 import avatar from "../../assets/avatar.png";
 import { useLocation, useNavigate } from "react-router-dom";
@@ -15,184 +15,6 @@ import { checkAuth } from "../../middleware/auth";
 import { checkMember } from "../../middleware/member";
 
 // CartModal Component
-const CartModal = ({
-  isOpen,
-  onClose,
-  cartItems,
-  removeFromCart,
-  updateQuantity,
-  clearCart,
-}) => {
-  if (!isOpen) return null;
-
-  const calculateTotalPrice = () => {
-    return cartItems
-      .reduce((total, item) => total + item.price * item.quantity, 0)
-      .toFixed(2);
-  };
-
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center">
-      {/* Backdrop */}
-      <div
-        className="absolute inset-0 bg-black bg-opacity-50"
-        onClick={onClose}
-      ></div>
-
-      {/* Modal */}
-      <div className="relative bg-white rounded-lg shadow-xl max-w-md w-full max-h-[80vh] overflow-auto">
-        <div className="flex justify-between items-center border-b p-4">
-          <h2 className="text-xl font-bold">Your Cart</h2>
-          <button
-            onClick={onClose}
-            className="text-gray-500 hover:text-gray-700"
-          >
-            <X className="h-6 w-6" />
-          </button>
-        </div>
-
-        {cartItems.length === 0 ? (
-          <div className="p-6 text-center space-y-4">
-            <p className="text-gray-500">Your cart is empty</p>
-            <div className="flex justify-center">
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                className="h-16 w-16 text-gray-300"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"
-                />
-              </svg>
-            </div>
-            <p className="text-gray-400">Add some products to your cart</p>
-            <button
-              onClick={onClose}
-              className="px-4 py-2 rounded-lg bg-green-700 text-white hover:bg-green-800"
-            >
-              Continue Shopping
-            </button>
-          </div>
-        ) : (
-          <>
-            <div className="p-4 space-y-4">
-              {cartItems.map((item) => (
-                <div
-                  key={item.id}
-                  className="flex items-center justify-between border-b pb-4"
-                >
-                  <div className="flex items-center space-x-3">
-                    {item.image ? (
-                      <img
-                        src={import.meta.env.VITE_API_URL + item.image}
-                        alt={item.name}
-                        className="w-16 h-16 object-cover rounded"
-                      />
-                    ) : (
-                      <div className="w-16 h-16 bg-gray-200 rounded flex items-center justify-center">
-                        <svg
-                          xmlns="http://www.w3.org/2000/svg"
-                          className="h-8 w-8 text-gray-400"
-                          fill="none"
-                          viewBox="0 0 24 24"
-                          stroke="currentColor"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
-                          />
-                        </svg>
-                      </div>
-                    )}
-                    <div>
-                      <h3 className="font-medium">
-                        {item.name || "Unnamed Product"}
-                      </h3>
-                      <p className="text-green-700 font-bold">
-                        ₱ {(item.price || 0).toFixed(2)}
-                      </p>
-                    </div>
-                  </div>
-
-                  <div className="flex items-center space-x-3">
-                    <div className="flex items-center border rounded">
-                      <button
-                        className="px-2 py-1 bg-gray-100"
-                        onClick={() =>
-                          updateQuantity(
-                            item.id,
-                            Math.max(1, item.quantity - 1)
-                          )
-                        }
-                      >
-                        -
-                      </button>
-                      <span className="px-3">{item.quantity}</span>
-                      <button
-                        className="px-2 py-1 bg-gray-100"
-                        onClick={() =>
-                          updateQuantity(item.id, item.quantity + 1)
-                        }
-                      >
-                        +
-                      </button>
-                    </div>
-
-                    <button
-                      onClick={() => removeFromCart(item.id)}
-                      className="text-red-500 hover:text-red-700"
-                    >
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        className="h-5 w-5"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        stroke="currentColor"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
-                        />
-                      </svg>
-                    </button>
-                  </div>
-                </div>
-              ))}
-            </div>
-
-            <div className="p-4 border-t">
-              <div className="flex justify-between font-bold mb-4">
-                <span>Total:</span>
-                <span>₱ {calculateTotalPrice()}</span>
-              </div>
-
-              <div className="flex space-x-2">
-                <button
-                  onClick={clearCart}
-                  className="flex-1 px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50"
-                >
-                  Clear Cart
-                </button>
-                <button className="flex-1 px-4 py-2 rounded-lg bg-green-700 text-white hover:bg-green-800">
-                  Checkout
-                </button>
-              </div>
-            </div>
-          </>
-        )}
-      </div>
-    </div>
-  );
-};
 
 // Navbar Component
 const Navbar = () => {
@@ -222,24 +44,27 @@ const Navbar = () => {
           credentials: "include",
         }
       );
-
+  
       if (!response.ok) {
         setCartQuantity(0);
         setCartItems([]);
         const errorData = await response.json();
         throw new Error(errorData.message || "Failed to fetch cart");
       }
-
       const cartData = await response.json();
+      
       const formattedCartItems = cartData.items.map((item) => ({
-        _id: item.itemId,
+        _id: item.itemId._id, // This is the fix - using item.itemId._id instead of cartData.items._id
+        cartId: cartData._id,
         name: item.name,
         price: item.price,
         image: item.imageUrl,
         quantity: item.quantity,
       }));
+      
       setCartQuantity(cartData.items.length);
       setCartItems(formattedCartItems);
+    
       setCartUpdated((prev) => !prev);
     } catch (error) {
       console.error("Error fetching cart:", error);
@@ -247,26 +72,68 @@ const Navbar = () => {
     }
   };
 
-  const removeFromCart = (itemId) => {
-    setCartItems((prevItems) =>
-      prevItems.filter((item) => item._id !== itemId)
-    );
+
+
+  const updateQuantity = async (itemId, cartId) => {
+    try {
+      // Show what's being sent (for debugging)
+      console.log(`Decreasing quantity for item: ${itemId} in cart: ${cartId}`);
+      
+      // Update UI state immediately for better user experience
+      setCartUpdated((prev) => !prev);
+      
+      // Send request to backend
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/cart/decrease/${itemId}/${cartId}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json"
+        }
+        // No need to send in body what's already in URL
+      });
+      
+      if (!response.ok) {
+        throw new Error(`Server responded with ${response.status}`);
+      }
+      
+      const data = await response.json();
+      return data;
+    } catch (error) {
+      console.error("Failed to update item:", error);
+      // Consider showing an error message to the user
+    }
   };
 
-  const updateQuantity = (itemId, quantity) => {
-    setCartItems((prevItems) =>
-      prevItems.map((item) =>
-        item._id === itemId
-          ? { ...item, quantity: Math.max(1, quantity) }
-          : item
-      )
-    );
+  const updateQuantityIncrease = async (itemId, cartId) => {
+    try {
+      // Show what's being sent (for debugging)
+      console.log(`increasing quantity for item: ${itemId} in cart: ${cartId}`);
+      
+      // Update UI state immediately for better user experience
+      setCartUpdated((prev) => !prev);
+      
+      // Send request to backend
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/cart/increase/${itemId}/${cartId}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json"
+        }
+        // No need to send in body what's already in URL
+      });
+      
+      if (!response.ok) {
+        throw new Error(`Server responded with ${response.status}`);
+      }
+      
+      const data = await response.json();
+      return data;
+    } catch (error) {
+      console.error("Failed to update item:", error);
+      // Consider showing an error message to the user
+    }
   };
-
   const clearCart = () => {
     setCartItems([]);
   };
-
   const [authState, setAuthState] = useState({
     isAuthenticated: false,
     isCheckingAuth: true,
@@ -282,6 +149,8 @@ const Navbar = () => {
         return 2;
       case "/contact-us":
         return 3;
+      case "/my-purchase":
+        return 4;
       default:
         return 0;
     }
@@ -298,6 +167,8 @@ const Navbar = () => {
     navigate(path);
     setIsProfileMenuOpen(false);
   };
+
+
 
   const handleLogout = async () => {
     try {
@@ -364,6 +235,7 @@ const Navbar = () => {
                 >
                   Shop
                 </li>
+
                 {member === "Member" ? null : (
                   <li
                     className={`cursor-pointer transition-colors duration-200 hover:text-red-400 ${
@@ -381,6 +253,14 @@ const Navbar = () => {
                   onClick={() => handleNavigation("/contact-us")}
                 >
                   Contacts
+                </li>
+                <li
+                  className={`cursor-pointer transition-colors duration-200 hover:text-red-400 ${
+                    active === 4 ? "text-red-500" : ""
+                  }`}
+                  onClick={() => handleNavigation("/my-purchase")}
+                >
+                  My Purchase
                 </li>
               </ul>
             </div>
@@ -506,6 +386,14 @@ const Navbar = () => {
                 >
                   Shop
                 </li>
+                <li
+                  className={`cursor-pointer transition-colors duration-200 hover:text-red-400 ${
+                    active === 4 ? "text-red-500" : ""
+                  }`}
+                  onClick={() => handleNavigation("/my-purchase")}
+                >
+                  My Purchase
+                </li>
                 {member === "Member" ? null : (
                   <li
                     className={`cursor-pointer transition-colors duration-200 hover:text-red-400 ${
@@ -606,8 +494,9 @@ const Navbar = () => {
         isOpen={isCartOpen}
         onClose={() => setIsCartOpen(false)}
         cartItems={cartItems}
-        removeFromCart={removeFromCart}
+        setCartItems={setCartItems}
         updateQuantity={updateQuantity}
+        updateQuantityIncrease={updateQuantityIncrease}
         clearCart={clearCart}
       />
 
@@ -704,9 +593,215 @@ const Navbar = () => {
             </div>
           </div>
         </div>
+      
       )}
+      
     </>
   );
+  
 };
+const CartModal = ({
+  isOpen,
+  onClose,
+  cartItems,
+  updateQuantity,
+  updateQuantityIncrease,
+  clearCart,
+}) => {
+  if (!isOpen) return null;
+
+  const calculateTotalPrice = () => {
+    return cartItems
+      .reduce((total, item) => total + item.price * item.quantity, 0)
+      .toFixed(2);
+  };
+  const handleCheckout = () => {
+    window.location.href = "/checkout";
+    setIsProfileMenuOpen(false);
+  };
+  const removeFromCart = useCallback(async (itemId) => {
+    try {
+      const response = await fetch(
+        import.meta.env.VITE_API_URL + `/api/cart/items/`+itemId,
+        {
+          method: 'DELETE',
+          headers: { "Content-Type": "application/json" },
+          credentials: 'include',
+        }
+      );
+
+      const result = await response.json();
+      
+      if (response.ok) {
+        // Update local cart state
+        setCartUpdated((prev) => !prev);
+
+      } else {
+        console.error("Failed to remove item:", result);
+      }
+    } catch (error) {
+      console.error("Error removing item:", error);
+    }
+  });
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center">
+      {/* Backdrop */}
+      <div
+        className="absolute inset-0 bg-black bg-opacity-50"
+        onClick={onClose}
+      ></div>
+
+      {/* Modal */}
+      <div className="relative bg-white rounded-lg shadow-xl max-w-md w-full max-h-[80vh] overflow-auto">
+        <div className="flex justify-between items-center border-b p-4">
+          <h2 className="text-xl font-bold">Your Cart</h2>
+          <button
+            onClick={onClose}
+            className="text-gray-500 hover:text-gray-700"
+          >
+            <X className="h-6 w-6" />
+          </button>
+        </div>
+
+        {cartItems.length === 0 ? (
+          <div className="p-6 text-center space-y-4">
+            <p className="text-gray-500">Your cart is empty</p>
+            <div className="flex justify-center">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="h-16 w-16 text-gray-300"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"
+                />
+              </svg>
+            </div>
+            <p className="text-gray-400">Add some products to your cart</p>
+            <button
+              onClick={onClose}
+              className="px-4 py-2 rounded-lg bg-green-700 text-white hover:bg-green-800"
+            >
+              Continue Shopping
+            </button>
+          </div>
+        ) : (
+          <>
+          <div className="p-4 space-y-4">
+  {cartItems.map((item) => (
+    <div
+      key={item.id}
+      className="flex items-center justify-between border-b pb-4"
+    >
+      <div className="flex items-center space-x-3">
+        {item.image ? (
+          <img
+            src={import.meta.env.VITE_API_URL + item.image}
+            alt={item.name}
+            className="w-16 h-16 object-cover rounded"
+            loading="lazy"
+          />
+        ) : (
+          <div className="w-16 h-16 bg-gray-200 rounded flex items-center justify-center">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              className="h-8 w-8 text-gray-400"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
+              />
+            </svg>
+          </div>
+        )}
+        <div>
+          <h3 className="font-medium">
+            {item.name || "Unnamed Product"}
+          </h3>
+          <p className="text-green-700 font-bold">
+            ₱ {(item.price || 0).toFixed(2)}
+          </p>
+        </div>
+      </div>
+
+      <div className="flex items-center space-x-3">
+        <div className="flex items-center border rounded">
+          <button
+            className="px-2 py-1 bg-gray-100 hover:bg-gray-200 transition-colors"
+            onClick={() => updateQuantity(item._id,item.cartId)}
+            aria-label="Decrease quantity"
+          >
+            -
+          </button>
+          <span className="px-3">{item.quantity}</span>
+          <button
+            className="px-2 py-1 bg-gray-100 hover:bg-gray-200 transition-colors"
+            onClick={() => updateQuantityIncrease(item._id,item.cartId)}
+            aria-label="Increase quantity"
+          >
+            +
+          </button>
+        </div>
+        <button
+
+          onClick={() => removeFromCart(item._id)}
+          className="text-red-500 hover:text-red-700 transition-colors"
+          aria-label="Remove item"
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            className="h-5 w-5"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+            />
+          </svg>
+        </button>
+      </div>
+    </div>
+  ))}
+</div>
+
+<div className="p-4 border-t">
+  <div className="flex justify-between font-bold mb-4">
+    <span>Total:</span>
+    <span>₱ {calculateTotalPrice()}</span>
+  </div>
+
+  <div className="flex space-x-2">
+  
+    <button 
+      onClick={handleCheckout} 
+      className="flex-1 px-4 py-2 rounded-lg bg-green-700 text-white hover:bg-green-800 transition-colors"
+      disabled={cartItems.length === 0}
+    >
+      Checkout
+    </button>
+  </div>
+</div>
+          </>
+        )}
+      </div>
+    </div>
+  );
+};
+
 
 export default Navbar;

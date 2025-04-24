@@ -26,6 +26,8 @@ import EcommerceShop from "./components/user/Shop";
 import ReferralCode from "./components/user/ReferralCode";
 import Seatlist from "./components/member/SeatList";
 import AddToCart from "./components/user/AddToCart";
+import CheckOut from "./components/user/CheckOut";
+import PurchaseHistory from "./components/user/PurchaseHistory";
 
 const App = () => {
   const [authState, setAuthState] = useState({
@@ -190,6 +192,14 @@ const App = () => {
 
               <ReferralCode />
           }
+        />
+        <Route
+          path="/checkout"
+          element={<CheckOut />}
+        />
+        <Route
+          path="/my-purchase"
+          element={<PurchaseHistory />}
         />
 
         <Route

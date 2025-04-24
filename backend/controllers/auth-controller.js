@@ -296,7 +296,6 @@ export const checkAuth = async (request, response) => {
 
         // Find the user by ID
         const user = await User.findById(decoded.userId).select("-password"); // Exclude password
-
         if (!user) {
             return response.status(401).json({
                 status: 401

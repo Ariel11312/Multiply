@@ -97,7 +97,6 @@ export default function ItemPage() {
     }
   }, [showZoom, mainImage, item.images]);
   const location = useLocation();
-
   const queryParams = new URLSearchParams(location.search);
   const productId = queryParams.get('productId');
 
@@ -163,6 +162,37 @@ export default function ItemPage() {
       setShowModal(true); // Show success modal
       setTimeout(() => setShowModal(false), 3000); // Hide after 3 seconds
       
+    } catch (error) {
+      console.error("Error adding item to cart:", error.message);
+    } finally {
+      setIsAddingToCart(false);
+    }
+  };
+  const buynow = async () => {
+    if (!item._id || isAddingToCart) return;
+    
+    setIsAddingToCart(true);
+    
+    try {
+      const response = await fetch(import.meta.env.VITE_API_URL + `/api/cart/addcart`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({
+          itemId: item._id, 
+          imageUrl: item.images[mainImage],
+          quantity: quantity,
+          color: selectedColor
+        })
+      });
+  
+      if (!response.ok) {
+        throw new Error('Failed to add item to cart');
+      }
+      
+      setShowModal(true); // Show success modal
+      setTimeout(() => setShowModal(false), 3000); // Hide after 3 seconds
+      window.location.href = '/checkout'; // Redirect to checkout page
     } catch (error) {
       console.error("Error adding item to cart:", error.message);
     } finally {
@@ -390,6 +420,7 @@ export default function ItemPage() {
                     )}
                   </button>
                   <button 
+                  onClick={buynow}
                     className={`bg-green-700 text-white hover:bg-green-800 py-3 px-6 rounded-lg font-medium flex-1
                       ${!item.inStock ? 'opacity-50 cursor-not-allowed' : ''}`}
                     disabled={!item.inStock}

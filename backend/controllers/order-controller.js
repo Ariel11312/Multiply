@@ -1,110 +1,119 @@
-import { Order } from "../models/order";
+import { Order } from "../models/order.js";
+import jwt from "jsonwebtoken";
 
-const Order = mongoose.model('Order', orderSchema);
+/**
+ * Controller to handle placing a new order
+ * @param {Object} req - Express request object
+ * @param {Object} res - Express response object
+ */
 
-// Order Routes
-// GET all orders
-export const getAllOrders = async (req, res) => {
+
+export const userOrder = async (req, res) => {
   try {
-    const orders = await Order.find().populate('products.productId');
-    res.json(orders);
-  } catch (error) {
-    res.status(500).json({ message: error.message });
-  }
-};
-
-// GET order by ID
-export const getOrderById = async (req, res) => {
-  try {
-    const order = await Order.findById(req.params.id).populate('products.productId');
-    if (!order) {
-      return res.status(404).json({ message: 'Order not found' });
-    }
-    res.json(order);
-  } catch (error) {
-    res.status(500).json({ message: error.message });
-  }
-};
-
-// POST new order
-export const newOrder = async (req, res) => {
-  // Validate products and calculate total
-  try {
-    const productIds = req.body.products.map(item => item.productId);
-    const products = await Product.find({ _id: { $in: productIds } });
-    
-    if (products.length !== productIds.length) {
-      return res.status(400).json({ message: 'One or more products not found' });
-    }
-    
-    // Check stock and prepare order items
-    const orderProducts = [];
-    let totalAmount = 0;
-    
-    for (const item of req.body.products) {
-      const product = products.find(p => p._id.toString() === item.productId);
-      
-      if (product.stock < item.quantity) {
-        return res.status(400).json({ 
-          message: `Not enough stock for ${product.name}. Available: ${product.stock}`
-        });
+      const token = req.cookies.token;
+      if (!token) {
+          return res.status(401).json({
+              success: false,
+              message: 'Authentication token is missing.',
+          });
       }
+
+      const decoded = jwt.verify(token, process.env.JWT_SECRET);
+      const { userId } = decoded;
+
+      const userOrders = await Order.find({ customerId: userId });
+
+      return res.status(200).json(userOrders);
       
-      orderProducts.push({
-        productId: item.productId,
-        quantity: item.quantity,
-        price: product.price
+  } catch (error) {
+      console.error('Get order error:', error);
+      return res.status(500).json({ 
+          message: 'Failed to retrieve order',
+          error: error.message 
       });
-      
-      totalAmount += product.price * item.quantity;
-      
-      // Update product stock
-      product.stock -= item.quantity;
-      await product.save();
-    }
-    
-    // Create order
-    const order = new Order({
-      customer: req.body.customer,
-      products: orderProducts,
-      totalAmount,
-      paymentMethod: req.body.paymentMethod
+  }
+};
+
+
+export const placeOrder = async (req, res) => {
+  try {
+    const {
+      customerId,
+      email,
+      name,
+      phone,
+      address,
+      region,
+      province,
+      city,
+      barangay,
+      postalCode,
+      landmark,
+      paymentMethod,
+      regionName,
+      provinceName,
+      cityName,
+      barangayName,
+      orderItems
+    } = req.body;
+console.log('Received order data:', req.body);
+    // Validate required fields
+    // if (!customerId || !email || !name || !phone || !address || !orderItems || orderItems.length === 0) {
+    //   return res.status(400).json({ message: 'Missing required fields' });
+    // }
+
+    // Validate email format
+    // const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    // if (!emailRegex.test(email)) {
+    //   return res.status(400).json({ message: 'Invalid email format' });
+    // }
+
+    // Calculate order totals
+    const subtotal = orderItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+    const shippingFee = 150; // Example fixed shipping fee
+    const total = subtotal + shippingFee;
+
+    // Create a new order instance
+    const newOrder = new Order({
+      customerId,
+      email,
+      name,
+      phone,
+      address,
+      region,
+      province,
+      city,
+      barangay,
+      postalCode,
+      landmark,
+      paymentMethod,
+      regionName,
+      provinceName,
+      cityName,
+      barangayName,
+      orderItems,
+      subtotal,
+      shippingFee,
+      total,
+      status: 'pending',
+      orderDate: new Date()
     });
-    
-    const newOrder = await order.save();
-    res.status(201).json(newOrder);
+
+    // Save to database
+    const savedOrder = await newOrder.save();
+
+    res.status(201).json({ 
+      message: 'Order placed successfully', 
+      order: savedOrder 
+    });
   } catch (error) {
-    res.status(400).json({ message: error.message });
+    console.error('Error placing order:', error);
+    res.status(500).json({ 
+      message: 'Something went wrong', 
+      error: process.env.NODE_ENV === 'production' ? 'Server error' : error.message 
+    });
   }
 };
 
-// PUT update order status
-export const updateOrder = async (req, res) => {
-  try {
-    const order = await Order.findById(req.params.id);
-    if (!order) {
-      return res.status(404).json({ message: 'Order not found' });
-    }
-    
-    order.status = req.body.status;
-    const updatedOrder = await order.save();
-    res.json(updatedOrder);
-  } catch (error) {
-    res.status(400).json({ message: error.message });
-  }
-};
-
-// DELETE order
-export const deleteOrder = async (req, res) => {
-  try {
-    const order = await Order.findById(req.params.id);
-    if (!order) {
-      return res.status(404).json({ message: 'Order not found' });
-    }
-    
-    await order.remove();
-    res.json({ message: 'Order deleted successfully' });
-  } catch (error) {
-    res.status(500).json({ message: error.message });
-  }
-};
+// Using ES modules export as the import style suggests this is preferred
+export default { placeOrder };
