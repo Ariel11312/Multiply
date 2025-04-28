@@ -179,9 +179,9 @@ const Dashboard = () => {
     { title: "e-World - Philippines", unlockAmount: "5,000,000", availed: false },
     { title: "e-President",name:"Christian Albert Viceo", unlockAmount: "5,000,000", availed: false },
     { title: "e-Vice President",name:"Christian Albert Viceo", unlockAmount: "3,000,000", availed: false },
-    { title: "e-Senator", unlockAmount: "2,000,000", availed: false },
-    { title: "e-Governor", unlockAmount: "750,000", availed: false },
-    { title: "e-Mayor", unlockAmount: "200,000", availed: false },
+    { title: "e-Senator", unlockAmount: "1,500,000", availed: false },
+    { title: "e-Governor", unlockAmount: "700,000", availed: false },
+    { title: "e-Mayor", unlockAmount: "150,000", availed: false },
     { title: "e-Captain", unlockAmount: "25,000", availed: false }
   ]);
 
@@ -776,13 +776,26 @@ const Dashboard = () => {
 <div className="overflow-auto w-full h-80">
 <Seatlist/>
 </div>
-              {/* Unlock Button */}
+            {selectedSeat.title === "e-World - Philippines" || selectedSeat.title === "e-President" || selectedSeat.title === "e-Vice President" ? (
+              <div className="bg-yellow-50 p-3 rounded border border-yellow-200">
+                <h5 className="font-medium text-yellow-800 mb-2">
+                  Note:
+                </h5>
+                <p className="text-yellow-800">
+                  This special seat is owned by Mr. Christian Viceo.
+                </p>
+              </div>
+            ) : (
               <button
                 onClick={() => CreatePayment(selectedSeat)}
                 className="w-full py-2 bg-green-500 text-white rounded hover:bg-green-600"
               >
                 Unlock {selectedSeat.title} Seat
               </button>
+            )}
+
+              {/* Payment Button */}
+             
 
               {/* Close Button */}
               <button
