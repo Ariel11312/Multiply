@@ -74,9 +74,15 @@ const Membership = () => {
   if (memberType === "X5") memberAmount = 5000;
   if (memberType === "Crown") memberAmount = 15000;
   if (memberType === "Diamond") memberAmount = 750000;
+    useEffect(() => {
+    const storedType = localStorage.getItem("referralType"); // Get type from localStorage
+    
+    if (storedType) {
+      handlePackageSelect(storedType); // Auto-select if type exists
+    }
+  }, []);
   const handlePackageSelect = (packageType) => {
     setMemberType(packageType);
-    
     setTimeout(() => {
         const formElement = document.querySelector('form');
         if (formElement) {

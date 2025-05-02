@@ -10,6 +10,7 @@ const EnhancedReferralCard = () => {
   // Get the referral code from URL parameters or props
   const urlParams = new URLSearchParams(window.location.search);
   const referralCode = urlParams.get('referral') || "asdadsadsfhgadsfhadschgasd";
+  const referralType = urlParams.get('type') || "Default Type";
   
   // First API call to get member details based on referral code
    // Fetch Member Details when referralCode changes
@@ -31,6 +32,7 @@ useEffect(() => {
           // Check if the response has the expected structure with member object
           if (data.success && data.member) {
             setMemberDetails(data.member);
+            localStorage.setItem("referralType", referralType);
           } else {
             throw new Error("Invalid member data structure");
           }

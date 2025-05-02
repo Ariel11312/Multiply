@@ -20,7 +20,7 @@ const QRCodeGenerator = () => {
         <QRCodeCanvas
           value={referralLink}
           size={200}
-          bgColor="#ffffff"
+          bgColor="transparent"
           fgColor="#059669"
           level="H"
         />

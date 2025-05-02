@@ -18,7 +18,7 @@ const Navigation = () => {
   const navItems = [
     { icon: Home, label: "Home", path: "/" },
     { icon: Package, label: "Transactions", path: "/member-transactions " },
-    { icon: Users, label: "Customers", path: "/customers" },
+    { icon: Users, label: "4 Ways To Earn", path: "/earnings" },
     { icon: Settings, label: "Settings", path: "/settings" },
   ];
   const handleLogout = async () => {

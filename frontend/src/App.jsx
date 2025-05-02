@@ -28,6 +28,7 @@ import Seatlist from "./components/member/SeatList";
 import AddToCart from "./components/user/AddToCart";
 import CheckOut from "./components/user/CheckOut";
 import PurchaseHistory from "./components/user/PurchaseHistory";
+import Earnings from "./components/member/Earnings";
 
 const App = () => {
   const [authState, setAuthState] = useState({
@@ -229,6 +230,14 @@ const App = () => {
           element={
             <ProtectedRoute allowedRoles={["Member"]}>
               <MemberHome />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/earnings"
+          element={
+            <ProtectedRoute allowedRoles={["Member"]}>
+              <Earnings />
             </ProtectedRoute>
           }
         />

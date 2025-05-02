@@ -162,8 +162,19 @@ const Dashboard = () => {
 
   const formatAmount = (amount) => {
     if (amount == null) return "₱ 0.00";
-    return `₱ ${isVisible ? amount : "*".repeat(amount.toString().length)}`;
+  
+    if (!isVisible) {
+      return `₱ ${"*".repeat(amount.toLocaleString().length)}`;
+    }
+  
+    const formattedAmount = Number(amount).toLocaleString('en-PH', {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2
+    });
+  
+    return `₱ ${formattedAmount}`;
   };
+  
 
   const handleCopy = () => {
     const referralCode = memberData?.referralCode;
@@ -224,17 +235,18 @@ const Dashboard = () => {
     checkAuth(setAuthState);
     fetchReferrals(setReferralList, setReferralStats); // fetch referral data
   }, []);
-
+  
+  
   const HandleAvailModal = (seat) => {
     setSelectedSeat(seat);
     setAvailModal(true);
     localStorage.setItem("owner", seat.title)
   };
-
+  
   const CreatePayment = async (seat) => {
     setSelectedSeat(seat);
     const amount = parseInt(seat.unlockAmount.toString().replace(/,/g, ""), 10);
-
+    
     try {
       const response = await axios.post(
         import.meta.env.VITE_API_URL+"/api/paymongo/create-payment",
@@ -246,7 +258,7 @@ const Dashboard = () => {
           phone: "09123456789", // Optional
         }
       );
-
+      
       if (response.data.success) {
         setPaymentUrl(response.data.checkoutUrl); // Set the URL to redirect the user to PayMongo
         localStorage.setItem(
@@ -262,7 +274,7 @@ const Dashboard = () => {
       console.error("Payment creation error:", error);
     }
   };
-
+  
   const InfoModal = () => {
     if (!showModal) return null;
     return (
@@ -271,7 +283,7 @@ const Dashboard = () => {
           <button
             onClick={() => setShowModal(false)}
             className="absolute top-4 right-4 text-gray-500 hover:text-gray-700"
-          >
+            >
             <X size={24} />
           </button>
 
@@ -324,13 +336,25 @@ const Dashboard = () => {
           <button
             onClick={() => setShowModal(false)}
             className="mt-6 bg-green-500 text-white py-2 px-4 rounded hover:bg-green-600 w-full"
-          >
+            >
             Close
           </button>
         </div>
       </div>
     );
   };
+  useEffect(() => {
+    const storedSeat = localStorage.getItem("seat");
+    
+    if (storedSeat) {
+      const exampleSeat = {
+        title: storedSeat.replace(/"/g, ''), // Remove quotes if they exist
+        // ...other seat properties if needed
+      };
+      
+      HandleAvailModal(exampleSeat);
+    }
+  }, []); // Empty dependency array means it runs once on mount
   return (
     <>
       <Navbar />
@@ -799,7 +823,10 @@ const Dashboard = () => {
 
               {/* Close Button */}
               <button
-                onClick={() => setAvailModal(false)}
+ onClick={() => {
+  setAvailModal(false);
+  localStorage.removeItem("seat");
+}}
                 className="absolute top-2 right-4 text-gray-500 hover:text-gray-700"
               >
                 <X size={24} />
