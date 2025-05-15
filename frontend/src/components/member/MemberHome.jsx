@@ -65,7 +65,9 @@ const PodluckIcon = ({ availed }) => {
     </div>
   );
 };
-const topSowers = [
+
+
+  const topSowers = [
   { id: 1, name: "Christian Albert Viceo", referrals: 30, earnings: 150000 },
   { id: 2, name: "Christian Albert Viceo", referrals: 28, earnings: 140000 },
   { id: 3, name: "Christian Albert Viceo", referrals: 25, earnings: 125000 },
@@ -119,6 +121,9 @@ const Dashboard = () => {
   const [paymentUrl, setPaymentUrl] = useState("");
   const [error, setError] = useState("");
   const [totalCommission, setTotalCommission] = useState(0);
+  const [selectedPackage, setSelectedPackage] = useState(null);
+  const [packageModalOpen, setPackageModalOpen] = useState(false);
+  const [packageShowModal, setPackageShowModal] = useState(false);
   useEffect(() => {
     checkAuth(setAuthState);
   }, []);
@@ -156,10 +161,14 @@ const Dashboard = () => {
     Diamond: 0,
 
   });
+  
   const toggleVisibility = () => {
     setIsVisible(!isVisible);
   };
-
+  const HandlePackageAvailModal = (pkg) => {
+    setSelectedPackage(pkg);
+    setPackageModalOpen(true);
+  };
   const formatAmount = (amount) => {
     if (amount == null) return "₱ 0.00";
   
@@ -174,7 +183,44 @@ const Dashboard = () => {
   
     return `₱ ${formattedAmount}`;
   };
-  
+  const packages = [
+    { 
+      id: 1, 
+      name: "X1 Package", 
+      price: "500",
+      availed: memberData?.memberType?.includes("X1") || false
+    },
+    { 
+      id: 2, 
+      name: "X2 Package", 
+      price: "1,000",
+      availed: memberData?.memberType?.includes("X2") || false 
+    },
+    { 
+      id: 3, 
+      name: "X3 Package", 
+      price: "3,000",
+      availed: memberData?.memberType?.includes("X3") || false
+    },
+    { 
+      id: 4, 
+      name: "X5 Package", 
+      price: "5,000",
+      availed: memberData?.memberType?.includes("X5") || false
+    },
+    { 
+      id: 5, 
+      name: "Crown Package", 
+      price: "15,000",
+      availed: memberData?.memberType?.includes("Crown") || false
+    },
+    { 
+      id: 6, 
+      name: "Crown Diamond Package", 
+      price: '750,000',
+      availed: memberData?.memberType?.includes("Diamond") || false
+    },
+  ];
 
   const handleCopy = () => {
     const referralCode = memberData?.referralCode;
@@ -593,6 +639,41 @@ const Dashboard = () => {
                 ))}
               </CardContent>
             </Card>
+            {/* <Card>
+              <CardHeader>
+                <div className="flex justify-between items-center">
+                  <div className="text-xl font-semibold">Packages</div>
+                  <button
+                    onClick={() => setPackageShowModal(true)}
+                    className="text-gray-500 hover:text-gray-700"
+                  >
+                    <HelpCircle size={20} />
+                  </button>
+                </div>
+              </CardHeader>
+              <CardContent>
+                {packages.map((pkg, index) => (
+                  <div
+                    key={index}
+                    onClick={() => HandlePackageAvailModal(pkg)}
+                    className={`flex items-center mb-3 cursor-pointer p-2 rounded-lg hover:bg-zinc-300 ${
+                      !pkg.availed ? "opacity-60" : ""
+                    }`}
+                  >
+                    <div className="podluckIcon mr-3">
+                      <PodluckIcon availed={pkg.availed} />
+                    </div>
+                    <p className="text-gray-800">{ (pkg.name + " " + pkg.price  || "")}</p>
+
+                    {pkg.availed && (
+                      <div className="ml-auto">
+                        <CheckCircle size={16} className="text-green-500" />
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </CardContent>
+            </Card> */}
           </div>
         </div>
         <SevenLayer />
@@ -835,6 +916,78 @@ const Dashboard = () => {
           </div>
         </div>
       )}
+       {packageModalOpen && selectedPackage && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg w-full max-w-md mx-4">
+            <div className="p-4 border-b flex justify-between items-center">
+              <h3 className="text-lg font-semibold">Package Details</h3>
+              <button 
+                onClick={() => setPackageModalOpen(false)}
+                className="text-gray-500 hover:text-gray-700"
+              >
+                <X size={20} />
+              </button>
+            </div>
+            <div className="p-4">
+              <div className="flex items-center mb-4">
+                <div className="mr-3">
+                  <PodluckIcon availed={selectedPackage.availed} />
+                </div>
+                <div>
+                  <h4 className="font-medium text-lg">{selectedPackage.name}</h4>
+                  <p className="text-gray-600">{selectedPackage.price}</p>
+                </div>
+                {selectedPackage.availed && (
+                  <div className="ml-auto flex items-center text-green-500">
+                    <CheckCircle size={16} className="mr-1" />
+                    <span className="text-sm">Active</span>
+                  </div>
+                )}
+              </div>
+              
+              <div className="mt-6">
+                {selectedPackage.availed ? (
+                  <button className="w-full py-2 bg-gray-200 text-gray-800 rounded-md">
+                    Already Availed
+                  </button>
+                ) : (
+                  <button className="w-full py-2 bg-green-600 text-white rounded-md hover:bg-blue-700">
+                    Avail This Package
+                  </button>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Info Modal */}
+      {/* {packageShowModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg w-full max-w-md mx-4">
+            <div className="p-4 border-b flex justify-between items-center">
+              <h3 className="text-lg font-semibold">About Packages</h3>
+              <button 
+                onClick={() => setPackageShowModal(false)}
+                className="text-gray-500 hover:text-gray-700"
+              >
+                <X size={20} />
+              </button>
+            </div>
+            <div className="p-4">
+              <p className="text-gray-700 mb-4">
+                Our packages provide different levels of service and features.
+                Currently active packages are highlighted and marked with a green checkmark.
+              </p>
+              <p className="text-gray-700">
+                Click on any package to view its benefits and details.
+                Contact support if you need assistance selecting the right package for your needs.
+              </p>
+            </div>
+          </div>
+        </div>
+      )} */}
+
     </>
   );
 };

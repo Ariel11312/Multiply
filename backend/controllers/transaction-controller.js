@@ -58,152 +58,152 @@ export const GetAllTransaction = async (request, response) => {
   }
 };
 
-export const GoldenSeatsCommissions = async (request, response) => {
-  try {
-    const token = request.cookies.token;
-    if (!token) {
-      return response.status(401).json({
-        success: false,
-        message: "Authentication token is missing.",
-      });
-    }
+// export const GoldenSeatsCommissions = async (request, response) => {
+//   try {
+//     const token = request.cookies.token;
+//     if (!token) {
+//       return response.status(401).json({
+//         success: false,
+//         message: "Authentication token is missing.",
+//       });
+//     }
 
-    // Verify the token
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    const memberGoldenSeater = decoded.userId; // Extract userId from the token
-    const existingMember = await GoldenSeatOwner.findOne({
-      userId: memberGoldenSeater,
-    });
-    if (existingMember) {
-      const position = existingMember.position;
-      if (position === "e-Captain") {
+//     // Verify the token
+//     const decoded = jwt.verify(token, process.env.JWT_SECRET);
+//     const memberGoldenSeater = decoded.userId; // Extract userId from the token
+//     const existingMember = await GoldenSeatOwner.findOne({
+//       userId: memberGoldenSeater,
+//     });
+//     if (existingMember) {
+//       const position = existingMember.position;
+//       if (position === "e-Captain") {
 
-        const spot = existingMember.spot;
+//         const spot = existingMember.spot;
 
-        const goldenSeatersSpot = await goldenseats.find({
-          captain: spot,
-        });
+//         const goldenSeatersSpot = await goldenseats.find({
+//           captain: spot,
+//         });
 
-        // Summing up all commissions
-        const totalCommission = goldenSeatersSpot.reduce(
-          (sum, seat) => sum + (seat.commission || 0),
-          0
-        );
-        response
-          .status(200)
-          .json({
-            success: true,
-            totalCommission: totalCommission,
-            spot: spot,
-            position: position,
-          });
-      }
-      if (position === "e-Mayor") {
-        const spot = existingMember.spot;
+//         // Summing up all commissions
+//         const totalCommission = goldenSeatersSpot.reduce(
+//           (sum, seat) => sum + (seat.commission || 0),
+//           0
+//         );
+//         response
+//           .status(200)
+//           .json({
+//             success: true,
+//             totalCommission: totalCommission,
+//             spot: spot,
+//             position: position,
+//           });
+//       }
+//       if (position === "e-Mayor") {
+//         const spot = existingMember.spot;
 
-        const goldenSeatersSpot = await goldenseats.find({
-          mayor: spot,
-        });
-        console.log(goldenSeatersSpot.commission);
-        // Summing up all commissions
-        const totalCommission = goldenSeatersSpot.reduce(
-          (sum, seat) => sum + (seat.commission || 0),
-          0
-        );
-        response
-          .status(200)
-          .json({
-            success: true,
-            totalCommission: totalCommission,
-            spot: spot,
-            position: position,
-          });
-      }
-      if (position === "e-Governor") {
-        const spot = existingMember.spot;
+//         const goldenSeatersSpot = await goldenseats.find({
+//           mayor: spot,
+//         });
+//         console.log(goldenSeatersSpot.commission);
+//         // Summing up all commissions
+//         const totalCommission = goldenSeatersSpot.reduce(
+//           (sum, seat) => sum + (seat.commission || 0),
+//           0
+//         );
+//         response
+//           .status(200)
+//           .json({
+//             success: true,
+//             totalCommission: totalCommission,
+//             spot: spot,
+//             position: position,
+//           });
+//       }
+//       if (position === "e-Governor") {
+//         const spot = existingMember.spot;
   
-        const goldenSeatersSpot = await goldenseats.find({
-          governor: spot,
-        });
-        console.log(goldenSeatersSpot.commission);
-        // Summing up all commissions
-        const totalCommission = goldenSeatersSpot.reduce(
-          (sum, seat) => sum + (seat.commission || 0),
-          0
-        );
-        response
-          .status(200)
-          .json({
-            success: true,
-            totalCommission: totalCommission,
-            spot: spot,
-            position: position,
-          });
-      }
-      if (position === "e-Senator") {
-        const spot = existingMember.spot;
+//         const goldenSeatersSpot = await goldenseats.find({
+//           governor: spot,
+//         });
+//         console.log(goldenSeatersSpot.commission);
+//         // Summing up all commissions
+//         const totalCommission = goldenSeatersSpot.reduce(
+//           (sum, seat) => sum + (seat.commission || 0),
+//           0
+//         );
+//         response
+//           .status(200)
+//           .json({
+//             success: true,
+//             totalCommission: totalCommission,
+//             spot: spot,
+//             position: position,
+//           });
+//       }
+//       if (position === "e-Senator") {
+//         const spot = existingMember.spot;
   
-        const goldenSeatersSpot = await goldenseats.find({
-          senator: spot,
-        });
-        console.log(goldenSeatersSpot.commission);
-        // Summing up all commissions
-        const totalCommission = goldenSeatersSpot.reduce(
-          (sum, seat) => sum + (seat.commission || 0),
-          0
-        );
-        response
-          .status(200)
-          .json({
-            success: true,
-            totalCommission: totalCommission,
-            spot: spot,
-            position: position,
-          });
-      }
-      if (position === "e-Vice President") {
-        const spot = "Philippines";
+//         const goldenSeatersSpot = await goldenseats.find({
+//           senator: spot,
+//         });
+//         console.log(goldenSeatersSpot.commission);
+//         // Summing up all commissions
+//         const totalCommission = goldenSeatersSpot.reduce(
+//           (sum, seat) => sum + (seat.commission || 0),
+//           0
+//         );
+//         response
+//           .status(200)
+//           .json({
+//             success: true,
+//             totalCommission: totalCommission,
+//             spot: spot,
+//             position: position,
+//           });
+//       }
+//       if (position === "e-Vice President") {
+//         const spot = "Philippines";
   
-        const goldenSeatersSpot = await goldenseats.find({
-            vicePresident: spot,
-        });
-        // Summing up all commissions
-        const totalCommission = goldenSeatersSpot.reduce(
-          (sum, seat) => sum + (seat.commission || 0),
-          0
-        );
-        response
-          .status(200)
-          .json({
-            success: true,
-            totalCommission: totalCommission,
-            spot: spot,
-            position: position,
-          });
-      }
-      if (position === "e-President") {
-        const spot = "Philippines";
+//         const goldenSeatersSpot = await goldenseats.find({
+//             vicePresident: spot,
+//         });
+//         // Summing up all commissions
+//         const totalCommission = goldenSeatersSpot.reduce(
+//           (sum, seat) => sum + (seat.commission || 0),
+//           0
+//         );
+//         response
+//           .status(200)
+//           .json({
+//             success: true,
+//             totalCommission: totalCommission,
+//             spot: spot,
+//             position: position,
+//           });
+//       }
+//       if (position === "e-President") {
+//         const spot = "Philippines";
   
-        const goldenSeatersSpot = await goldenseats.find({
-            President: spot,
-        });
-        // Summing up all commissions
-        const totalCommission = goldenSeatersSpot.reduce(
-          (sum, seat) => sum + (seat.commission || 0),
-          0
-        );
-        response
-          .status(200)
-          .json({
-            success: true,
-            totalCommission: totalCommission,
-            spot: spot,
-            position: position,
-          });
-      }
-    }
-  } catch (error) {}
-};
+//         const goldenSeatersSpot = await goldenseats.find({
+//             President: spot,
+//         });
+//         // Summing up all commissions
+//         const totalCommission = goldenSeatersSpot.reduce(
+//           (sum, seat) => sum + (seat.commission || 0),
+//           0
+//         );
+//         response
+//           .status(200)
+//           .json({
+//             success: true,
+//             totalCommission: totalCommission,
+//             spot: spot,
+//             position: position,
+//           });
+//       }
+//     }
+//   } catch (error) {}
+// };
 
 export const UpdateTransaction = async (req, res) => {
   try {

@@ -2,7 +2,6 @@ import { Member } from "../models/Member.js";
 import jwt from "jsonwebtoken";
 import { User } from "../models/user.js";
 import { MemberTransaction } from "../models/member-transactions.js";
-import { goldenseats } from "../models/golden-seats.js";
 import { GoldenSeatOwner } from "../models/golden-seat-owner.js";
 
 export const createMember = async (request, response) => {
@@ -82,36 +81,47 @@ export const createMember = async (request, response) => {
     const CrownTransactionId = `CRO${Date.now()}${Math.floor(
       Math.random() * 1000
     )}`;
+    const newMemberTransaction = new MemberTransaction({
+      memberId: memberID,
+      transactionId: DiamondTransactionId,
+      productName: `${memberType} Registration`,
+      productImage,
+      quantity: 1,
+      price: 0,
+      total: 0,
+      paymentMethod,
+      transactionDate,
+    });
+    await newMemberTransaction.save();
     if (memberType === "Diamond") {
       const referrer = await Member.findOne({ referralCode: referredBy });
       if (referrer) {
-        if(referrer.memberRoot) {
-        const savedMember = new Member({
-          memberID,
-          referralCode,
-          memberType,
-          addressNo,
-          region,
-          province,
-          city,
-          barangay,
-          userType,
-          role,
-          memberStatus,
-          paymentType,
-          referredBy,
-          memberDate,
-          memberRoot: DiamondTransactionId,
-          referredRoot: referrer.memberRoot,
-        });
-        savedMember.save();
-    }
-
+        if (referrer.memberRoot) {
+          const savedMember = new Member({
+            memberID,
+            referralCode,
+            memberType: [memberType],
+            addressNo,
+            region,
+            province,
+            city,
+            barangay,
+            userType,
+            role,
+            memberStatus,
+            paymentType,
+            referredBy,
+            memberDate,
+            memberRoot: DiamondTransactionId,
+            referredRoot: referrer.memberRoot,
+          });
+          savedMember.save();
+        }
       } else {
         const savedMember = new Member({
           memberID,
           referralCode,
-          memberType,
+          memberType: [memberType],
           addressNo,
           region,
           province,
@@ -124,7 +134,6 @@ export const createMember = async (request, response) => {
           referredBy,
           memberDate,
           memberRoot: DiamondTransactionId,
-
         });
         await savedMember.save();
       }
@@ -152,7 +161,8 @@ export const createMember = async (request, response) => {
 
         // Save the referral transaction
         await savedMember.save();
-      }if (referrer.memberRoot &&  referrer.referredRoot){
+      }
+      if (referrer.memberRoot && referrer.referredRoot) {
         const savedMember = new Member({
           memberID,
           referralCode,
@@ -179,7 +189,7 @@ export const createMember = async (request, response) => {
       const savedMember = new Member({
         memberID,
         referralCode,
-        memberType,
+        memberType: [memberType],
         addressNo,
         region,
         province,
@@ -263,7 +273,7 @@ export const createMember = async (request, response) => {
         const memberCount = await Member.countDocuments({
           referredRoot: referredMember.memberRoot,
         });
-        console.log(memberCount)
+        console.log(memberCount);
         if (memberCount > 1) {
           const indirect = new MemberTransaction({
             memberId: referredMember.memberID,
@@ -284,18 +294,18 @@ export const createMember = async (request, response) => {
         const referredMember = await Member.findOne({
           memberRoot: referrer.referredRoot,
         });
-          const indirect = new MemberTransaction({
-            memberId: referredMember.memberID,
-            transactionId: referralTransactionId,
-            productName: `Indirect Referral Bonus`,
-            productImage, // Ensure this variable is defined
-            quantity: 1,
-            price: 100000,
-            total: 100000,
-            paymentMethod, // Ensure this variable is defined
-            transactionDate: formattedDate, // Ensure this variable is defined
-          });
-          await indirect.save();
+        const indirect = new MemberTransaction({
+          memberId: referredMember.memberID,
+          transactionId: referralTransactionId,
+          productName: `Indirect Referral Bonus`,
+          productImage, // Ensure this variable is defined
+          quantity: 1,
+          price: 100000,
+          total: 100000,
+          paymentMethod, // Ensure this variable is defined
+          transactionDate: formattedDate, // Ensure this variable is defined
+        });
+        await indirect.save();
       }
 
       // Calculate referral earnings based on the memberType
@@ -432,11 +442,7 @@ export const updateMember = async (request, response) => {
     const { position } = request.body; // Extract position as a string
 
     // Find member by memberID and update memberType
-    const member = await Member.findOneAndUpdate(
-      { memberID: memberGoldenSeater }, // Find by memberID
-      { $set: { memberType: position } }, // Ensure memberType is a string
-      { new: true } // Return updated document
-    );
+   
 
     // If no member was found, return 404
     if (!member) {
@@ -573,6 +579,69 @@ export const memberReferral = async (request, response) => {
     response.status(500).json({
       success: false,
       message: "An error occurred while fetching member",
+    });
+  }
+};
+export const upgradePackage = async (req, res) => {
+  try {
+    // Extract token from authorization header
+    const token = req.cookies.token;
+
+    if (!token) {
+      return res.status(401).json({ success: false, message: 'No token provided' });
+    }
+
+    // Verify token and extract user data
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    if (!decoded || !decoded.userId) {
+      return res.status(401).json({ success: false, message: 'Invalid token' });
+    }
+
+    // Get package data from request body
+    const { name, price } = req.body;
+    
+    if (!name) {
+      return res.status(400).json({ success: false, message: 'Package name is required' });
+    }
+
+    // Find the member by memberID
+    const member = await Member.findOne({ memberID: decoded.userId });
+    
+    if (!member) {
+      return res.status(404).json({ success: false, message: 'Member not found' });
+    }
+
+    // Update member's package/type based on the purchase
+    if (!member.memberType.includes(name)) {
+      member.memberType.push(name);
+      
+      // You might want to update other fields based on the package
+      // For example, updating memberStatus or paymentType
+      
+      // Save the updated member
+      await member.save();
+      
+      // Return success response
+      return res.status(200).json({
+        success: true,
+        message: 'Package upgraded successfully',
+        data: {
+          memberID: member.memberID,
+          memberType: member.memberType
+        }
+      });
+    } else {
+      return res.status(400).json({
+        success: false,
+        message: 'Member already has this package'
+      });
+    }
+  } catch (error) {
+    console.error('Error upgrading package:', error);
+    return res.status(500).json({
+      success: false,
+      message: 'Internal server error',
+      error: error.message
     });
   }
 };

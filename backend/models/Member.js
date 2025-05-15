@@ -12,10 +12,9 @@ const MemberSchema = new mongoose.Schema({
         required: true,
     },
     memberType: {
-        type: String,
-        required: true,
+        type: [String],  // Array of strings
+        required: true
     },
-
     addressNo: {
         type: String,
         required: true,
