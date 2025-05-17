@@ -32,10 +32,6 @@ import SevenLayer from "./SevenLayer";
 import GoldenSeats from "./GoldenSeatsCommision";
 import Seatlist from "./SeatList";
 
-
-
-
-
 // const topProducts = [
 //   { id: 1, name: "X1 Package", sales: 150, revenue: 750000 },
 //   { id: 2, name: "X2 Package", sales: 120, revenue: 480000 },
@@ -66,8 +62,7 @@ const PodluckIcon = ({ availed }) => {
   );
 };
 
-
-  const topSowers = [
+const topSowers = [
   { id: 1, name: "Christian Albert Viceo", referrals: 30, earnings: 150000 },
   { id: 2, name: "Christian Albert Viceo", referrals: 28, earnings: 140000 },
   { id: 3, name: "Christian Albert Viceo", referrals: 25, earnings: 125000 },
@@ -159,9 +154,8 @@ const Dashboard = () => {
     X5: 0,
     Crown: 0,
     Diamond: 0,
-
   });
-  
+
   const toggleVisibility = () => {
     setIsVisible(!isVisible);
   };
@@ -171,54 +165,54 @@ const Dashboard = () => {
   };
   const formatAmount = (amount) => {
     if (amount == null) return "₱ 0.00";
-  
+
     if (!isVisible) {
       return `₱ ${"*".repeat(amount.toLocaleString().length)}`;
     }
-  
-    const formattedAmount = Number(amount).toLocaleString('en-PH', {
+
+    const formattedAmount = Number(amount).toLocaleString("en-PH", {
       minimumFractionDigits: 2,
-      maximumFractionDigits: 2
+      maximumFractionDigits: 2,
     });
-  
+
     return `₱ ${formattedAmount}`;
   };
   const packages = [
-    { 
-      id: 1, 
-      name: "X1 Package", 
+    {
+      id: 1,
+      name: "X1 Package",
       price: "500",
-      availed: memberData?.memberType?.includes("X1") || false
+      availed: memberData?.memberType?.includes("X1") || false,
     },
-    { 
-      id: 2, 
-      name: "X2 Package", 
+    {
+      id: 2,
+      name: "X2 Package",
       price: "1,000",
-      availed: memberData?.memberType?.includes("X2") || false 
+      availed: memberData?.memberType?.includes("X2") || false,
     },
-    { 
-      id: 3, 
-      name: "X3 Package", 
+    {
+      id: 3,
+      name: "X3 Package",
       price: "3,000",
-      availed: memberData?.memberType?.includes("X3") || false
+      availed: memberData?.memberType?.includes("X3") || false,
     },
-    { 
-      id: 4, 
-      name: "X5 Package", 
+    {
+      id: 4,
+      name: "X5 Package",
       price: "5,000",
-      availed: memberData?.memberType?.includes("X5") || false
+      availed: memberData?.memberType?.includes("X5") || false,
     },
-    { 
-      id: 5, 
-      name: "Crown Package", 
+    {
+      id: 5,
+      name: "Crown Package",
       price: "15,000",
-      availed: memberData?.memberType?.includes("Crown") || false
+      availed: memberData?.memberType?.includes("Crown") || false,
     },
-    { 
-      id: 6, 
-      name: "Crown Diamond Package", 
-      price: '750,000',
-      availed: memberData?.memberType?.includes("Diamond") || false
+    {
+      id: 6,
+      name: "Crown Diamond Package",
+      price: "750,000",
+      availed: memberData?.memberType?.includes("Diamond") || false,
     },
   ];
 
@@ -233,23 +227,40 @@ const Dashboard = () => {
   };
   const [positions, setPositions] = useState([]); // Store API positions
   const [seats, setSeats] = useState([
-    { title: "e-World - Philippines", unlockAmount: "5,000,000", availed: false },
-    { title: "e-President",name:"Christian Albert Viceo", unlockAmount: "5,000,000", availed: false },
-    { title: "e-Vice President",name:"Christian Albert Viceo", unlockAmount: "3,000,000", availed: false },
+    {
+      title: "e-World - Philippines",
+      unlockAmount: "5,000,000",
+      availed: false,
+    },
+    {
+      title: "e-President",
+      name: "Christian Albert Viceo",
+      unlockAmount: "5,000,000",
+      availed: false,
+    },
+    {
+      title: "e-Vice President",
+      name: "Christian Albert Viceo",
+      unlockAmount: "3,000,000",
+      availed: false,
+    },
     { title: "e-Senator", unlockAmount: "1,500,000", availed: false },
     { title: "e-Governor", unlockAmount: "700,000", availed: false },
     { title: "e-Mayor", unlockAmount: "150,000", availed: false },
-    { title: "e-Captain", unlockAmount: "25,000", availed: false }
+    { title: "e-Captain", unlockAmount: "25,000", availed: false },
   ]);
 
   useEffect(() => {
     async function fetchPositions() {
       try {
-        const response = await fetch(import.meta.env.VITE_API_URL + "/api/golden/goldenowner",{ 
-           method: "GET",
-          headers: { "Content-Type": "application/json" },
-          credentials: "include",
-        });
+        const response = await fetch(
+          import.meta.env.VITE_API_URL + "/api/golden/goldenowner",
+          {
+            method: "GET",
+            headers: { "Content-Type": "application/json" },
+            credentials: "include",
+          }
+        );
         const apiResponse = await response.json();
 
         if (!apiResponse.success) {
@@ -257,14 +268,16 @@ const Dashboard = () => {
           return;
         }
 
-        const ownedPositions = apiResponse.members.map(member => member.position);
+        const ownedPositions = apiResponse.members.map(
+          (member) => member.position
+        );
         setPositions(ownedPositions); // Update state with owned positions
 
         // Update seats based on owned positions
-        setSeats(prevSeats =>
-          prevSeats.map(seat => ({
+        setSeats((prevSeats) =>
+          prevSeats.map((seat) => ({
             ...seat,
-            availed: ownedPositions.includes(seat.title) // Unlock if owned
+            availed: ownedPositions.includes(seat.title), // Unlock if owned
           }))
         );
       } catch (error) {
@@ -274,28 +287,27 @@ const Dashboard = () => {
 
     fetchPositions();
   }, []);
-  
+
   useEffect(() => {
     checkMember(setMemberData);
     checkMemberTransaction(setMemberTransaction);
     checkAuth(setAuthState);
     fetchReferrals(setReferralList, setReferralStats); // fetch referral data
   }, []);
-  
-  
+
   const HandleAvailModal = (seat) => {
     setSelectedSeat(seat);
     setAvailModal(true);
-    localStorage.setItem("owner", seat.title)
+    localStorage.setItem("owner", seat.title);
   };
-  
+
   const CreatePayment = async (seat) => {
     setSelectedSeat(seat);
     const amount = parseInt(seat.unlockAmount.toString().replace(/,/g, ""), 10);
-    
+
     try {
       const response = await axios.post(
-        import.meta.env.VITE_API_URL+"/api/paymongo/create-payment",
+        import.meta.env.VITE_API_URL + "/api/paymongo/create-payment",
         {
           amount: amount,
           description: seat.title,
@@ -304,12 +316,15 @@ const Dashboard = () => {
           phone: "09123456789", // Optional
         }
       );
-      
+
       if (response.data.success) {
         setPaymentUrl(response.data.checkoutUrl); // Set the URL to redirect the user to PayMongo
         localStorage.setItem(
           "memberGoldenSeat",
-          JSON.stringify({ GoldenSeat: "success", position:selectedSeat.title })
+          JSON.stringify({
+            GoldenSeat: "success",
+            position: selectedSeat.title,
+          })
         );
         window.location.href = response.data.checkoutUrl; // Redirect to PayMongo checkout
       } else {
@@ -320,7 +335,7 @@ const Dashboard = () => {
       console.error("Payment creation error:", error);
     }
   };
-  
+
   const InfoModal = () => {
     if (!showModal) return null;
     return (
@@ -329,7 +344,7 @@ const Dashboard = () => {
           <button
             onClick={() => setShowModal(false)}
             className="absolute top-4 right-4 text-gray-500 hover:text-gray-700"
-            >
+          >
             <X size={24} />
           </button>
 
@@ -382,7 +397,7 @@ const Dashboard = () => {
           <button
             onClick={() => setShowModal(false)}
             className="mt-6 bg-green-500 text-white py-2 px-4 rounded hover:bg-green-600 w-full"
-            >
+          >
             Close
           </button>
         </div>
@@ -391,13 +406,13 @@ const Dashboard = () => {
   };
   useEffect(() => {
     const storedSeat = localStorage.getItem("seat");
-    
+
     if (storedSeat) {
       const exampleSeat = {
-        title: storedSeat.replace(/"/g, ''), // Remove quotes if they exist
+        title: storedSeat.replace(/"/g, ""), // Remove quotes if they exist
         // ...other seat properties if needed
       };
-      
+
       HandleAvailModal(exampleSeat);
     }
   }, []); // Empty dependency array means it runs once on mount
@@ -489,9 +504,13 @@ const Dashboard = () => {
                   <div className="space-y-3">
                     <div className="flex items-center gap-3">
                       <Users className="h-6 w-6 text-green-500" />
-                      <span className="text-sm text-gray-600">Crown Diamond</span>
+                      <span className="text-sm text-gray-600">
+                        Crown Diamond
+                      </span>
                     </div>
-                    <p className="text-2xl font-bold">{referralStats.Diamond}</p>
+                    <p className="text-2xl font-bold">
+                      {referralStats.Diamond}
+                    </p>
                   </div>
                   <div className="space-y-3">
                     <div className="flex items-center gap-3">
@@ -500,21 +519,22 @@ const Dashboard = () => {
                     </div>
                     <p className="text-2xl font-bold">{referralList.length}</p>
                   </div>
-                  <div className="space-y-3">
+                  <div className="space-y-3 col-span-3">
                     <div className="flex items-center gap-3">
                       <ShoppingCart className="h-6 w-6 text-purple-500" />
                       <span className="text-sm text-gray-600">
                         Product Availed
                       </span>
                     </div>
-                    <p className="text-2xl font-bold whitespace-nowrap">
-                      {memberData?.memberType || "N/A"}
+                    <p className="text-xl font-bold break-words">
+                      {memberData?.memberType
+                        ? `${memberData.memberType} , `
+                        : "N/A"}
                     </p>
                   </div>
                 </div>
               </CardContent>
             </Card>
-
             {/* Wallet Card */}
             <Card className="w-full h-full">
               <CardHeader className="pb-2">
@@ -534,10 +554,9 @@ const Dashboard = () => {
                     <div className="flex items-center gap-3">
                       <h2 className="text-3xl font-bold">
                         {formatAmount(
-                          totalCommission + (MemberTransaction?.total || 0) +
+                            (MemberTransaction?.total || 0) +
                             (isNaN(
                               parseFloat(localStorage.getItem("totalEarnings"))
-                            
                             )
                               ? 0
                               : parseFloat(
@@ -590,14 +609,16 @@ const Dashboard = () => {
                       </p>
                     </div>
                     <div className="space-y-1">
-    <GoldenSeats onCommissionChange={setTotalCommission} />
-  </div>
+                      <GoldenSeats onCommissionChange={setTotalCommission} />
+                    </div>
                   </div>
                   <div className="space-y-2">
                     <div>
                       <p className="text-sm text-gray-600">Total Earnings</p>
                       <p className="text-2xl font-bold text-green-600">
-                      {formatAmount((MemberTransaction?.total || 0) + totalCommission)}
+                        {formatAmount(
+                          (MemberTransaction?.total || 0)
+                        )}
                       </p>
                     </div>
                   </div>
@@ -628,7 +649,9 @@ const Dashboard = () => {
                     <div className="podluckIcon mr-3">
                       <PodluckIcon availed={seat.availed} />
                     </div>
-                    <p className="text-gray-800">{seat.title + " " + (seat.name || "")}</p>
+                    <p className="text-gray-800">
+                      {seat.title + " " + (seat.name || "")}
+                    </p>
 
                     {seat.availed && (
                       <div className="ml-auto">
@@ -877,37 +900,36 @@ const Dashboard = () => {
                   <li>Commissions for every member availed products</li>
                 </ul>
               </div>
-<h2>Select: {selectedSeat.title} Spot</h2>
-<div className="overflow-auto w-full h-80">
-<Seatlist/>
-</div>
-            {selectedSeat.title === "e-World - Philippines" || selectedSeat.title === "e-President" || selectedSeat.title === "e-Vice President" ? (
-              <div className="bg-yellow-50 p-3 rounded border border-yellow-200">
-                <h5 className="font-medium text-yellow-800 mb-2">
-                  Note:
-                </h5>
-                <p className="text-yellow-800">
-                  This special seat is owned by Mr. Christian Viceo.
-                </p>
+              <h2>Select: {selectedSeat.title} Spot</h2>
+              <div className="overflow-auto w-full h-80">
+                <Seatlist />
               </div>
-            ) : (
-              <button
-                onClick={() => CreatePayment(selectedSeat)}
-                className="w-full py-2 bg-green-500 text-white rounded hover:bg-green-600"
-              >
-                Unlock {selectedSeat.title} Seat
-              </button>
-            )}
+              {selectedSeat.title === "e-World - Philippines" ||
+              selectedSeat.title === "e-President" ||
+              selectedSeat.title === "e-Vice President" ? (
+                <div className="bg-yellow-50 p-3 rounded border border-yellow-200">
+                  <h5 className="font-medium text-yellow-800 mb-2">Note:</h5>
+                  <p className="text-yellow-800">
+                    This special seat is owned by Mr. Christian Viceo.
+                  </p>
+                </div>
+              ) : (
+                <button
+                  onClick={() => CreatePayment(selectedSeat)}
+                  className="w-full py-2 bg-green-500 text-white rounded hover:bg-green-600"
+                >
+                  Unlock {selectedSeat.title} Seat
+                </button>
+              )}
 
               {/* Payment Button */}
-             
 
               {/* Close Button */}
               <button
- onClick={() => {
-  setAvailModal(false);
-  localStorage.removeItem("seat");
-}}
+                onClick={() => {
+                  setAvailModal(false);
+                  localStorage.removeItem("seat");
+                }}
                 className="absolute top-2 right-4 text-gray-500 hover:text-gray-700"
               >
                 <X size={24} />
@@ -916,12 +938,12 @@ const Dashboard = () => {
           </div>
         </div>
       )}
-       {packageModalOpen && selectedPackage && (
+      {packageModalOpen && selectedPackage && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white rounded-lg w-full max-w-md mx-4">
             <div className="p-4 border-b flex justify-between items-center">
               <h3 className="text-lg font-semibold">Package Details</h3>
-              <button 
+              <button
                 onClick={() => setPackageModalOpen(false)}
                 className="text-gray-500 hover:text-gray-700"
               >
@@ -934,7 +956,9 @@ const Dashboard = () => {
                   <PodluckIcon availed={selectedPackage.availed} />
                 </div>
                 <div>
-                  <h4 className="font-medium text-lg">{selectedPackage.name}</h4>
+                  <h4 className="font-medium text-lg">
+                    {selectedPackage.name}
+                  </h4>
                   <p className="text-gray-600">{selectedPackage.price}</p>
                 </div>
                 {selectedPackage.availed && (
@@ -944,7 +968,7 @@ const Dashboard = () => {
                   </div>
                 )}
               </div>
-              
+
               <div className="mt-6">
                 {selectedPackage.availed ? (
                   <button className="w-full py-2 bg-gray-200 text-gray-800 rounded-md">
@@ -987,7 +1011,6 @@ const Dashboard = () => {
           </div>
         </div>
       )} */}
-
     </>
   );
 };

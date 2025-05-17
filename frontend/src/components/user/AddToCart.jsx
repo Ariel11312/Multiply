@@ -322,7 +322,7 @@ export default function ItemPage() {
               <div className="flex justify-between items-start">
                 <div>
                   <h1 className="text-2xl font-bold text-gray-800">{item.name}</h1>
-                  <div className="flex items-center mt-1">
+                  {/* <div className="flex items-center mt-1">
                     <div className="flex">
                       {[...Array(5)].map((_, i) => (
                         <Star 
@@ -337,25 +337,24 @@ export default function ItemPage() {
                     <span className="text-gray-500">{item.reviewCount} Reviews</span>
                     <span className="text-gray-500 mx-2">|</span>
                     <span className="text-green-600">Sold 1.2k</span>
-                  </div>
+                  </div> */}
                 </div>
               </div>
 
-              <div className="mt-4 bg-gray-50 p-4 rounded-lg">
-                <div className="flex items-baseline">
-                  <span className="text-3xl font-bold text-green-700">₱ {item.price}</span>
-                  {item.originalPrice && (
-                    <>
-                      <span className="text-gray-400 line-through ml-2">${item.originalPrice}</span>
-                      <span className="ml-2 bg-green-100 text-green-800 text-xs px-2 py-1 rounded">{item.discount}% OFF</span>
-                    </>
-                  )}
-                </div>
-              </div>
+<div className="mt-4 bg-gray-50 p-4 rounded-lg">
+  <div className="flex items-baseline">
+    <span className="text-3xl font-bold text-green-700">₱ {parseFloat(item.price).toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}</span>
+    {item.originalPrice && (
+      <>
+        <span className="text-gray-400 line-through ml-2">₱ {parseFloat(item.originalPrice).toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}</span>
+        <span className="ml-2 bg-green-100 text-green-800 text-xs px-2 py-1 rounded">{item.discount}% OFF</span>
+      </>
+    )}
+  </div>
+</div>
 
               <div className="mt-6">
                 <div className="mb-4">
-                  <span className="text-gray-700 block mb-2">Color:</span>
                   <div className="flex space-x-2">
                     {item.colors && item.colors.map(color => (
                       <button

@@ -3,6 +3,7 @@ import jwt from "jsonwebtoken";
 import { User } from "../models/user.js";
 import { MemberTransaction } from "../models/member-transactions.js";
 import { GoldenSeatOwner } from "../models/golden-seat-owner.js";
+import { goldenseats } from "../models/golden-seats.js";
 
 export const createMember = async (request, response) => {
   try {
@@ -439,18 +440,44 @@ export const updateMember = async (request, response) => {
     // Verify the token
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
     const memberGoldenSeater = decoded.userId; // Extract userId from the token
-    const { position } = request.body; // Extract position as a string
+    const { position, memberType } = request.body; // Extract position and memberType
 
-    // Find member by memberID and update memberType
-   
+    console.log("Looking for member with ID:", memberGoldenSeater);
+    
+    // Find member by memberID
+    const member = await Member.findOne({ memberID: memberGoldenSeater });
 
     // If no member was found, return 404
     if (!member) {
+      console.log("Member not found for memberID:", memberGoldenSeater);
       return response.status(404).json({
         success: false,
         message: "Member not found or unauthorized",
       });
     }
+
+    // Add new member type to the array if not already included
+    if (!member.memberType) {
+      // If memberType doesn't exist, initialize as array
+      member.memberType = [memberType];
+    } else if (Array.isArray(member.memberType)) {
+      // If already an array and doesn't include the new type, add it
+      if (!member.memberType.includes(memberType)) {
+        member.memberType.push(memberType);
+      }
+    } else {
+      // If it's a single value, convert to array
+      member.memberType = [member.memberType];
+      // Add new type if different
+      if (member.memberType[0] !== memberType) {
+        member.memberType.push(memberType);
+      }
+    }
+    
+    // Save the updates
+    await member.save();
+    console.log("Updated member types:", member.memberType);
+    
     const spot = request.body.spot;
     // Create a new GoldenSeatOwner document
     const createGoldenSeats = new GoldenSeatOwner({
@@ -471,7 +498,6 @@ export const updateMember = async (request, response) => {
   } catch (error) {
     console.error(`Error updating member: ${error.message}`);
     return response.status(500).json({
-      // Fixed: changed res to response
       success: false,
       message: "An error occurred while updating the member",
     });

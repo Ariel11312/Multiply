@@ -23,41 +23,51 @@ console.log("selectedSpot",selectedSpot);
     }
     processedRef.current = true;
 
-    try {
-      const isUpdate = goldenSeatData && goldenSeatData.GoldenSeat === "success";
-      const position = goldenSeatData?.position || ""; // Ensure position is a string
-      const spot = selectedSpot?.name || ""; // Ensure position is a string
-      const apiUrl = isUpdate
-        ? import.meta.env.VITE_API_URL+"/api/member/update-member"
-        : import.meta.env.VITE_API_URL+"/api/member/create-member";
+try {
+  const isUpdate = goldenSeatData && goldenSeatData.GoldenSeat === "success";
+  const position = goldenSeatData?.position || ""; // Ensure position is a string
+  const spot = selectedSpot?.name || ""; // Ensure spot is a string
+  const memberType = goldenSeatData?.position; // Add memberType for updating members
+  
+  console.log("Sending request with data:", { position, spot, memberType, isUpdate });
+  
+  const apiUrl = isUpdate
+    ? `${import.meta.env.VITE_API_URL}/api/member/update-member`
+    : `${import.meta.env.VITE_API_URL}/api/member/create-member`;
 
-      const method = isUpdate ? "PUT" : "POST";
+  console.log("Request URL:", apiUrl);
+  const method = isUpdate ? "PUT" : "POST";
 
-      const bodyData = isUpdate ? { position,spot } : JSON.parse(storedData);
+  // Include memberType in the request body when updating
+  const bodyData = isUpdate 
+    ? { position, spot, memberType } 
+    : JSON.parse(storedData);
 
-      const response = await fetch(apiUrl, {
-        method: method,
-        headers: {
-          "Content-Type": "application/json",
-        },
-        credentials: "include",
-        body: JSON.stringify(bodyData),
-      });
+  console.log("Sending request body:", bodyData);
 
-      const result = await response.json();
-      console.log("Server response:", result);
+  const response = await fetch(apiUrl, {
+    method: method,
+    headers: {
+      "Content-Type": "application/json",
+    },
+    credentials: "include",
+    body: JSON.stringify(bodyData),
+  });
 
-      if (response.ok) {
-        localStorage.removeItem("membershipData");
-        localStorage.removeItem("memberGoldenSeat");
-        localStorage.removeItem("referralCode");
-        
-        window.location.href = "/member";
-      } else {
-        processedRef.current = false; // Reset if failed
-        setError(result.message || "Request failed. Please try again.");
-      }
-    } catch (error) {
+  const result = await response.json();
+  console.log("Server response:", result);
+
+  if (response.ok) {
+    localStorage.removeItem("membershipData");
+    localStorage.removeItem("memberGoldenSeat");
+    localStorage.removeItem("referralCode");
+    
+    window.location.href = "/member";
+  } else {
+    processedRef.current = false; // Reset if failed
+    setError(result.message || "Request failed. Please try again.");
+  }
+} catch (error) {
       processedRef.current = false; // Reset if failed
       console.error("Error:", error);
       setError("An error occurred. Please try again.");

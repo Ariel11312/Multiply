@@ -276,7 +276,23 @@ const Seatlist = () => {
     );
     return;
   }
-  const handleConfirm = () => {
+const handleConfirm = async () => {
+  try {
+    setLoading(true);
+    
+    // First fetch current seat ownership data
+    const response = await fetch(`${import.meta.env.VITE_API_URL}/api/golden/golden-seat-owner`, {
+      method: 'GET',
+      headers: { "Content-Type": "application/json" },
+      credentials: 'include'
+    });
+
+    if (!response.ok) {
+      throw new Error("Failed to fetch seat ownership data");
+    }
+
+    const seatData = await response.json();
+    
     // Create the location object based on the selected values
     const locationData = {
       region: { code: selectedRegion, name: selectedRegionName },
@@ -285,53 +301,84 @@ const Seatlist = () => {
       barangay: { code: selectedBarangay, name: selectedBarangayName },
     };
 
-    // Also save specific location items based on position
-    if (position === "e-Senator" && selectedRegionName) {
-      localStorage.setItem(
-        "selectedSpot",
-        JSON.stringify({
-          code: selectedRegion,
-          name: selectedRegionName,
-        })
-      );
+    // Check if the selected spot is already occupied
+    const isOccupied = seatData.members?.some(member => {
+      if (position === "e-Senator") {
+        return member.position === position && member.spot === selectedRegionName;
+      } else if (position === "e-Governor") {
+        return member.position === position && member.spot === selectedProvinceName;
+      } else if (position === "e-Mayor") {
+        return member.position === position && member.spot === selectedCityName;
+      } else if (position === "e-Captain") {
+        return member.position === position && member.spot === selectedBarangayName;
+      }
+      return false;
+    });
+
+    if (isOccupied) {
+      alert("This position is already occupied for the selected location");
+      return;
     }
-    if (position === "e-World - Philippines") {
-      localStorage.setItem(
-        "selectedSpot",
-        JSON.stringify({
-          code: "e-World - Philippines",
-          name: "e-World - Philippines",
-        })
-      );
+
+    // Save full location data to localStorage
+    localStorage.setItem("selectedLocation", JSON.stringify(locationData));
+
+    // Save position-specific spot if not already occupied
+    let spotData = {};
+    if (position === "e-World - Philippines" || position === "e-President" || position === "e-Vice President") {
+      spotData = {
+        code: "",
+        name: "Philippines"
+      };
+    } else if (position === "e-Senator" && selectedRegionName) {
+      spotData = {
+        code: selectedRegion,
+        name: selectedRegionName
+      };
     } else if (position === "e-Governor" && selectedProvinceName) {
-      localStorage.setItem(
-        "selectedSpot",
-        JSON.stringify({
-          code: selectedProvince,
-          name: selectedProvinceName,
-        })
-      );
+      spotData = {
+        code: selectedProvince,
+        name: selectedProvinceName
+      };
     } else if (position === "e-Mayor" && selectedCityName) {
-      localStorage.setItem(
-        "selectedSpot",
-        JSON.stringify({
-          code: selectedCity,
-          name: selectedCityName,
-        })
-      );
+      spotData = {
+        code: selectedCity,
+        name: selectedCityName
+      };
     } else if (position === "e-Captain" && selectedBarangayName) {
-      localStorage.setItem(
-        "selectedSpot",
-        JSON.stringify({
-          code: selectedBarangay,
-          name: selectedBarangayName,
-        })
-      );
+      spotData = {
+        code: selectedBarangay,
+        name: selectedBarangayName
+      };
+    }
+
+    if (Object.keys(spotData).length > 0) {
+      localStorage.setItem("selectedSpot", JSON.stringify(spotData));
+    }
+
+    // Save to backend
+    const saveResponse = await fetch(`${import.meta.env.VITE_API_URL}/api/golden/golden-seat-owner`, {
+      method: 'POST',
+      headers: { "Content-Type": "application/json" },
+      credentials: 'include',
+      body: JSON.stringify({
+        position,
+        spot: spotData.name || selectedRegionName || selectedProvinceName || selectedCityName || selectedBarangayName
+      })
+    });
+
+    if (!saveResponse.ok) {
+      throw new Error("Failed to save seat assignment");
     }
 
     setConfirmed(true);
-  };
-
+  } catch (error) {
+    console.error("Confirmation error:", error);
+    setError(error.message);
+  } finally {
+    setLoading(false);
+  }
+};
   const goBack = () => {
     if (currentView === "province") {
       setCurrentView("region");

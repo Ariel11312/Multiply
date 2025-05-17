@@ -17,6 +17,23 @@ export const getAllGoldenSeaters = async (request, response) => {
         });
     }
 };
+
+export const getAllGoldenOwner = async (request, response) => {
+    try {
+        const members = await GoldenSeatOwner.find();
+        response.status(200).json({
+            success: true,
+            members
+        });
+    } catch (error) {
+        console.error(`Error fetching members: ${error.message}`);
+        response.status(500).json({
+            success: false,
+            message: "An error occurred while fetching members"
+        });
+    }
+};
+
 export const getGoldenSeatersById = async (request, response) => {
  const token = request.cookies.token;
     if (!token) {

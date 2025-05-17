@@ -246,14 +246,14 @@ const Navbar = () => {
                     Be a Member?
                   </li>
                 )}
-                <li
+                {/* <li
                   className={`cursor-pointer transition-colors duration-200 hover:text-red-400 ${
                     active === 3 ? "text-red-500" : ""
                   }`}
                   onClick={() => handleNavigation("/contact-us")}
                 >
                   Contacts
-                </li>
+                </li> */}
                 <li
                   className={`cursor-pointer transition-colors duration-200 hover:text-red-400 ${
                     active === 4 ? "text-red-500" : ""
@@ -404,14 +404,14 @@ const Navbar = () => {
                     Be a Member?
                   </li>
                 )}
-                <li
+                {/* <li
                   className={`cursor-pointer transition-colors duration-200 hover:text-red-400 ${
                     active === 3 ? "text-red-500" : ""
                   }`}
                   onClick={() => handleNavigation("/contact-us")}
                 >
                   Contacts
-                </li>
+                </li> */}
               </ul>
               <div className="mt-4 pt-4 border-t border-gray-100">
                 {authState.isAuthenticated ? (

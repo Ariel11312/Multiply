@@ -58,126 +58,224 @@ export const placeOrder = async (req, res) => {
       orderItems,
     } = req.body;
 
-    const referralMember = await Member.findOne({ memberID: customerId });
+    // Validate orderItems is an array before processing
+    if (!Array.isArray(orderItems) || orderItems.length === 0) {
+      return res.status(400).json({ message: 'Order items are required and must be an array' });
+    }
 
-    const goldenSeat = new goldenseats({
-      captain: referralMember.barangay,
-      mayor: referralMember.city,
-      governor: referralMember.province,
-      senator: referralMember.region,
-      vicePresident: "Philippines",
-      President: "Philippines",
-      commission: 10,
+    // Log order items properly
+    console.log("Processing order items:");
+    orderItems.forEach((item, index) => {
+      console.log(`Order Item ${index+1}: ${item.name}`);
     });
-    await goldenSeat.save();
 
-    const eSenatorPosition = referralMember.region;
-    const eSenator = await GoldenSeatOwner.findOne({
+    const referralMember = await Member.findOne({ memberID: customerId });
+    if (!referralMember) {
+      return res.status(404).json({ message: 'Referral member not found' });
+    }
+
+    // Process each order item
+    for (const item of orderItems) {
+      console.log(`Processing item: ${item.name}`);
+      let commissionGold = 0;
+      // Check for specific products to create golden seat with different commission values
+      if (item.name === "Cnergee 1200 Capsules") {
+        console.log("Creating golden seat for Cnergee 1200 Capsules purchase");
+        commissionGold = 250;
+        const goldenSeat = new goldenseats({
+          captain: referralMember.barangay,
+          mayor: referralMember.city,
+          governor: referralMember.province,
+          senator: referralMember.region,
+          vicePresident: "Philippines",
+          President: "Philippines",
+          commission: commissionGold,
+        });
+        await goldenSeat.save();
+
+        // Process commissions for all positions here
+        await processAllCommissions(referralMember, commissionGold);
+      } 
+      else if (item.name === "Cnergee 10 Capsules") {
+        console.log("Creating golden seat for Cnergee 10 Capsules purchase");
+        commissionGold = 10;
+        const goldenSeat = new goldenseats({
+          captain: referralMember.barangay,
+          mayor: referralMember.city,
+          governor: referralMember.province,
+          senator: referralMember.region,
+          vicePresident: "Philippines",
+          President: "Philippines",
+          commission: commissionGold,
+        });
+        await goldenSeat.save();
+        await processAllCommissions(referralMember, commissionGold);
+      }
+      else if (item.name === "Cnergee 600 Capsules") {
+        console.log("Creating golden seat for Cnergee 600 Capsules purchase");
+        commissionGold = 20;
+        const goldenSeat = new goldenseats({
+          captain: referralMember.barangay,
+          mayor: referralMember.city,
+          governor: referralMember.province,
+          senator: referralMember.region,
+          vicePresident: "Philippines",
+          President: "Philippines",
+          commission: commissionGold,
+        });
+        await goldenSeat.save();
+        await processAllCommissions(referralMember, commissionGold);
+      }
+    }
+    
+    // Helper function to process all commissions
+    async function processAllCommissions(referralMember, commissionGold) {
+      // E-Senator commission
+      const eSenatorPosition = referralMember.region;
+      const eSenator = await GoldenSeatOwner.findOne({
       position: "e-Senator",
       spot: eSenatorPosition,
-    });
-    const PositionTransactionCodeSenator =
-      "GOLD" + Math.random().toString(36).substring(2, 10).toUpperCase();
-    if (eSenator) {
+      });
+      
+      if (eSenator) {
+      const PositionTransactionCodeSenator =
+        "GOLD" + Math.random().toString(36).substring(2, 10).toUpperCase();
       const eSenatorId = eSenator.userId;
       console.log("e-Senator ID: " + eSenatorId);
       const saveSenatorCommission = new MemberTransaction({
         memberId: eSenatorId,
-        price: 10, // Example commission amount
-        total: 10, // Example commission amount
-        transactionDate: new Date().toLocaleString(), // Show only date and time
+        price: commissionGold,
+        total: commissionGold,
+        transactionDate: new Date().toLocaleString(),
         transactionId: PositionTransactionCodeSenator,
         productName: "E-Senator Commission",
       });
-      saveSenatorCommission.save();
-    }
-
-    const eGovernor = await GoldenSeatOwner.findOne({
+      await saveSenatorCommission.save();
+      }
+    
+      // E-Governor commission
+      const eGovernor = await GoldenSeatOwner.findOne({
       position: "e-Governor",
       spot: referralMember.province,
-    });
-    const PositionTransactionCodeGovernor =
-      "GOLD" + Math.random().toString(36).substring(2, 10).toUpperCase();
-    if (eGovernor) {
+      });
+      
+      if (eGovernor) {
+      const PositionTransactionCodeGovernor =
+        "GOLD" + Math.random().toString(36).substring(2, 10).toUpperCase();
       const eGovernorId = eGovernor.userId;
       console.log("e-Governor ID: " + eGovernorId);
       const saveGovernorCommission = new MemberTransaction({
         memberId: eGovernorId,
-        price: 10, // Example commission amount
-        total: 10, // Example commission amount
-        transactionDate: new Date().toLocaleString(), // Show only date and time
+        price: commissionGold,
+        total: commissionGold,
+        transactionDate: new Date().toLocaleString(),
         transactionId: PositionTransactionCodeGovernor,
         productName: "E-Governor Commission",
       });
-      saveGovernorCommission.save();
-    }
-
-    const eMayor = await GoldenSeatOwner.findOne({
+      await saveGovernorCommission.save();
+      }
+    
+      // E-Mayor commission
+      const eMayor = await GoldenSeatOwner.findOne({
       position: "e-Mayor",
       spot: referralMember.city,
-    });
-    const PositionTransactionCodeMayor =
-      "GOLD" + Math.random().toString(36).substring(2, 10).toUpperCase();
-    if (eMayor) {
+      });
+      
+      if (eMayor) {
+      const PositionTransactionCodeMayor =
+        "GOLD" + Math.random().toString(36).substring(2, 10).toUpperCase();
       const eMayorId = eMayor.userId;
       console.log("e-Mayor ID: " + eMayorId);
       const saveMayorCommission = new MemberTransaction({
         memberId: eMayorId,
-        price: 10, // Example commission amount
-        total: 10, // Example commission amount
-        transactionDate: new Date().toLocaleString(), // Show only date and time
+        price: commissionGold,
+        total: commissionGold,
+        transactionDate: new Date().toLocaleString(),
         transactionId: PositionTransactionCodeMayor,
         productName: "E-Mayor Commission",
       });
-      saveMayorCommission.save();
-    }
-
-    const eCaptain = await GoldenSeatOwner.findOne({
+      await saveMayorCommission.save();
+      }
+    
+      // E-Captain commission
+      const eCaptain = await GoldenSeatOwner.findOne({
       position: "e-Captain",
       spot: referralMember.barangay,
-    });
-    const PositionTransactionCodeCaptain =
-      "GOLD" + Math.random().toString(36).substring(2, 10).toUpperCase();
-    if (eCaptain) {
+      });
+      
+      if (eCaptain) {
+      const PositionTransactionCodeCaptain =
+        "GOLD" + Math.random().toString(36).substring(2, 10).toUpperCase();
       const eCaptainId = eCaptain.userId;
       console.log("e-Captain ID: " + eCaptainId);
       const saveCaptainCommission = new MemberTransaction({
         memberId: eCaptainId,
-        price: 10, // Example commission amount
-        total: 10, // Example commission amount
-        transactionDate: new Date().toLocaleString(), // Show only date and time
+        price: commissionGold,
+        total: commissionGold,
+        transactionDate: new Date().toLocaleString(),
         transactionId: PositionTransactionCodeCaptain,
         productName: "E-Captain Commission",
       });
-      saveCaptainCommission.save();
-    }
-    // Generate a random 8-letter code starting with "RE"
-    const transactionCode =
-      "RE" + Math.random().toString(36).substring(2, 10).toUpperCase();
-    if (referralMember) {
+      await saveCaptainCommission.save();
+      }
+      
+      // Referral commission
+      if (referralMember) {
+      const transactionCode =
+        "RE" + Math.random().toString(36).substring(2, 10).toUpperCase();
       const ref = referralMember.referredBy;
-      console.log(ref);
-      const referralPerson = await Member.findOne({ referralCode: ref });
-      const saveCommission = new MemberTransaction({
-        memberId: referralPerson.memberID,
-        price: 10, // Example commission amount
-        total: 10, // Example commission amount
-        transactionDate: new Date().toLocaleString(), // Show only date and time
-        transactionId: transactionCode,
-        productName: "Re-Purchase Commission",
-      });
-      saveCommission.save();
-      //     }
+      console.log("Referral: " + ref);
+      
+      if (ref) {
 
-      // Validate required fields
-      // if (!customerId || !email || !name || !phone || !address || !orderItems || orderItems.length === 0) {
-      //   return res.status(400).json({ message: 'Missing required fields' });
-      // }
-
-      // Validate email format
-      // const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-      // if (!emailRegex.test(email)) {
-      //   return res.status(400).json({ message: 'Invalid email format' });
+        const referralPerson = await Member.findOne({ referralCode: ref });
+        console.log("Referral Person: " + referralPerson.memberType);
+        if (referralPerson && referralPerson.memberType && referralPerson.memberType.includes("X1")) {
+        const saveCommission = new MemberTransaction({
+          memberId: referralPerson.memberID,
+          price:3,
+          total: 3,
+          transactionDate: new Date().toLocaleString(),
+          transactionId: transactionCode,
+          productName: "Re-Purchase Commission",
+        });
+        await saveCommission.save();
+        }
+        if (referralPerson && referralPerson.memberType && referralPerson.memberType.includes("X2")) {
+        const saveCommission = new MemberTransaction({
+          memberId: referralPerson.memberID,
+          price:6,
+          total: 6,
+          transactionDate: new Date().toLocaleString(),
+          transactionId: transactionCode,
+          productName: "Re-Purchase Commission",
+        });
+        await saveCommission.save();
+        }
+        if (referralPerson && referralPerson.memberType && referralPerson.memberType.includes("X3")) {
+        const saveCommission = new MemberTransaction({
+          memberId: referralPerson.memberID,
+          price:7,
+          total: 7,
+          transactionDate: new Date().toLocaleString(),
+          transactionId: transactionCode,
+          productName: "Re-Purchase Commission",
+        });
+        await saveCommission.save();
+        }
+        if (referralPerson && referralPerson.memberType && referralPerson.memberType.includes("X5")) {
+        const saveCommission = new MemberTransaction({
+          memberId: referralPerson.memberID,
+          price:9,
+          total: 9,
+          transactionDate: new Date().toLocaleString(),
+          transactionId: transactionCode,
+          productName: "Re-Purchase Commission",
+        });
+        await saveCommission.save();
+        }
+      }
+      }
     }
 
     // Calculate order totals
@@ -230,6 +328,5 @@ export const placeOrder = async (req, res) => {
     });
   }
 };
-
 // Using ES modules export as the import style suggests this is preferred
 export default { placeOrder };

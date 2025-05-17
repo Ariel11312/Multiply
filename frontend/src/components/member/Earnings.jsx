@@ -109,16 +109,16 @@ const DirectSellingCards = () => {
         "golden seaters will earn commission for every repeat purchases",
       ],
       subPackages: [
-        { name: "X1 Package", price: "500", packageType: "X1" },
-        { name: "X2 Package", price: "2,000", packageType: "X2" },
-        { name: "X3 Package", price: "3,000", packageType: "X3" },
-        { name: "X5 Package", price: "5,000" , packageType: "X5" },
+        { name: "X1", price: "500", packageType: "X1" },
+        { name: "X2", price: "2,000", packageType: "X2" },
+        { name: "X3", price: "3,000", packageType: "X3" },
+        { name: "X5", price: "5,000" , packageType: "X5" },
       ],
       getReferralLink: (referralCode, subPackage) =>
         referralCode && subPackage
           ? `${
               import.meta.env.VITE_URL
-            }/referral-verification?referral=${referralCode}&type=PassiveIncome&package=${subPackage}`
+            }/referral-verification?referral=${referralCode}&type=${subPackage}`
           : "",
     },
     // 4. Golden Seats

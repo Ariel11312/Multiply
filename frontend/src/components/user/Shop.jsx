@@ -287,7 +287,7 @@ const EcommerceShop = () => {
               </div>
               <h3 className="font-medium text-sm md:text-base line-clamp-2">{product.name}</h3>
               <div className="flex justify-between items-center mt-2">
-                <p className="font-bold">₱ {parseFloat(product.price).toFixed(2)}</p>
+₱ {parseFloat(product.price).toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}
                 
               </div>
             </div>
