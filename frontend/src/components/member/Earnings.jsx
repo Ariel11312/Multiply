@@ -48,7 +48,7 @@ const DirectSellingCards = () => {
     {
       id: 1,
       title: "DIRECT SELLING",
-      price: "15K",
+      price: "15,000",
       icon: <Crown className="w-10 h-10 text-yellow-600" />,
       color: "from-yellow-500 to-yellow-300",
       hoverColor: "from-yellow-600 to-yellow-400",
@@ -72,7 +72,7 @@ const DirectSellingCards = () => {
       id: 3,
       title: "SUPER DIRECT SELLING",
       subtitle: "Crown Diamond Package",
-      price: "750K",
+      price: "750,000",
       icon: <Diamond className="w-12 h-12 text-blue-500" />,
       color: "from-blue-500 to-blue-400",
       hoverColor: "from-blue-600 to-blue-500",
