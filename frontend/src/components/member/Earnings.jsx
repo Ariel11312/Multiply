@@ -10,6 +10,7 @@ import {
   Award,
 } from "lucide-react";
 import Navbar from "../member/Navbar";
+import axios from "axios";
 
 const DirectSellingCards = () => {
   const [openModal, setOpenModal] = useState(null);
@@ -18,7 +19,7 @@ const DirectSellingCards = () => {
   const [showModal, setShowModal] = useState(false);
   const [selectedSeat, setSelectedSeat] = useState(null);
   const [hoveredCard, setHoveredCard] = useState(null);
-
+ const [paymentUrl, setPaymentUrl] = useState("");
   useEffect(() => {
     checkMember(setMemberData);
   }, []);
@@ -78,7 +79,7 @@ const DirectSellingCards = () => {
       bgColor: "bg-gradient-to-r from-blue-500 to-blue-400",
       borderColor: "border-blue-300",
       shadowColor: "shadow-blue-200",
-        packageType: "Diamond",
+      packageType: "Diamond",
       features: [
         "get 250,000 cash back for every crown diamond",
         "get 100,000 cash back for every crown diamond indirect referral",
@@ -112,7 +113,7 @@ const DirectSellingCards = () => {
         { name: "X1", price: "500", packageType: "X1" },
         { name: "X2", price: "2,000", packageType: "X2" },
         { name: "X3", price: "3,000", packageType: "X3" },
-        { name: "X5", price: "5,000" , packageType: "X5" },
+        { name: "X5", price: "5,000", packageType: "X5" },
       ],
       getReferralLink: (referralCode, subPackage) =>
         referralCode && subPackage
@@ -152,34 +153,42 @@ const DirectSellingCards = () => {
   const handleSubPackageSelect = (subPackage) => {
     setSelectedPackage(subPackage);
   };
-const handlePackage = (name, price) => {
-  const packageData = {
-    name: name,
-    price: price,
-  };
-  console.log("Package Data:", packageData);
-  fetch(`${import.meta.env.VITE_URL}/api/member/upgrade`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify(packageData),
-    credentials: "include"
-  })
-  .then((response) => response.json())
-  .then((data) => {
-    if (data.success) {
-      alert("Package upgraded successfully!");
-      window.location.reload();
-    } else {
-      alert("Failed to upgrade package: " + (data.message || "Unknown error"));
+  const handlePackage = async (name, price) => {
+    const packageData = {
+      name: name,
+      price: price,
+    };
+    const cleanPrice = price.toString().replace(/,/g, "");
+    console.log("Package Data:", cleanPrice);
+    try {
+      const response = await axios.post(
+        import.meta.env.VITE_API_URL + "/api/paymongo/create-payment",
+        {
+          amount: cleanPrice, // Convert to cents
+          description: packageData.name,
+          name: "Customer Name", // Optional, add real customer data if needed
+          email: "customer@example.com", // Optional
+          phone: "09123456789", // Optional
+        }
+      );
+
+      if (response.data.success) {
+        setPaymentUrl(response.data.checkoutUrl); // Set the URL to redirect the user to PayMongo
+        localStorage.setItem(
+          "packages",
+          JSON.stringify({
+            package: "success1",
+            name: packageData.name,
+          })
+        );
+        window.location.href = response.data.checkoutUrl; // Redirect to PayMongo checkout
+      } else {
+
+      }
+    } catch (error) {
+      console.error("Payment creation error:", error);
     }
-  })
-  .catch((error) => {
-    console.error("Error:", error);
-    alert("Error occurred during upgrade request");
-  });
-};
+  };
 
   const HandleAvailModal = (seat) => {
     setSelectedSeat(seat);
@@ -416,263 +425,283 @@ const handlePackage = (name, price) => {
           </div>
         </div>
 
-{/* Modals */}
-{packages.map((pkg) => {
-  let referralLink = null;
-  if (pkg.id === 2 && selectedPackage) {
-    referralLink = pkg.getReferralLink
-      ? pkg.getReferralLink(memberData?.referralCode, selectedPackage.name)
-      : null;
-  } else if (pkg.getReferralLink) {
-    referralLink = pkg.getReferralLink(memberData?.referralCode);
-  }
+        {/* Modals */}
+        {packages.map((pkg) => {
+          let referralLink = null;
+          if (pkg.id === 2 && selectedPackage) {
+            referralLink = pkg.getReferralLink
+              ? pkg.getReferralLink(
+                  memberData?.referralCode,
+                  selectedPackage.name
+                )
+              : null;
+          } else if (pkg.getReferralLink) {
+            referralLink = pkg.getReferralLink(memberData?.referralCode);
+          }
 
-  const isEligibleForPackage =
-    (pkg.id === 1 && memberData?.memberType?.includes("Crown")) ||
-    (pkg.id === 3 && memberData?.memberType?.includes("Diamond")) ||
-    (pkg.id === 2 && 
-      ["X1", "X2", "X3", "X5"].some(type => memberData?.memberType?.includes(type)) && 
-      selectedPackage);
+          const isEligibleForPackage =
+            (pkg.id === 1 && memberData?.memberType?.includes("Crown")) ||
+            (pkg.id === 3 && memberData?.memberType?.includes("Diamond")) ||
+            (pkg.id === 2 &&
+              ["X1", "X2", "X3", "X5"].some((type) =>
+                memberData?.memberType?.includes(type)
+              ) &&
+              selectedPackage);
 
-  return (
-    <div
-      key={pkg.id}
-      className={`fixed inset-0 z-50 flex items-center justify-center p-4 ${
-        openModal === pkg.id ? "block" : "hidden"
-      }`}
-    >
-      <div
-        className="absolute inset-0 bg-black bg-opacity-50"
-        onClick={closeModal}
-      ></div>
-      <div
-        className={`relative bg-white rounded-xl max-w-md w-full mx-auto overflow-hidden shadow-2xl z-10 border-2 ${pkg.borderColor}`}
-      >
-        {/* Header Section */}
-        <div className={`${pkg.bgColor} p-6 text-white`}>
-          <div className="flex justify-between items-center">
-            <div>
-              <h2 className="text-2xl font-bold">{pkg.title}</h2>
-              {pkg.subtitle && (
-                <p className="text-blue-100 mt-1">{pkg.subtitle}</p>
-              )}
-              {pkg.price && (
-                <p className="text-3xl font-bold mt-2">₱{pkg.price}</p>
-              )}
-              {selectedPackage && (
-                <p className="text-2xl font-bold mt-2">
-                  {selectedPackage.name} - ₱{selectedPackage.price}
-                </p>
-              )}
-            </div>
-            <div>{pkg.icon}</div>
-          </div>
-        </div>
-
-        {/* Package Selection (for package 2) */}
-        {openModal === pkg.id && pkg.id === 2 && !selectedPackage && (
-          <div className="p-6">
-            <h3 className="font-bold text-lg text-gray-800 mb-4">
-              Select a Package:
-            </h3>
-            <div className="grid grid-cols-2 gap-3">
-              {pkg.subPackages.map((subPkg, index) => (
-                <button
-                  key={index}
-                  onClick={() => handleSubPackageSelect(subPkg)}
-                  className="bg-green-100 hover:bg-green-200 text-green-800 font-medium py-3 px-4 rounded-lg transition duration-200 flex flex-col items-center transform hover:scale-105"
-                >
-                  <span className="font-bold">{subPkg.name}</span>
-                  <span className="mt-1">₱{subPkg.price}</span>
-                </button>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {/* Golden Seats (for package 4) */}
-        {openModal === pkg.id && pkg.id === 4 && (
-          <div className="p-6">
-            <div className="bg-white rounded-lg shadow">
-              <div className="p-4 border-b">
-                <div className="flex justify-between items-center">
-                  <div className="text-xl font-semibold text-amber-600">
-                    Golden Seats
-                  </div>
-                  <button
-                    onClick={() => setShowModal(true)}
-                    className="text-amber-500 hover:text-amber-700"
-                  >
-                    <HelpCircle size={20} />
-                  </button>
-                </div>
-              </div>
-              <div className="p-4">
-                {seats.map((seat, index) => (
-                  <div
-                    key={index}
-                    onClick={() => HandleAvailModal(seat)}
-                    className={`flex items-center mb-3 cursor-pointer p-3 rounded-lg hover:bg-amber-100 border border-transparent hover:border-amber-200 transition-all`}
-                  >
-                    <div className="mr-3 text-amber-500">
-                      {seat.icon}
-                    </div>
+          return (
+            <div
+              key={pkg.id}
+              className={`fixed inset-0 z-50 flex items-center justify-center p-4 ${
+                openModal === pkg.id ? "block" : "hidden"
+              }`}
+            >
+              <div
+                className="absolute inset-0 bg-black bg-opacity-50"
+                onClick={closeModal}
+              ></div>
+              <div
+                className={`relative bg-white rounded-xl max-w-md w-full mx-auto overflow-hidden shadow-2xl z-10 border-2 ${pkg.borderColor}`}
+              >
+                {/* Header Section */}
+                <div className={`${pkg.bgColor} p-6 text-white`}>
+                  <div className="flex justify-between items-center">
                     <div>
-                      <p className="text-gray-800 font-medium">
-                        {seat.title}
-                      </p>
-                      <p className="text-amber-600 text-sm">
-                        ₱{seat.price}
-                      </p>
+                      <h2 className="text-2xl font-bold">{pkg.title}</h2>
+                      {pkg.subtitle && (
+                        <p className="text-blue-100 mt-1">{pkg.subtitle}</p>
+                      )}
+                      {pkg.price && (
+                        <p className="text-3xl font-bold mt-2">₱{pkg.price}</p>
+                      )}
+                      {selectedPackage && (
+                        <p className="text-2xl font-bold mt-2">
+                          {selectedPackage.name} - ₱{selectedPackage.price}
+                        </p>
+                      )}
                     </div>
-                    {seat.availed && (
-                      <div className="ml-auto">
-                        <CheckCircle size={16} className="text-green-500" />
+                    <div>{pkg.icon}</div>
+                  </div>
+                </div>
+
+                {/* Package Selection (for package 2) */}
+                {openModal === pkg.id && pkg.id === 2 && !selectedPackage && (
+                  <div className="p-6">
+                    <h3 className="font-bold text-lg text-gray-800 mb-4">
+                      Select a Package:
+                    </h3>
+                    <div className="grid grid-cols-2 gap-3">
+                      {pkg.subPackages.map((subPkg, index) => (
+                        <button
+                          key={index}
+                          onClick={() => handleSubPackageSelect(subPkg)}
+                          className="bg-green-100 hover:bg-green-200 text-green-800 font-medium py-3 px-4 rounded-lg transition duration-200 flex flex-col items-center transform hover:scale-105"
+                        >
+                          <span className="font-bold">{subPkg.name}</span>
+                          <span className="mt-1">₱{subPkg.price}</span>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Golden Seats (for package 4) */}
+                {openModal === pkg.id && pkg.id === 4 && (
+                  <div className="p-6">
+                    <div className="bg-white rounded-lg shadow">
+                      <div className="p-4 border-b">
+                        <div className="flex justify-between items-center">
+                          <div className="text-xl font-semibold text-amber-600">
+                            Golden Seats
+                          </div>
+                          <button
+                            onClick={() => setShowModal(true)}
+                            className="text-amber-500 hover:text-amber-700"
+                          >
+                            <HelpCircle size={20} />
+                          </button>
+                        </div>
+                      </div>
+                      <div className="p-4">
+                        {seats.map((seat, index) => (
+                          <div
+                            key={index}
+                            onClick={() => HandleAvailModal(seat)}
+                            className={`flex items-center mb-3 cursor-pointer p-3 rounded-lg hover:bg-amber-100 border border-transparent hover:border-amber-200 transition-all`}
+                          >
+                            <div className="mr-3 text-amber-500">
+                              {seat.icon}
+                            </div>
+                            <div>
+                              <p className="text-gray-800 font-medium">
+                                {seat.title}
+                              </p>
+                              <p className="text-amber-600 text-sm">
+                                ₱{seat.price}
+                              </p>
+                            </div>
+                            {seat.availed && (
+                              <div className="ml-auto">
+                                <CheckCircle
+                                  size={16}
+                                  className="text-green-500"
+                                />
+                              </div>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* QR Code or Upgrade Message */}
+                {openModal === pkg.id && (
+                  <div className="p-6 flex flex-col items-center">
+                    {isEligibleForPackage && referralLink ? (
+                      <div
+                        className={`p-4 rounded-lg ${
+                          pkg.id === 1
+                            ? "bg-yellow-50"
+                            : pkg.id === 3
+                            ? "bg-blue-50"
+                            : "bg-green-50"
+                        }`}
+                      >
+                        <QRCodeCanvas
+                          value={referralLink}
+                          size={200}
+                          bgColor="transparent"
+                          fgColor={
+                            pkg.id === 1
+                              ? "#ca8a04"
+                              : pkg.id === 3
+                              ? "#3b82f6"
+                              : "#059669"
+                          }
+                          level="H"
+                          className="mb-4"
+                        />
+                        <p className="text-sm text-gray-500 text-center mt-2">
+                          Scan this QR code to join
+                        </p>
+                      </div>
+                    ) : (
+                      <div className="text-center">
+                        <p className="text-red-500 mb-4">
+                          You need to upgrade your membership to access this
+                          package.
+                        </p>
+                        {pkg.id !== 2 && (
+                          <button
+                            onClick={() =>
+                              handlePackage(pkg.packageType, pkg.price)
+                            }
+                            className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors"
+                          >
+                            Avail this Package
+                          </button>
+                        )}
+                        {pkg.id === 2 && (
+                          <>
+                            <p className="text-sm font-medium text-gray-700 mt-3 mb-2">
+                              Choose a sub-package:
+                            </p>
+                            <div className="space-y-3">
+                              {pkg.subPackages.map((subPkg, index) => (
+                                <div
+                                  key={index}
+                                  className="p-3 border rounded-lg hover:shadow-md transition-shadow"
+                                >
+                                  <div className="flex justify-between items-center">
+                                    <div>
+                                      <span className="font-medium text-gray-800">
+                                        {subPkg.name}
+                                      </span>
+                                      <span className="block text-green-600 font-bold">
+                                        ₱{subPkg.price}
+                                      </span>
+                                    </div>
+                                    <button
+                                      onClick={() =>
+                                        handlePackage(
+                                          subPkg.packageType,
+                                          subPkg.price
+                                        )
+                                      }
+                                      className={`px-4 py-2 text-white rounded-md 
+                bg-gradient-to-r ${pkg.color} hover:${pkg.hoverColor} 
+                transition-all transform hover:scale-105`}
+                                    >
+                                      Avail
+                                    </button>
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          </>
+                        )}
                       </div>
                     )}
                   </div>
-                ))}
+                )}
+
+                {/* Package Features */}
+                <div className="p-6">
+                  <h3 className="font-bold text-lg text-gray-800 mb-3">
+                    Package Includes:
+                  </h3>
+                  <ul className="space-y-2 mb-6">
+                    {pkg.features.map((feature, index) => (
+                      <li key={index} className="flex items-start">
+                        <svg
+                          className={`h-5 w-5 ${
+                            pkg.id === 1
+                              ? "text-yellow-500"
+                              : pkg.id === 3
+                              ? "text-blue-500"
+                              : pkg.id === 4
+                              ? "text-amber-500"
+                              : "text-green-500"
+                          } mr-2 mt-0.5`}
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          stroke="currentColor"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M5 13l4 4L19 7"
+                          />
+                        </svg>
+                        <span>{feature}</span>
+                      </li>
+                    ))}
+                  </ul>
+
+                  {/* Action Buttons */}
+                  <div className="flex space-x-4">
+                    <button
+                      onClick={closeModal}
+                      className="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-800 font-medium py-2 px-4 rounded-lg transition duration-200"
+                    >
+                      Close
+                    </button>
+
+                    {pkg.id === 2 && selectedPackage && (
+                      <button
+                        onClick={() => setSelectedPackage(null)}
+                        className="flex-1 bg-blue-500 hover:bg-blue-600 text-white font-medium py-2 px-4 rounded-lg transition duration-200"
+                      >
+                        Back
+                      </button>
+                    )}
+                  </div>
+                </div>
               </div>
             </div>
-          </div>
-        )}
-
-        {/* QR Code or Upgrade Message */}
-        {openModal === pkg.id && (
-          <div className="p-6 flex flex-col items-center">
-            {isEligibleForPackage && referralLink ? (
-              <div
-                className={`p-4 rounded-lg ${
-                  pkg.id === 1
-                    ? "bg-yellow-50"
-                    : pkg.id === 3
-                    ? "bg-blue-50"
-                    : "bg-green-50"
-                }`}
-              >
-                <QRCodeCanvas
-                  value={referralLink}
-                  size={200}
-                  bgColor="transparent"
-                  fgColor={
-                    pkg.id === 1
-                      ? "#ca8a04"
-                      : pkg.id === 3
-                      ? "#3b82f6"
-                      : "#059669"
-                  }
-                  level="H"
-                  className="mb-4"
-                />
-                <p className="text-sm text-gray-500 text-center mt-2">
-                  Scan this QR code to join
-                </p>
-              </div>
-            ) : (
-              <div className="text-center">
-                <p className="text-red-500 mb-4">
-                  You need to upgrade your membership to access this package.
-                </p>
-{pkg.id !== 2 && (
-  <button 
-    onClick={() => handlePackage(pkg.packageType, pkg.price)}
-    className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors"
-  >
-    Avail this Package
-  </button>
-)}
-{pkg.id === 2 && (
-  <>
-    <p className="text-sm font-medium text-gray-700 mt-3 mb-2">
-      Choose a sub-package:
-    </p>
-    <div className="space-y-3">
-      {pkg.subPackages.map((subPkg, index) => (
-        <div 
-          key={index} 
-          className="p-3 border rounded-lg hover:shadow-md transition-shadow"
-        >
-          <div className="flex justify-between items-center">
-            <div>
-              <span className="font-medium text-gray-800">{subPkg.name}</span>
-              <span className="block text-green-600 font-bold">₱{subPkg.price}</span>
-            </div>
-            <button
-              onClick={() => handlePackage(subPkg.packageType, subPkg.price)}
-              className={`px-4 py-2 text-white rounded-md 
-                bg-gradient-to-r ${pkg.color} hover:${pkg.hoverColor} 
-                transition-all transform hover:scale-105`}
-            >
-              Avail
-            </button>
-          </div>
-        </div>
-      ))}
-    </div>
-  </>
-)}
-              </div>
-            )}
-          </div>
-        )}
-
-        {/* Package Features */}
-        <div className="p-6">
-          <h3 className="font-bold text-lg text-gray-800 mb-3">
-            Package Includes:
-          </h3>
-          <ul className="space-y-2 mb-6">
-            {pkg.features.map((feature, index) => (
-              <li key={index} className="flex items-start">
-                <svg
-                  className={`h-5 w-5 ${
-                    pkg.id === 1
-                      ? "text-yellow-500"
-                      : pkg.id === 3
-                      ? "text-blue-500"
-                      : pkg.id === 4
-                      ? "text-amber-500"
-                      : "text-green-500"
-                  } mr-2 mt-0.5`}
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M5 13l4 4L19 7"
-                  />
-                </svg>
-                <span>{feature}</span>
-              </li>
-            ))}
-          </ul>
-
-          {/* Action Buttons */}
-          <div className="flex space-x-4">
-            <button
-              onClick={closeModal}
-              className="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-800 font-medium py-2 px-4 rounded-lg transition duration-200"
-            >
-              Close
-            </button>
-
-            {pkg.id === 2 && selectedPackage && (
-              <button
-                onClick={() => setSelectedPackage(null)}
-                className="flex-1 bg-blue-500 hover:bg-blue-600 text-white font-medium py-2 px-4 rounded-lg transition duration-200"
-              >
-                Back
-              </button>
-            )}
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-})}
+          );
+        })}
 
         {/* Help Modal */}
         {showModal && (

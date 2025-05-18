@@ -443,7 +443,7 @@ export const updateMember = async (request, response) => {
     const { position, memberType } = request.body; // Extract position and memberType
 
     console.log("Looking for member with ID:", memberGoldenSeater);
-    
+
     // Find member by memberID
     const member = await Member.findOne({ memberID: memberGoldenSeater });
 
@@ -473,11 +473,11 @@ export const updateMember = async (request, response) => {
         member.memberType.push(memberType);
       }
     }
-    
+
     // Save the updates
     await member.save();
     console.log("Updated member types:", member.memberType);
-    
+
     const spot = request.body.spot;
     // Create a new GoldenSeatOwner document
     const createGoldenSeats = new GoldenSeatOwner({
@@ -609,6 +609,32 @@ export const memberReferral = async (request, response) => {
   }
 };
 export const upgradePackage = async (req, res) => {
+  const response = await axios.post(
+    import.meta.env.VITE_API_URL + "/api/paymongo/create-payment",
+    {
+      amount: amount,
+      description: seat.title,
+      name: "Customer Name", // Optional, add real customer data if needed
+      email: "customer@example.com", // Optional
+      phone: "09123456789", // Optional
+    }
+  );
+
+  if (response.data.success) {
+    setPaymentUrl(response.data.checkoutUrl); // Set the URL to redirect the user to PayMongo
+    localStorage.setItem(
+      "memberGoldenSeat",
+      JSON.stringify({
+        GoldenSeat: "success",
+        name: selectedSeat.title,
+      })
+    );
+    window.location.href = response.data.checkoutUrl; // Redirect to PayMongo checkout
+  } else {
+    setError("Failed to create payment, please try again.");
+  }
+}
+export const createPackage = async (req, res) => {
   try {
     // Extract token from authorization header
     const token = req.cookies.token;
@@ -670,4 +696,6 @@ export const upgradePackage = async (req, res) => {
       error: error.message
     });
   }
-};
+
+
+}
