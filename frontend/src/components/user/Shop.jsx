@@ -74,17 +74,17 @@ const EcommerceShop = () => {
   const recommendedProducts = [
     {
       id: 1,
-      imageUrl: "/uploads/product1.png",
+      imageUrl: "/uploads/cars1.avif",
       alt: "Product 2"
     },
     {
       id: 2,
-      imageUrl: "/uploads/product3.png",
+      imageUrl: "/uploads/cars2.avif",
       alt: "Product 3"
     },
     {
       id: 3,
-      imageUrl: "/uploads/product4.png",
+      imageUrl: "/uploads/promo1.avif",
       alt: "Product 4"
     }
   ];
@@ -119,7 +119,7 @@ const EcommerceShop = () => {
         <div className="w-full">
           <img
             className="w-full h-auto object-cover rounded"
-            src={import.meta.env.VITE_API_URL + "/uploads/promo_main.png"}
+            src={import.meta.env.VITE_API_URL + "/uploads/promo_main.avif"}
             alt="Main promotion"
           />
         </div>
@@ -129,21 +129,21 @@ const EcommerceShop = () => {
           <div className="bg-gray-200 rounded p-2 flex items-center justify-center">
             <img
               className="w-full h-auto"
-              src={import.meta.env.VITE_API_URL + "/uploads/subpromo1.png"}
+              src={import.meta.env.VITE_API_URL + "/uploads/promo1.avif"}
               alt="Promotion 1"
             />
           </div>
           <div className="bg-gray-200 rounded p-2 flex items-center justify-center">
             <img
               className="w-full h-auto"
-              src={import.meta.env.VITE_API_URL + "/uploads/subpromo2.png"}
+              src={import.meta.env.VITE_API_URL + "/uploads/promo2.avif"}
               alt="Promotion 2"
             />
           </div>
           <div className="bg-gray-200 rounded p-2 flex items-center justify-center">
             <img
               className="w-full h-auto"
-              src={import.meta.env.VITE_API_URL + "/uploads/subpromo3.png"}
+              src={import.meta.env.VITE_API_URL + "/uploads/promo3.avif"}
               alt="Promotion 3"
             />
           </div>
