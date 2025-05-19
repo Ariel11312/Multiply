@@ -443,7 +443,6 @@ const Dashboard = () => {
             </div>
           </div>
           <div className="w-full max-w-xs">
-            <QRCode />
           </div>
         </div>
 

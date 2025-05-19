@@ -96,7 +96,7 @@ export const placeOrder = async (req, res) => {
         // Process commissions for all positions here
         await processAllCommissions(referralMember, commissionGold);
       } 
-      else if (item.name === "Cnergee 10 Capsules") {
+      else if (item.name === "Cnergee 30 Capsules") {
         console.log("Creating golden seat for Cnergee 10 Capsules purchase");
         commissionGold = 10;
         const goldenSeat = new goldenseats({
@@ -111,9 +111,24 @@ export const placeOrder = async (req, res) => {
         await goldenSeat.save();
         await processAllCommissions(referralMember, commissionGold);
       }
-      else if (item.name === "Cnergee 600 Capsules") {
+      else if (item.name === "Cnergee 60 Capsules") {
         console.log("Creating golden seat for Cnergee 600 Capsules purchase");
         commissionGold = 20;
+        const goldenSeat = new goldenseats({
+          captain: referralMember.barangay,
+          mayor: referralMember.city,
+          governor: referralMember.province,
+          senator: referralMember.region,
+          vicePresident: "Philippines",
+          President: "Philippines",
+          commission: commissionGold,
+        });
+        await goldenSeat.save();
+        await processAllCommissions(referralMember, commissionGold);
+      }
+      else if (item.name === "Cnergee 100 Capsules") {
+        console.log("Creating golden seat for Cnergee 600 Capsules purchase");
+        commissionGold = 30;
         const goldenSeat = new goldenseats({
           captain: referralMember.barangay,
           mayor: referralMember.city,
@@ -226,55 +241,103 @@ export const placeOrder = async (req, res) => {
       const ref = referralMember.referredBy;
       console.log("Referral: " + ref);
       
-      if (ref) {
+     // Referral commission processing
+if (ref) {
+  try {
+    const referralPerson = await Member.findOne({ referralCode: ref });
+    
+    if (!referralPerson) {
+      console.log("Referral person not found with code:", ref);
+      return; // Skip if no referral person found
+    }
 
-        const referralPerson = await Member.findOne({ referralCode: ref });
-        console.log("Referral Person: " + referralPerson.memberType);
-        if (referralPerson && referralPerson.memberType && referralPerson.memberType.includes("X1")) {
-        const saveCommission = new MemberTransaction({
+    console.log("Referral Person Member Type:", referralPerson.memberType);
+    
+    // Process commission for each item in the order
+    for (const item of orderItems) {
+      try {
+        console.log("Processing commission for item:", item.name);
+        
+        // Determine commission amount based on member type
+        let commissionAmount = 0;
+        
+        if (item.name === "Cnergee 30 Capsules" && referralPerson.memberType?.includes("X1")) {
+          commissionAmount = 3;
+        } else if (item.name === "Cnergee 30 Capsules" && referralPerson.memberType?.includes("X2")) {
+          commissionAmount = 6;
+        } else if (item.name === "Cnergee 30 Capsules" && referralPerson.memberType?.includes("X3")) {
+          commissionAmount = 7;
+        } else if (item.name === "Cnergee 30 Capsules" && referralPerson.memberType?.includes("X5")) {
+          commissionAmount = 9;
+        }
+        else if (item.name === "Cnergee 60 Capsules" && referralPerson.memberType?.includes("X1")) {
+          commissionAmount = 10;
+        }
+        else if (item.name === "Cnergee 60 Capsules" && referralPerson.memberType?.includes("X2")) {
+          commissionAmount = 20;
+        }
+        else if (item.name === "Cnergee 60 Capsules" && referralPerson.memberType?.includes("X3")) {
+          commissionAmount = 25;
+        }
+        else if (item.name === "Cnergee 60 Capsules" && referralPerson.memberType?.includes("X5")) {
+          commissionAmount = 30;
+        }
+        else if (item.name === "Cnergee 100 Capsules" && referralPerson.memberType?.includes("X1")) {
+          commissionAmount = 20;
+        }
+        else if (item.name === "Cnergee 100 Capsules" && referralPerson.memberType?.includes("X2")) {
+          commissionAmount = 30;
+        }
+        else if (item.name === "Cnergee 100 Capsules" && referralPerson.memberType?.includes("X3")) {
+          commissionAmount = 40;
+        }
+        else if (item.name === "Cnergee 100 Capsules" && referralPerson.memberType?.includes("X5")) {
+          commissionAmount = 50;
+        }
+
+        else if (item.name === "Cnergee 1200 Capsules" && referralPerson.memberType?.includes("X1")) {
+          commissionAmount = 100;
+        }
+        else if (item.name === "Cnergee 1200 Capsules" && referralPerson.memberType?.includes("X2")) {
+          commissionAmount = 200;
+        }
+        else if (item.name === "Cnergee 1200 Capsules" && referralPerson.memberType?.includes("X3")) {
+          commissionAmount = 300;
+        }
+        else if (item.name === "Cnergee 1200 Capsules" && referralPerson.memberType?.includes("X5")) {
+          commissionAmount = 500;
+        }
+
+          // Skip if no commission applies
+        if (commissionAmount <= 0) {
+          console.log("No commission for member type:", referralPerson.memberType);
+          continue;
+        }
+
+        const transactionCode = "RE" + Math.random().toString(36).substring(2, 10).toUpperCase();
+        
+        const commissionRecord = new MemberTransaction({
           memberId: referralPerson.memberID,
-          price:3,
-          total: 3,
+          price: commissionAmount,
+          total: commissionAmount,
           transactionDate: new Date().toLocaleString(),
           transactionId: transactionCode,
-          productName: "Re-Purchase Commission",
+          productName: `Re-Purchase Commission for ${item.name}`,
         });
-        await saveCommission.save();
-        }
-        if (referralPerson && referralPerson.memberType && referralPerson.memberType.includes("X2")) {
-        const saveCommission = new MemberTransaction({
-          memberId: referralPerson.memberID,
-          price:6,
-          total: 6,
-          transactionDate: new Date().toLocaleString(),
-          transactionId: transactionCode,
-          productName: "Re-Purchase Commission",
-        });
-        await saveCommission.save();
-        }
-        if (referralPerson && referralPerson.memberType && referralPerson.memberType.includes("X3")) {
-        const saveCommission = new MemberTransaction({
-          memberId: referralPerson.memberID,
-          price:7,
-          total: 7,
-          transactionDate: new Date().toLocaleString(),
-          transactionId: transactionCode,
-          productName: "Re-Purchase Commission",
-        });
-        await saveCommission.save();
-        }
-        if (referralPerson && referralPerson.memberType && referralPerson.memberType.includes("X5")) {
-        const saveCommission = new MemberTransaction({
-          memberId: referralPerson.memberID,
-          price:9,
-          total: 9,
-          transactionDate: new Date().toLocaleString(),
-          transactionId: transactionCode,
-          productName: "Re-Purchase Commission",
-        });
-        await saveCommission.save();
-        }
+        
+        await commissionRecord.save();
+        console.log(`Commission of ${commissionAmount} recorded for ${item.name}`);
+        
+      } catch (itemError) {
+        console.error("Error processing commission for item:", item.name, itemError);
+        // Continue with next item even if one fails
       }
+    }
+  } catch (referralError) {
+    console.error("Error processing referral commission:", referralError);
+    // Continue with order processing even if referral commission fails
+  }
+}
       }
     }
 
