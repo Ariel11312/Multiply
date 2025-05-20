@@ -1,5 +1,5 @@
 import express from 'express';
-import { createMember, createPackage, getMemberById, memberReferral, updateMember, upgradePackage } from '../controllers/member-controller.js';
+import { createMember, createPackage, getMemberById, getReapers, memberReferral, updateMember, upgradePackage } from '../controllers/member-controller.js';
 import { getReferralTree, referrals } from '../controllers/referrals.js';
 const router = express.Router();
 
@@ -11,5 +11,6 @@ router.get('/referral-tree', getReferralTree); // Gets complete tree up to 7 lev
 router.get('/memberReferral/:referralCode', memberReferral);
 router.post('/upgrade', upgradePackage);
 router.post('/create-package', createPackage);
+router.post('/reapers', getReapers);
 
 export default router;

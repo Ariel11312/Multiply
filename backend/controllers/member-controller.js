@@ -274,7 +274,6 @@ export const createMember = async (request, response) => {
         const memberCount = await Member.countDocuments({
           referredRoot: referredMember.memberRoot,
         });
-        console.log(memberCount);
         if (memberCount > 1) {
           const indirect = new MemberTransaction({
             memberId: referredMember.memberID,
@@ -291,7 +290,7 @@ export const createMember = async (request, response) => {
         }
       }
       if (referrer.referredRoot && memberType === "Diamond") {
-        console.log("Diamond Referral Bonus");
+
         const referredMember = await Member.findOne({
           memberRoot: referrer.referredRoot,
         });
@@ -334,10 +333,7 @@ export const createMember = async (request, response) => {
       referrer.totalEarnings += referralEarnings;
       await referrer.save();
 
-      // Log or return success response
-      console.log(
-        `Referral transaction created for ${referrer.memberID} with earnings: ${referralEarnings}`
-      );
+      
     }
     // Calculate base amount for golden seats commission
     // Save all records
@@ -442,14 +438,12 @@ export const updateMember = async (request, response) => {
     const memberGoldenSeater = decoded.userId; // Extract userId from the token
     const { position, memberType } = request.body; // Extract position and memberType
 
-    console.log("Looking for member with ID:", memberGoldenSeater);
 
     // Find member by memberID
     const member = await Member.findOne({ memberID: memberGoldenSeater });
 
     // If no member was found, return 404
     if (!member) {
-      console.log("Member not found for memberID:", memberGoldenSeater);
       return response.status(404).json({
         success: false,
         message: "Member not found or unauthorized",
@@ -476,7 +470,6 @@ export const updateMember = async (request, response) => {
 
     // Save the updates
     await member.save();
-    console.log("Updated member types:", member.memberType);
 
     const spot = request.body.spot;
     // Create a new GoldenSeatOwner document
@@ -697,5 +690,44 @@ export const createPackage = async (req, res) => {
     });
   }
 
+  };
 
-}
+export const getReapers = async (req, res) => {
+  try {
+    const { reaper } = req.body;
+
+    // Find member by referralCode and only return the memberType array
+    const member = await Member.findOne(
+      { referralCode: reaper },
+      { memberType: 1, _id: 0 } // Projection: only include memberType
+    );
+
+    if (!member) {
+      return res.status(404).json({
+        success: false,
+        message: "Member not found",
+        memberType: [] // Return empty array
+      });
+    }
+
+    // Ensure memberType exists and is an array
+    const memberTypeArray = Array.isArray(member.memberType) 
+      ? member.memberType 
+      : [];
+
+    res.status(200).json({
+      success: true,
+      memberType: memberTypeArray,
+      count: memberTypeArray.length
+    });
+
+  } catch (error) {
+    console.error("Error fetching reapers:", error);
+    res.status(500).json({ 
+      success: false,
+      memberType: [], // Always return array even on error
+      message: "Server error while fetching reapers",
+      error: process.env.NODE_ENV === 'development' ? error.message : undefined
+    });
+  }
+};
