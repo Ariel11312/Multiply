@@ -262,50 +262,50 @@ if (ref) {
         let commissionAmount = 0;
         
         if (item.name === "Cnergee 30 Capsules" && referralPerson.memberType?.includes("X1")) {
-          commissionAmount = 3;
+          commissionAmount = 3 * item.quantity;
         } else if (item.name === "Cnergee 30 Capsules" && referralPerson.memberType?.includes("X2")) {
-          commissionAmount = 6;
+          commissionAmount = 6 * item.quantity;
         } else if (item.name === "Cnergee 30 Capsules" && referralPerson.memberType?.includes("X3")) {
-          commissionAmount = 7;
+          commissionAmount = 7 * item.quantity;
         } else if (item.name === "Cnergee 30 Capsules" && referralPerson.memberType?.includes("X5")) {
-          commissionAmount = 9;
+          commissionAmount = 9 * item.quantity;
         }
         else if (item.name === "Cnergee 60 Capsules" && referralPerson.memberType?.includes("X1")) {
-          commissionAmount = 10;
+          commissionAmount = 10 * item.quantity;
         }
         else if (item.name === "Cnergee 60 Capsules" && referralPerson.memberType?.includes("X2")) {
-          commissionAmount = 20;
+          commissionAmount = 20 * item.quantity;
         }
         else if (item.name === "Cnergee 60 Capsules" && referralPerson.memberType?.includes("X3")) {
-          commissionAmount = 25;
+          commissionAmount = 25 * item.quantity;
         }
         else if (item.name === "Cnergee 60 Capsules" && referralPerson.memberType?.includes("X5")) {
-          commissionAmount = 30;
+          commissionAmount = 30 * item.quantity;
         }
         else if (item.name === "Cnergee 100 Capsules" && referralPerson.memberType?.includes("X1")) {
-          commissionAmount = 20;
+          commissionAmount = 20 * item.quantity;
         }
         else if (item.name === "Cnergee 100 Capsules" && referralPerson.memberType?.includes("X2")) {
-          commissionAmount = 30;
+          commissionAmount = 30 * item.quantity;
         }
         else if (item.name === "Cnergee 100 Capsules" && referralPerson.memberType?.includes("X3")) {
-          commissionAmount = 40;
+          commissionAmount = 40 * item.quantity;
         }
         else if (item.name === "Cnergee 100 Capsules" && referralPerson.memberType?.includes("X5")) {
-          commissionAmount = 50;
+          commissionAmount = 50 * item.quantity;
         }
 
         else if (item.name === "Cnergee 1200 Capsules" && referralPerson.memberType?.includes("X1")) {
-          commissionAmount = 100;
+          commissionAmount = 100 * item.quantity;
         }
         else if (item.name === "Cnergee 1200 Capsules" && referralPerson.memberType?.includes("X2")) {
-          commissionAmount = 200;
+          commissionAmount = 200 * item.quantity;
         }
         else if (item.name === "Cnergee 1200 Capsules" && referralPerson.memberType?.includes("X3")) {
-          commissionAmount = 300;
+          commissionAmount = 300 * item.quantity;
         }
         else if (item.name === "Cnergee 1200 Capsules" && referralPerson.memberType?.includes("X5")) {
-          commissionAmount = 500;
+          commissionAmount = 500 * item.quantity;
         }
 
           // Skip if no commission applies

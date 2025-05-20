@@ -4,10 +4,10 @@ import { Package, Crown, Diamond } from "lucide-react";
 
 const MemberCategory = ({ onSelectPackage, selectedType }) => {
   const packages = [
-    { name: "X1 PACKAGE", type: "X1", membership: 500, bottles: 1 },
-    { name: "X2 PACKAGE", type: "X2", membership: 1000, bottles: 2 },
-    { name: "X3 PACKAGE", type: "X3", membership: 3000, bottles: 6 },
-    { name: "X5 PACKAGE", type: "X5", membership: 5000, bottles: 10 },
+    { name: "X1 PACKAGE", type: "X1", membership: 750, bottles: 1 },
+    { name: "X2 PACKAGE", type: "X2", membership: 1500, bottles: 2 },
+    { name: "X3 PACKAGE", type: "X3", membership: 4500, bottles: 6 },
+    { name: "X5 PACKAGE", type: "X5", membership: 7500, bottles: 10 },
     { 
       name: "Crown PACKAGE", 
       type: "Crown", 
