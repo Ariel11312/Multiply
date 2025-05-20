@@ -68,10 +68,10 @@ const Membership = () => {
   let memberDescription = `Membership payment ${memberType} `;
 
   // Setting amounts based on member type
-  if (memberType === "X1") memberAmount = 500;
-  if (memberType === "X2") memberAmount = 1000;
-  if (memberType === "X3") memberAmount = 3000;
-  if (memberType === "X5") memberAmount = 5000;
+  if (memberType === "X1") memberAmount = 750;
+  if (memberType === "X2") memberAmount = 1500;
+  if (memberType === "X3") memberAmount = 4500;
+  if (memberType === "X5") memberAmount = 7500;
   if (memberType === "Crown") memberAmount = 15000;
   if (memberType === "Diamond") memberAmount = 750000;
     useEffect(() => {

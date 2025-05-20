@@ -110,10 +110,10 @@ const DirectSellingCards = () => {
         "golden seaters will earn commission for every repeat purchases",
       ],
       subPackages: [
-        { name: "X1", price: "500", packageType: "X1" },
-        { name: "X2", price: "2,000", packageType: "X2" },
-        { name: "X3", price: "3,000", packageType: "X3" },
-        { name: "X5", price: "5,000", packageType: "X5" },
+        { name: "X1", price: "375", packageType: "X1" },
+        { name: "X2", price: "750", packageType: "X2" },
+        { name: "X3", price: "2250", packageType: "X3" },
+        { name: "X5", price: "3750", packageType: "X5" },
       ],
       getReferralLink: (referralCode, subPackage) =>
         referralCode && subPackage
