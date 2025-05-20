@@ -150,7 +150,7 @@ useEffect(() => {
   const HandlDiamond = () => {
     window.location.href = "./member-registration";
   };
-  const calculateTotalCommission = (productName, reapers) => {
+function calculateCommission(productName, reapers) {
   if (!productName || !reapers) return 0;
   
   const reaperStr = reapers.toString();
@@ -182,7 +182,7 @@ useEffect(() => {
   }
 
   return total;
-};
+}
   return (
     <>
       <Navbar />
@@ -366,16 +366,12 @@ useEffect(() => {
 <section className="container mx-auto px-4 py-6 md:py-8">
   {loading ? (
     <div className="text-center py-8">Loading products...</div>
-  ) : error ? (
-    <div className="text-center py-8 text-red-500">
-      Error loading products: {error}
-    </div>
   ) : items.length === 0 ? (
     <div className="text-center py-8">No products found</div>
   ) : (
     <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
       {items.map((product) => {
-        // Golden Seater value calculation (unchanged)
+        // Determine Golden Seater value (always shown)
         let goldenSeaterValue = 10;
         if (product.name?.includes("Cnergee")) {
           if (product.name.includes("30 Capsules")) goldenSeaterValue = 10;
@@ -384,8 +380,8 @@ useEffect(() => {
           else if (product.name.includes("1200 Capsules")) goldenSeaterValue = 250;
         }
 
-        // Calculate total commission for all matching Reaper types
-        const commission = error ? 0 : calculateTotalCommission(product.name, Reapers);
+        // Default to 0 if member not found or error occurs
+        const commission = (!memberData || error) ? 0 : calculateCommission(product.name, Reapers);
 
         return (
           <div
@@ -393,7 +389,6 @@ useEffect(() => {
             onClick={() => HandleItemClick(product._id)}
             className="bg-white rounded shadow overflow-hidden flex flex-col h-full cursor-pointer"
           >
-            {/* Product image */}
             <div className="relative pt-[100%]">
               <img
                 src={getImageUrl(product)}
@@ -404,18 +399,14 @@ useEffect(() => {
                 }}
               />
             </div>
-
-            {/* Product details */}
             <div className="p-4 bg-green-500 text-white flex-grow">
               <div className="flex justify-between text-xs mb-1">
                 <p>Reaper Commission: ₱{commission}</p>
                 <p>Golden Seater: {goldenSeaterValue}</p>
               </div>
-              
               <h3 className="font-medium text-sm md:text-base line-clamp-2">
                 {product.name}
               </h3>
-              
               <div className="flex justify-between items-center mt-2">
                 {product.price ? (
                   <>
