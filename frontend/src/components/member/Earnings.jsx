@@ -110,10 +110,10 @@ const DirectSellingCards = () => {
         "golden seaters will earn commission for every repeat purchases",
       ],
       subPackages: [
-        { name: "X1", price: "375", packageType: "X1" },
-        { name: "X2", price: "750", packageType: "X2" },
-        { name: "X3", price: "2250", packageType: "X3" },
-        { name: "X5", price: "3750", packageType: "X5" },
+        { name: "X1", price: "750", packageType: "X1" },
+        { name: "X2", price: "1500", packageType: "X2" },
+        { name: "X3", price: "4500", packageType: "X3" },
+        { name: "X5", price: "7500", packageType: "X5" },
       ],
       getReferralLink: (referralCode, subPackage) =>
         referralCode && subPackage
@@ -485,7 +485,7 @@ const DirectSellingCards = () => {
 
                 {/* Package Selection (for package 2) */}
                 {openModal === pkg.id && pkg.id === 2 && !selectedPackage && (
-                  <div className="p-6">
+                  <div className="p-6 mt-12">
                     <h3 className="font-bold text-lg text-gray-800 mb-4">
                       Select a Package:
                     </h3>
@@ -497,7 +497,6 @@ const DirectSellingCards = () => {
                           className="bg-green-100 hover:bg-green-200 text-green-800 font-medium py-3 px-4 rounded-lg transition duration-200 flex flex-col items-center transform hover:scale-105"
                         >
                           <span className="font-bold">{subPkg.name}</span>
-                          <span className="mt-1">₱{subPkg.price}</span>
                         </button>
                       ))}
                     </div>

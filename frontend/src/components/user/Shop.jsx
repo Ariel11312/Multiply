@@ -4,6 +4,7 @@ import { fetchItems } from "../../middleware/shopItems";
 import { Card, CardContent } from "../../components/ui/card";
 import { Diamond, Crown } from "lucide-react";
 import { useNavigate } from 'react-router-dom';
+import { checkMember } from "../../middleware/member";
 
 const EcommerceShop = () => {
   const [cartItems, setCartItems] = useState([]);
@@ -14,19 +15,27 @@ const EcommerceShop = () => {
   const [cartItemCount, setCartItemCount] = useState(0);
   const [notification, setNotification] = useState(null);
   const [currentSlide, setCurrentSlide] = useState(0);
+    const [memberData, setMemberData] = useState(null);
   
-  useEffect(() => {
-    // Call the fetch function when component mounts
-    const loadProducts = async () => {
-      try {
-        await fetchItems(setItems);
-        setLoading(false);
-      } catch (err) {
-        setError(err.message);
-        setLoading(false);
-      }
-    };
-
+ useEffect(() => {
+  // Create an async function inside useEffect
+  const fetchMemberData = async () => {
+    const member = await checkMember(setMemberData);
+    console.log("Member data after fetch:", member); // This will show the updated data
+  };
+  
+  fetchMemberData();
+  
+  // Rest of your code for loading products
+  const loadProducts = async () => {
+    try {
+      await fetchItems(setItems);
+      setLoading(false);
+    } catch (err) {
+      setError(err.message);
+      setLoading(false);
+    }
+  };
 
     loadProducts();
   }, []);
@@ -287,7 +296,16 @@ const EcommerceShop = () => {
               </div>
               <h3 className="font-medium text-sm md:text-base line-clamp-2">{product.name}</h3>
               <div className="flex justify-between items-center mt-2">
-₱ {parseFloat(product.price).toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}
+{product.price ? (
+  <>
+    ₱ {parseFloat(memberData ? product.price : product.price * 2).toLocaleString(undefined, {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2
+    })}
+  </>
+) : (
+  "Price unavailable"
+)}
                 
               </div>
             </div>

@@ -3,6 +3,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Heart, ShoppingCart, ChevronLeft, ChevronRight, Star, Share2, Truck, Check } from 'lucide-react';
 import Navbar from './Navbar';
 import { useLocation } from 'react-router-dom';
+import { checkMember } from "../../middleware/member";
 
 export default function ItemPage() {
   const [item, setItem] = useState({
@@ -25,7 +26,7 @@ export default function ItemPage() {
   const [quantity, setQuantity] = useState(1);
   const [showModal, setShowModal] = useState(false);
   const [isAddingToCart, setIsAddingToCart] = useState(false);
-  
+      const [memberData, setMemberData] = useState(null);
   // Zoom functionality
   const [showZoom, setShowZoom] = useState(false);
   const imageRef = useRef(null);
@@ -35,6 +36,12 @@ export default function ItemPage() {
   
   useEffect(() => {
     fetchItems();
+     const fetchMemberData = async () => {
+        const member = await checkMember(setMemberData);
+        console.log("Member data after fetch:", member);
+        // This will show the updated data
+      };
+      fetchMemberData();
   }, []);
 
   // Traditional image zoom functionality
@@ -343,7 +350,15 @@ export default function ItemPage() {
 
 <div className="mt-4 bg-gray-50 p-4 rounded-lg">
   <div className="flex items-baseline">
-    <span className="text-3xl font-bold text-green-700">₱ {parseFloat(item.price).toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}</span>
+<span className="text-3xl font-bold text-green-700">
+  ₱ {parseFloat(memberData ? item.price : item.price * 2).toLocaleString(undefined, {
+    minimumFractionDigits: 2, 
+    maximumFractionDigits: 2
+  })}
+  {!memberData && 
+    <span className="text-xs text-red-500 ml-1">(Non-member price)</span>
+  }
+</span>
     {item.originalPrice && (
       <>
         <span className="text-gray-400 line-through ml-2">₱ {parseFloat(item.originalPrice).toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}</span>

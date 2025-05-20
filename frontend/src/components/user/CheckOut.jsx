@@ -82,7 +82,7 @@ export default function CheckoutPage() {
       const formattedCartItems = cartData.items.map((item) => ({
         _id: item.itemId,
         name: item.name,
-        price: item.price,
+price: memberData ? item.price : item.price * 2,
         image: item.imageUrl,
         quantity: item.quantity,
       }));
