@@ -432,10 +432,10 @@ const Navbar = () => {
                           <li className="group">
                             <a
                               className="flex items-center space-x-3 p-3 rounded-lg cursor-pointer transition-colors duration-200 hover:bg-green-50 group-hover:text-green-500"
-                          href="/account"
+                          href="/account-settings"
                           >
                               <User className="h-5 w-5 text-gray-400 group-hover:text-green-500" />
-                              <span>My Account</span>
+                              <span>Account Settings</span>
                             </a>
                           </li>
                           <li className="group">
@@ -546,10 +546,10 @@ const Navbar = () => {
                 <li className="group">
                   <a
                     className="flex items-center space-x-3 p-3 rounded-lg cursor-pointer transition-colors duration-200 hover:bg-green-50 group-hover:text-green-500"
-                    onClick={() => handleNavigation("/account")}
+                    onClick={() => handleNavigation("/account-settings")}
                   >
                     <User className="h-5 w-5 text-gray-400 group-hover:text-green-500" />
-                    <span>My Account</span>
+                    <span>Account Settings</span>
                   </a>
                 </li>
                 <li className="group">

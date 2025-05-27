@@ -29,6 +29,7 @@ import AddToCart from "./components/user/AddToCart";
 import CheckOut from "./components/user/CheckOut";
 import PurchaseHistory from "./components/user/PurchaseHistory";
 import Earnings from "./components/member/Earnings";
+import AccountSettings from "./components/user/AccountSettings";
 
 const App = () => {
   const [authState, setAuthState] = useState({
@@ -174,6 +175,7 @@ const App = () => {
           }
         />
         <Route path="/member-registration" element={<Membership />} />
+        <Route path="/account-settings" element={<AccountSettings />} />
         <Route path="/verify-payment" element={<PaymentStatus />} />
         <Route path="/" element={<Home />} />
         <Route path="/items" element={<AddToCart />} />

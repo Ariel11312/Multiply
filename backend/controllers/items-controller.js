@@ -199,34 +199,73 @@ export const updateItems = async (req, res) => {
     });
 };
 
-// Delete an item by ID
+
+
 export const deleteItem = async (req, res) => {
     try {
+        // Validate ID parameter
+        if (!req.params.id.match(/^[0-9a-fA-F]{24}$/)) {
+            return res.status(400).json({ message: 'Invalid item ID format' });
+        }
+
         const item = await Item.findById(req.params.id);
+        
         if (!item) {
             return res.status(404).json({ message: 'Item not found' });
         }
 
-        // Delete all associated image files if they exist
-        if (item.images && item.images.length > 0) {
-            item.images.forEach(imagePath => {
-                const fullPath = path.join(__dirname, '..', imagePath.substring(1));
-                if (fs.existsSync(fullPath)) {
-                    fs.unlinkSync(fullPath);
+        // Delete associated images
+        try {
+            if (item.images && item.images.length > 0) {
+                for (const imagePath of item.images) {
+                    try {
+                        const fullPath = path.join(process.cwd(), 'public', imagePath);
+                        if (fs.existsSync(fullPath)) {
+                            fs.unlinkSync(fullPath);
+                            console.log(`Deleted image: ${fullPath}`);
+                        }
+                    } catch (fileError) {
+                        console.error(`Error deleting image ${imagePath}:`, fileError);
+                        // Continue with deletion even if image deletion fails
+                    }
                 }
-            });
-        } else if (item.imageUrl) {
-            // Handle legacy single imageUrl
-            const imagePath = path.join(__dirname, '..', item.imageUrl.substring(1));
-            if (fs.existsSync(imagePath)) {
-                fs.unlinkSync(imagePath);
+            } else if (item.imageUrl) {
+                // Handle legacy single image
+                try {
+                    const fullPath = path.join(process.cwd(), 'public', item.imageUrl);
+                    if (fs.existsSync(fullPath)) {
+                        fs.unlinkSync(fullPath);
+                        console.log(`Deleted legacy image: ${fullPath}`);
+                    }
+                } catch (fileError) {
+                    console.error(`Error deleting legacy image ${item.imageUrl}:`, fileError);
+                }
             }
+        } catch (fileSystemError) {
+            console.error('Error during image cleanup:', fileSystemError);
+            // Continue with database deletion even if file cleanup fails
         }
 
-        await Item.findByIdAndDelete(req.params.id);
-        res.json({ message: 'Item deleted successfully' });
+        // Delete from database
+        const deletedItem = await Item.findByIdAndDelete(req.params.id);
+        
+        if (!deletedItem) {
+            return res.status(404).json({ message: 'Item not found during deletion' });
+        }
+
+        res.json({ 
+            success: true,
+            message: 'Item deleted successfully',
+            deletedItemId: deletedItem._id 
+        });
+
     } catch (err) {
-        res.status(500).json({ message: err.message });
+        console.error('Error in deleteItem controller:', err);
+        res.status(500).json({ 
+            success: false,
+            message: 'Server error during item deletion',
+            error: process.env.NODE_ENV === 'development' ? err.message : undefined
+        });
     }
 };
 
