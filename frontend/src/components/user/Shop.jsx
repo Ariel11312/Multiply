@@ -89,7 +89,7 @@ useEffect(() => {
 
   const navigate = useNavigate();
 
-  const HandleItemClick = (productId) => () => {
+  const HandleItemClick = (productId) => {
     window.location.href = `${
       import.meta.env.VITE_URL
     }/Items?productId=${productId}`;
