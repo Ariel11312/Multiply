@@ -128,7 +128,6 @@ const Home = () => {
             <Hero />
           </div>
         </div>
-        <Carousel />
         <Footer />
       </div>
     </>

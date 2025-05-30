@@ -54,7 +54,7 @@ const Navbar = () => {
       const cartData = await response.json();
       
       const formattedCartItems = cartData.items.map((item) => ({
-        _id: item.itemId._id, // This is the fix - using item.itemId._id instead of cartData.items._id
+        _id: item.itemId?._id, // This is the fix - using item.itemId._id instead of cartData.items._id
         cartId: cartData._id,
         name: item.name,
         price: item.price,
