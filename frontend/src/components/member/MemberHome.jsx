@@ -40,9 +40,9 @@ import Seatlist from "./SeatList";
 // ];
 
 const topReapers = [
-  { id: 1, name: "", referrals: 50, earnings: 250000 },
-  { id: 2, name: "", referrals: 45, earnings: 225000 },
-  { id: 3, name: "", referrals: 40, earnings: 200000 },
+  { id: 1, name: "", referrals: 50, earnings: 0 },
+  { id: 2, name: "", referrals: 45, earnings: 0 },
+  { id: 3, name: "", referrals: 40, earnings: 0 },
 ];
 
 // Custom Podluck Icon component
@@ -63,16 +63,16 @@ const PodluckIcon = ({ availed }) => {
 };
 
 const topSowers = [
-  { id: 1, name: "", referrals: 30, earnings: 150000 },
-  { id: 2, name: "", referrals: 28, earnings: 140000 },
-  { id: 3, name: "", referrals: 25, earnings: 125000 },
+  { id: 1, name: "", referrals: 30, earnings: 0 },
+  { id: 2, name: "", referrals: 28, earnings: 0 },
+  { id: 3, name: "", referrals: 25, earnings: 0 },
 ];
 
 const topOfficials = [
-  { id: 1, role: "Senator", name: "", supporters: 1200 },
-  { id: 2, role: "Governor", name: "", supporters: 800 },
-  { id: 3, role: "Mayor", name: "", supporters: 500 },
-  { id: 4, role: "Captain", name: "", supporters: 200 },
+  { id: 1, role: "Senator", name: "", supporters: 0 },
+  { id: 2, role: "Governor", name: "", supporters: 0 },
+  { id: 3, role: "Mayor", name: "", supporters: 0 },
+  { id: 4, role: "Captain", name: "", supporters: 0 },
 ];
 const quotaLevels = [
   {
