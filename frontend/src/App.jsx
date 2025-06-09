@@ -30,7 +30,7 @@ import CheckOut from "./components/user/CheckOut";
 import PurchaseHistory from "./components/user/PurchaseHistory";
 import Earnings from "./components/member/Earnings";
 import AccountSettings from "./components/user/AccountSettings";
-
+import Tracker from "./components/admin/Tracker";
 const App = () => {
   const [authState, setAuthState] = useState({
     isAuthenticated: false,
@@ -221,6 +221,13 @@ const App = () => {
             <ProtectedRoute allowedRoles={["admin"]}>
               <Dashboard />
             </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/admin/tracker"
+          element={
+              <Tracker />
+
           }
         />
 

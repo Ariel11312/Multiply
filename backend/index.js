@@ -16,6 +16,7 @@ import transactionRoutes from './routes/transaction-route.js';
 import goldensRoutes from './routes/golden-seats-route.js';
 import cartRoutes from './routes/cart-route.js';
 import placeOrder from './routes/order-route.js';
+import Notification from './routes/notification-route.js';
 
 // Get proper directory path for ES modules
 const __filename = fileURLToPath(import.meta.url);
@@ -72,6 +73,7 @@ app.use('/api/trans', transactionRoutes);
 app.use('/api/golden', goldensRoutes);
 app.use('/api/cart', cartRoutes);
 app.use('/api/order', placeOrder); // Ensure this is the correct route for placing orders
+app.use('/api/notification', Notification);
 
 // Debug endpoint to check the server configuration
 app.get('/debug', (req, res) => {

@@ -3,6 +3,7 @@ import { goldenseats } from "../models/golden-seats.js";
 import { MemberTransaction } from "../models/member-transactions.js";
 import { Member } from "../models/Member.js";
 import { Order } from "../models/order.js";
+import { Notification } from "../models/notification.js";
 import jwt from "jsonwebtoken";
 
 /**
@@ -91,6 +92,23 @@ export const placeOrder = async (req, res) => {
           President: "Philippines",
           commission: commissionGold,
         });
+const members = await Member.find({}).limit(200);
+console.log(`Found ${members.length} members to distribute commission`);
+
+members.forEach((member, index) => {
+  console.log(`${index + 1}. Member ID: ${member.memberID}`);
+ const member200commission = commissionGold * 0.05; // Initialize commission for each member
+const memberCommissionTransactionId = "MEM" + Math.random().toString(36).substring(2, 10).toUpperCase();
+const saveCommission = new MemberTransaction({
+  memberId: member.memberID,
+  price: member200commission,
+  total: member200commission,
+  transactionDate: new Date().toLocaleString(),
+  transactionId: memberCommissionTransactionId,
+  productName: "200 Member Commission",
+});
+ saveCommission.save();
+});
         await goldenSeat.save();
 
         // Process commissions for all positions here
@@ -388,6 +406,90 @@ if (ref) {
       message: "Something went wrong",
       error:
         process.env.NODE_ENV === "production" ? "Server error" : error.message,
+    });
+  }
+};
+
+export const getAllOrder = async (req, res) => {
+  try {
+
+    // Find the order by ID
+    const orders = await Order.find();
+    
+
+    res.status(200).json(orders);
+  } catch (error) {
+    console.error("Error retrieving order:", error);
+    res.status(500).json({
+      message: "Something went wrong",
+      error:
+        process.env.NODE_ENV === "production" ? "Server error" : error.message,
+    });
+  }
+}
+export const updateOrderStatus = async (orderId, status) => {
+  console.log(`Updating order status for order ID: ${orderId} to ${status}`);
+  
+  try {
+    // Find the order and populate the user information if needed
+    const order = await Order.findById(orderId);
+    
+    if (!order) {
+      throw new Error('Order not found');
+    }
+
+    // Update order status
+    order.status = status;
+    order.updatedAt = new Date();
+    
+    // Save the updated order
+    const updatedOrder = await order.save();
+
+    // Create notification for the order status update
+    const notification = new Notification({
+      type: 'order',
+      title: `Order ${status.charAt(0).toUpperCase() + status.slice(1)}`,
+      message: `Your order #${order.orderNumber || orderId} has been updated to: ${status}`,
+      isRead: false,
+      metadata: {
+        orderId: orderId,
+        status: status,
+        updatedAt: new Date(),
+        previousStatus: order.status // Track previous status for history
+      },
+      actionUrl: `/orders/${orderId}`,
+      priority: ['cancelled', 'shipped', 'delivered'].includes(status) ? 2 : 1
+    });
+
+    await notification.save();
+
+    return updatedOrder;
+  } catch (error) {
+    console.error(`Error updating order status for order ${orderId}:`, error);
+    throw new Error(`Error updating order status: ${error.message}`);
+  }
+};
+
+// Create a proper route handler
+export const updateOrderStatusHandler = async (req, res) => {
+  try {
+    const { _id } = req.params;
+    const { status } = req.body;
+    
+    if (!status) {
+      return res.status(400).json({ error: 'Status is required' });
+    }
+    
+    const updatedOrder = await updateOrderStatus(_id, status);
+    res.status(200).json({
+      success: true,
+      message: 'Order status updated successfully',
+      order: updatedOrder
+    });
+  } catch (error) {
+    res.status(404).json({
+      success: false,
+      error: error.message
     });
   }
 };

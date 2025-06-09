@@ -10,11 +10,205 @@ import {
   CreditCard,
   Settings,
   LogOut,
+  Bell,
+  Check,
+  XCircle,
+  AlertCircle,
+  Info
 } from "lucide-react";
 import { checkAuth } from "../../middleware/auth";
 import { checkMember } from "../../middleware/member";
 
-// CartModal Component
+// NotificationModal Component
+const NotificationModal = ({ isOpen, onClose, notifications = [], markAsRead, clearAllNotifications }) => {
+  const [localNotifications, setLocalNotifications] = useState(notifications || []);
+  const [unreadCount, setUnreadCount] = useState(0);
+
+  // Fixed: Proper function to fetch notifications
+  const fetchNotifications = useCallback(async () => {
+    try {
+      const response = await fetch(import.meta.env.VITE_API_URL + '/api/notification/all-notif', {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        credentials: 'include'
+      });
+      
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      
+      const data = await response.json();
+      console.log('Fetched notification data:', data); // Debug log
+      
+      // Handle different response structures
+      let notificationList = [];
+      if (Array.isArray(data)) {
+        // If data is directly an array
+        notificationList = data;
+      } else if (data.notifications && Array.isArray(data.notifications)) {
+        // If data has notifications property
+        notificationList = data.notifications;
+      } else if (data.data && Array.isArray(data.data)) {
+        // If data has data property
+        notificationList = data.data;
+      }
+      
+      console.log('Processed notifications:', notificationList); // Debug log
+      setLocalNotifications(notificationList);
+      setUnreadCount(notificationList.filter(n => !n.isRead).length);
+    } catch (error) {
+      console.error('Error fetching notifications:', error);
+      // Set empty array on error
+      setLocalNotifications([]);
+      setUnreadCount(0);
+    }
+  }, []);
+
+  // Update local state when props change
+  useEffect(() => {
+    const notificationList = notifications || [];
+    setLocalNotifications(notificationList);
+    setUnreadCount(notificationList.filter(n => !n.isRead).length);
+  }, [notifications]);
+
+  // Fetch notifications when modal opens
+  useEffect(() => {
+    if (isOpen) {
+      fetchNotifications();
+    }
+  }, [isOpen, fetchNotifications]);
+
+  if (!isOpen) return null;
+
+  const getNotificationIcon = (type) => {
+    switch (type) {
+      case 'success':
+        return <Check className="h-5 w-5 text-green-500" />;
+      case 'error':
+        return <XCircle className="h-5 w-5 text-red-500" />;
+      case 'warning':
+        return <AlertCircle className="h-5 w-5 text-yellow-500" />;
+      default:
+        return <Info className="h-5 w-5 text-blue-500" />;
+    }
+  };
+
+  const getNotificationBg = (type, isRead) => {
+    if (isRead) return 'bg-gray-50';
+    switch (type) {
+      case 'success':
+        return 'bg-green-50 border-l-4 border-green-400';
+      case 'error':
+        return 'bg-red-50 border-l-4 border-red-400';
+      case 'warning':
+        return 'bg-yellow-50 border-l-4 border-yellow-400';
+      default:
+        return 'bg-blue-50 border-l-4 border-blue-400';
+    }
+  };
+
+  const handleMarkAsRead = async (notificationId) => {
+    try {
+      // Update local state immediately for better UX
+      setLocalNotifications(prev => {
+        const updated = (prev || []).map(notif => 
+          notif.id === notificationId || notif._id === notificationId
+            ? { ...notif, isRead: true }
+            : notif
+        );
+        setUnreadCount(updated.filter(n => !n.isRead).length);
+        return updated;
+      });
+      
+      // Call parent function if provided
+      if (markAsRead) {
+        await markAsRead(notificationId);
+      }
+    } catch (error) {
+      console.error('Error marking notification as read:', error);
+    }
+  };
+
+  const handleClearAll = () => {
+    setLocalNotifications([]);
+    setUnreadCount(0);
+    
+    // Call parent function if provided
+    if (clearAllNotifications) {
+      clearAllNotifications();
+    }
+  };
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center">
+      <div
+        className="absolute inset-0 bg-black bg-opacity-50 backdrop-blur-sm"
+        onClick={onClose}
+      ></div>
+      <div className="relative bg-white rounded-lg shadow-xl max-w-md w-full max-h-[80vh] overflow-hidden">
+        <div className="flex justify-between items-center p-4 bg-gradient-to-r from-blue-500 to-blue-600 text-white">
+          <h2 className="text-xl font-bold">Notifications</h2>
+          <div className="flex items-center space-x-2">
+            {(localNotifications || []).length > 0 && (
+              <button
+                onClick={handleClearAll}
+                className="text-white hover:text-gray-200 transition-colors text-sm"
+              >
+                Clear All
+              </button>
+            )}
+            <button
+              onClick={onClose}
+              className="text-white hover:text-gray-200 transition-colors"
+            >
+              <X className="h-6 w-6" />
+            </button>
+          </div>
+        </div>
+
+        <div className="max-h-96 overflow-y-auto">
+          {(!localNotifications || localNotifications.length === 0) ? (
+            <div className="p-6 text-center space-y-4">
+              <Bell className="h-16 w-16 text-gray-300 mx-auto" />
+              <p className="text-gray-500">No notifications yet</p>
+              <p className="text-gray-400 text-sm">We'll notify you when something happens</p>
+            </div>
+          ) : (
+            <div className="p-4 space-y-3">
+              {(localNotifications || []).map((notification) => (
+                <div
+                  key={notification.id || notification._id}
+                  className={`p-4 rounded-lg cursor-pointer transition-all duration-200 hover:shadow-sm ${getNotificationBg(notification.type, notification.isRead)}`}
+                  onClick={() => handleMarkAsRead(notification.id || notification._id)}
+                >
+                  <div className="flex items-start space-x-3">
+                    {getNotificationIcon(notification.type)}
+                    <div className="flex-1 min-w-0">
+                      <h4 className={`font-medium ${notification.isRead ? 'text-gray-600' : 'text-gray-900'}`}>
+                        {notification.title}
+                      </h4>
+                      <p className={`text-sm mt-1 ${notification.isRead ? 'text-gray-500' : 'text-gray-700'}`}>
+                        {notification.message}
+                      </p>
+                      <p className="text-xs text-gray-400 mt-2">
+                        {new Date(notification.timestamp).toLocaleString()}
+                      </p>
+                    </div>
+                    {!notification.isRead && (
+                      <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+};
 
 // Navbar Component
 const Navbar = () => {
@@ -29,6 +223,10 @@ const Navbar = () => {
   const [error, setError] = useState(null);
   const [cartItems, setCartItems] = useState([]);
   const [cartQuantity, setCartQuantity] = useState(0);
+  const [notifications, setNotifications] = useState([]);
+  const [isNotificationOpen, setIsNotificationOpen] = useState(false);
+  const [unreadCount, setUnreadCount] = useState(0);
+
   const refreshCart = () => {
     setLastUpdate(Date.now());
   };
@@ -54,7 +252,7 @@ const Navbar = () => {
       const cartData = await response.json();
       
       const formattedCartItems = cartData.items.map((item) => ({
-        _id: item.itemId?._id, // This is the fix - using item.itemId._id instead of cartData.items._id
+        _id: item.itemId?._id,
         cartId: cartData._id,
         name: item.name,
         price: item.price,
@@ -64,7 +262,6 @@ const Navbar = () => {
       
       setCartQuantity(cartData.items.length);
       setCartItems(formattedCartItems);
-    
       setCartUpdated((prev) => !prev);
     } catch (error) {
       console.error("Error fetching cart:", error);
@@ -72,23 +269,13 @@ const Navbar = () => {
     }
   };
 
-
-
   const updateQuantity = async (itemId, cartId) => {
     try {
-      // Show what's being sent (for debugging)
-      console.log(`Decreasing quantity for item: ${itemId} in cart: ${cartId}`);
-      
-      // Update UI state immediately for better user experience
-      setCartUpdated((prev) => !prev);
-      
-      // Send request to backend
       const response = await fetch(`${import.meta.env.VITE_API_URL}/api/cart/decrease/${itemId}/${cartId}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json"
         }
-        // No need to send in body what's already in URL
       });
       
       if (!response.ok) {
@@ -96,28 +283,20 @@ const Navbar = () => {
       }
       
       const data = await response.json();
+      setCartUpdated((prev) => !prev);
       return data;
     } catch (error) {
       console.error("Failed to update item:", error);
-      // Consider showing an error message to the user
     }
   };
 
   const updateQuantityIncrease = async (itemId, cartId) => {
     try {
-      // Show what's being sent (for debugging)
-      console.log(`increasing quantity for item: ${itemId} in cart: ${cartId}`);
-      
-      // Update UI state immediately for better user experience
-      setCartUpdated((prev) => !prev);
-      
-      // Send request to backend
       const response = await fetch(`${import.meta.env.VITE_API_URL}/api/cart/increase/${itemId}/${cartId}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json"
         }
-        // No need to send in body what's already in URL
       });
       
       if (!response.ok) {
@@ -125,15 +304,40 @@ const Navbar = () => {
       }
       
       const data = await response.json();
+      setCartUpdated((prev) => !prev);
       return data;
     } catch (error) {
       console.error("Failed to update item:", error);
-      // Consider showing an error message to the user
     }
   };
+
+  const removeFromCart = async (itemId) => {
+    try {
+      const response = await fetch(
+        import.meta.env.VITE_API_URL + `/api/cart/items/`+itemId,
+        {
+          method: 'DELETE',
+          headers: { "Content-Type": "application/json" },
+          credentials: 'include',
+        }
+      );
+
+      const result = await response.json();
+      
+      if (response.ok) {
+        setCartUpdated((prev) => !prev);
+      } else {
+        console.error("Failed to remove item:", result);
+      }
+    } catch (error) {
+      console.error("Error removing item:", error);
+    }
+  };
+
   const clearCart = () => {
     setCartItems([]);
   };
+
   const [authState, setAuthState] = useState({
     isAuthenticated: false,
     isCheckingAuth: true,
@@ -168,8 +372,6 @@ const Navbar = () => {
     setIsProfileMenuOpen(false);
   };
 
-
-
   const handleLogout = async () => {
     try {
       const response = await fetch(
@@ -196,12 +398,32 @@ const Navbar = () => {
   };
 
   const loginNav = () => {
-    window.location.href = "/login";
+    navigate("/login");
+  };
+
+  const markAsRead = (notificationId) => {
+    setNotifications(notifications.map(notification => 
+      notification.id === notificationId 
+        ? { ...notification, isRead: true } 
+        : notification
+    ));
+    setUnreadCount(prev => prev > 0 ? prev - 1 : 0);
+  };
+
+  const clearAllNotifications = () => {
+    setNotifications([]);
+    setUnreadCount(0);
+  };
+
+  const handleCheckout = () => {
+    navigate("/checkout");
+    setIsCartOpen(false);
   };
 
   useEffect(() => {
     fetchUserCart();
-  }, [cartUpdated]); // Empty dependency array
+  }, [cartUpdated]);
+
   return (
     <>
       <nav className="w-full bg-white shadow-sm fixed top-0 left-0 z-50">
@@ -246,14 +468,6 @@ const Navbar = () => {
                     Be a Member?
                   </li>
                 )}
-                {/* <li
-                  className={`cursor-pointer transition-colors duration-200 hover:text-red-400 ${
-                    active === 3 ? "text-red-500" : ""
-                  }`}
-                  onClick={() => handleNavigation("/contact-us")}
-                >
-                  Contacts
-                </li> */}
                 <li
                   className={`cursor-pointer transition-colors duration-200 hover:text-red-400 ${
                     active === 4 ? "text-red-500" : ""
@@ -292,7 +506,19 @@ const Navbar = () => {
                   />
                 </svg>
               </div>
-
+              <div
+                className="relative cursor-pointer p-2"
+                onClick={() => setIsNotificationOpen(true)}
+              >
+                {unreadCount > 0 && (
+                  <div className="absolute -top-1 -right-1 transform translate-x-1/4 -translate-y-1/4">
+                    <p className="flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-xs text-white">
+                      {unreadCount > 9 ? '9+' : unreadCount}
+                    </p>
+                  </div>
+                )}
+                <Bell className="h-5 w-5 sm:h-6 sm:w-6 transition-all duration-200" />
+              </div>
               {/* Auth Section */}
               {authState.isAuthenticated ? (
                 <div className="flex items-center space-x-2 lg:space-x-4">
@@ -404,14 +630,6 @@ const Navbar = () => {
                     Be a Member?
                   </li>
                 )}
-                {/* <li
-                  className={`cursor-pointer transition-colors duration-200 hover:text-red-400 ${
-                    active === 3 ? "text-red-500" : ""
-                  }`}
-                  onClick={() => handleNavigation("/contact-us")}
-                >
-                  Contacts
-                </li> */}
               </ul>
               <div className="mt-4 pt-4 border-t border-gray-100">
                 {authState.isAuthenticated ? (
@@ -432,8 +650,8 @@ const Navbar = () => {
                           <li className="group">
                             <a
                               className="flex items-center space-x-3 p-3 rounded-lg cursor-pointer transition-colors duration-200 hover:bg-green-50 group-hover:text-green-500"
-                          href="/account-settings"
-                          >
+                              href="/account-settings"
+                            >
                               <User className="h-5 w-5 text-gray-400 group-hover:text-green-500" />
                               <span>Account Settings</span>
                             </a>
@@ -441,8 +659,8 @@ const Navbar = () => {
                           <li className="group">
                             <a
                               className="flex items-center space-x-3 p-3 rounded-lg cursor-pointer transition-colors duration-200 hover:bg-green-50 group-hover:text-green-500"
-                          href="/member"
-                          >
+                              href="/member"
+                            >
                               <Home className="h-5 w-5 text-gray-400 group-hover:text-green-500" />
                               <span>Member Home</span>
                             </a>
@@ -450,8 +668,8 @@ const Navbar = () => {
                           <li className="group">
                             <a
                               className="flex items-center space-x-3 p-3 rounded-lg cursor-pointer transition-colors duration-200 hover:bg-green-50 group-hover:text-green-500"
-                        href="/member-transactions"
-                        >
+                              href="/member-transactions"
+                            >
                               <CreditCard className="h-5 w-5 text-gray-400 group-hover:text-green-500" />
                               <span>Transactions</span>
                             </a>
@@ -459,8 +677,8 @@ const Navbar = () => {
                           <li className="group">
                             <a
                               className="flex items-center space-x-3 p-3 rounded-lg cursor-pointer transition-colors duration-200 hover:bg-green-50 group-hover:text-green-500"
-                           href="/settings"
-                           >
+                              href="/settings"
+                            >
                               <Settings className="h-5 w-5 text-gray-400 group-hover:text-green-500" />
                               <span>Settings</span>
                             </a>
@@ -494,10 +712,10 @@ const Navbar = () => {
         isOpen={isCartOpen}
         onClose={() => setIsCartOpen(false)}
         cartItems={cartItems}
-        setCartItems={setCartItems}
         updateQuantity={updateQuantity}
         updateQuantityIncrease={updateQuantityIncrease}
-        clearCart={clearCart}
+        removeFromCart={removeFromCart}
+        handleCheckout={handleCheckout}
       />
 
       {/* Profile Menu Component */}
@@ -593,20 +811,26 @@ const Navbar = () => {
             </div>
           </div>
         </div>
-      
       )}
-      
+      <NotificationModal
+        isOpen={isNotificationOpen}
+        onClose={() => setIsNotificationOpen(false)}
+        notifications={notifications}
+        markAsRead={markAsRead}
+        clearAllNotifications={clearAllNotifications}
+      />      
     </>
   );
-  
 };
+
 const CartModal = ({
   isOpen,
   onClose,
   cartItems,
   updateQuantity,
   updateQuantityIncrease,
-  clearCart,
+  removeFromCart,
+  handleCheckout,
 }) => {
   if (!isOpen) return null;
 
@@ -615,34 +839,6 @@ const CartModal = ({
       .reduce((total, item) => total + item.price * item.quantity, 0)
       .toFixed(2);
   };
-  const handleCheckout = () => {
-    window.location.href = "/checkout";
-    setIsProfileMenuOpen(false);
-  };
-  const removeFromCart = useCallback(async (itemId) => {
-    try {
-      const response = await fetch(
-        import.meta.env.VITE_API_URL + `/api/cart/items/`+itemId,
-        {
-          method: 'DELETE',
-          headers: { "Content-Type": "application/json" },
-          credentials: 'include',
-        }
-      );
-
-      const result = await response.json();
-      
-      if (response.ok) {
-        // Update local cart state
-        setCartUpdated((prev) => !prev);
-
-      } else {
-        console.error("Failed to remove item:", result);
-      }
-    } catch (error) {
-      console.error("Error removing item:", error);
-    }
-  });
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center">
@@ -693,115 +889,112 @@ const CartModal = ({
           </div>
         ) : (
           <>
-          <div className="p-4 space-y-4">
-  {cartItems.map((item) => (
-    <div
-      key={item.id}
-      className="flex items-center justify-between border-b pb-4"
-    >
-      <div className="flex items-center space-x-3">
-        {item.image ? (
-          <img
-            src={import.meta.env.VITE_API_URL + item.image}
-            alt={item.name}
-            className="w-16 h-16 object-cover rounded"
-            loading="lazy"
-          />
-        ) : (
-          <div className="w-16 h-16 bg-gray-200 rounded flex items-center justify-center">
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              className="h-8 w-8 text-gray-400"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
-              />
-            </svg>
-          </div>
-        )}
-        <div>
-          <h3 className="font-medium">
-            {item.name || "Unnamed Product"}
-          </h3>
-          <p className="text-green-700 font-bold">
-            ₱ {(item.price || 0).toFixed(2)}
-          </p>
-        </div>
-      </div>
+            <div className="p-4 space-y-4">
+              {cartItems.map((item) => (
+                <div
+                  key={item._id}
+                  className="flex items-center justify-between border-b pb-4"
+                >
+                  <div className="flex items-center space-x-3">
+                    {item.image ? (
+                      <img
+                        src={import.meta.env.VITE_API_URL + item.image}
+                        alt={item.name}
+                        className="w-16 h-16 object-cover rounded"
+                        loading="lazy"
+                      />
+                    ) : (
+                      <div className="w-16 h-16 bg-gray-200 rounded flex items-center justify-center">
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          className="h-8 w-8 text-gray-400"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          stroke="currentColor"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
+                          />
+                        </svg>
+                      </div>
+                    )}
+                    <div>
+                      <h3 className="font-medium">
+                        {item.name || "Unnamed Product"}
+                      </h3>
+                      <p className="text-green-700 font-bold">
+                        ₱ {(item.price || 0).toFixed(2)}
+                      </p>
+                    </div>
+                  </div>
 
-      <div className="flex items-center space-x-3">
-        <div className="flex items-center border rounded">
-          <button
-            className="px-2 py-1 bg-gray-100 hover:bg-gray-200 transition-colors"
-            onClick={() => updateQuantity(item._id,item.cartId)}
-            aria-label="Decrease quantity"
-          >
-            -
-          </button>
-          <span className="px-3">{item.quantity}</span>
-          <button
-            className="px-2 py-1 bg-gray-100 hover:bg-gray-200 transition-colors"
-            onClick={() => updateQuantityIncrease(item._id,item.cartId)}
-            aria-label="Increase quantity"
-          >
-            +
-          </button>
-        </div>
-        <button
+                  <div className="flex items-center space-x-3">
+                    <div className="flex items-center border rounded">
+                      <button
+                        className="px-2 py-1 bg-gray-100 hover:bg-gray-200 transition-colors"
+                        onClick={() => updateQuantity(item._id, item.cartId)}
+                        aria-label="Decrease quantity"
+                      >
+                        -
+                      </button>
+                      <span className="px-3">{item.quantity}</span>
+                      <button
+                        className="px-2 py-1 bg-gray-100 hover:bg-gray-200 transition-colors"
+                        onClick={() => updateQuantityIncrease(item._id, item.cartId)}
+                        aria-label="Increase quantity"
+                      >
+                        +
+                      </button>
+                    </div>
+                    <button
+                      onClick={() => removeFromCart(item._id)}
+                      className="text-red-500 hover:text-red-700 transition-colors"
+                      aria-label="Remove item"
+                    >
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        className="h-5 w-5"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                        />
+                      </svg>
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
 
-          onClick={() => removeFromCart(item._id)}
-          className="text-red-500 hover:text-red-700 transition-colors"
-          aria-label="Remove item"
-        >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            className="h-5 w-5"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
-            />
-          </svg>
-        </button>
-      </div>
-    </div>
-  ))}
-</div>
+            <div className="p-4 border-t">
+              <div className="flex justify-between font-bold mb-4">
+                <span>Total:</span>
+                <span>₱ {calculateTotalPrice()}</span>
+              </div>
 
-<div className="p-4 border-t">
-  <div className="flex justify-between font-bold mb-4">
-    <span>Total:</span>
-    <span>₱ {calculateTotalPrice()}</span>
-  </div>
-
-  <div className="flex space-x-2">
-  
-    <button 
-      onClick={handleCheckout} 
-      className="flex-1 px-4 py-2 rounded-lg bg-green-700 text-white hover:bg-green-800 transition-colors"
-      disabled={cartItems.length === 0}
-    >
-      Checkout
-    </button>
-  </div>
-</div>
+              <div className="flex space-x-2">
+                <button 
+                  onClick={handleCheckout} 
+                  className="flex-1 px-4 py-2 rounded-lg bg-green-700 text-white hover:bg-green-800 transition-colors"
+                  disabled={cartItems.length === 0}
+                >
+                  Checkout
+                </button>
+              </div>
+            </div>
           </>
         )}
       </div>
     </div>
   );
 };
-
 
 export default Navbar;
