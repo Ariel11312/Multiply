@@ -1,8 +1,9 @@
 import express from 'express';
-import { getAllNotifications } from '../controllers/notification-controller.js'; // Import your notification controller if needed
+import { getAllNotifications, markAsRead } from '../controllers/notification-controller.js'; // Import your notification controller if needed
 const router = express.Router();
 
 router.get('/all-notif', getAllNotifications);
+router.put('/mark-read/:notificationId', markAsRead);
 
 // Example: POST a new notification
 router.post('/', async (req, res) => {

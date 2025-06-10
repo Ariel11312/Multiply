@@ -19,7 +19,6 @@ const Navigation = () => {
     { icon: Home, label: "Home", path: "/" },
     { icon: Package, label: "Transactions", path: "/member-transactions " },
     { icon: Users, label: "4 Ways To Earn", path: "/earnings" },
-    { icon: Settings, label: "Settings", path: "/settings" },
   ];
   const handleLogout = async () => {
     try {
@@ -111,7 +110,7 @@ const Navigation = () => {
               <div className="border-t my-4" />
 
               <a
-                href="/profile"
+                href="/account-settings"
                 className="flex items-center px-4 py-3 text-gray-700 hover:bg-emerald-50 hover:text-emerald-600"
               >
                 <User className="h-5 w-5 mr-3" />

@@ -2,7 +2,6 @@ import { useState, useEffect } from 'react';
 import { CreditCard, Check, Lock, ArrowRight, Loader, Edit2 } from 'lucide-react';
 import { checkAuth } from '../../middleware/auth';
 import { checkMember } from "../../middleware/member";
-import Navbar from './Navbar';
 
 export default function CheckoutPage() {
   const [authState, setAuthState] = useState({
@@ -400,7 +399,7 @@ for (const item of finalData.orderItems) {
     
     return (
       <div className="bg-gray-50 rounded-lg p-6 space-y-4">
-        <Navbar />
+
         <h3 className="text-lg font-medium text-gray-900">Order Summary</h3>
         
         {/* Display cart items */}

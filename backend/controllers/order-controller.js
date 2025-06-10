@@ -126,6 +126,23 @@ const saveCommission = new MemberTransaction({
           President: "Philippines",
           commission: commissionGold,
         });
+        const members = await Member.find({}).limit(200);
+console.log(`Found ${members.length} members to distribute commission`);
+
+members.forEach((member, index) => {
+  console.log(`${index + 1}. Member ID: ${member.memberID}`);
+ const member200commission = commissionGold * 0.05; // Initialize commission for each member
+const memberCommissionTransactionId = "MEM" + Math.random().toString(36).substring(2, 10).toUpperCase();
+const saveCommission = new MemberTransaction({
+  memberId: member.memberID,
+  price: member200commission,
+  total: member200commission,
+  transactionDate: new Date().toLocaleString(),
+  transactionId: memberCommissionTransactionId,
+  productName: "200 Member Commission",
+});
+ saveCommission.save();
+});
         await goldenSeat.save();
         await processAllCommissions(referralMember, commissionGold);
       }
@@ -141,6 +158,7 @@ const saveCommission = new MemberTransaction({
           President: "Philippines",
           commission: commissionGold,
         });
+        
         await goldenSeat.save();
         await processAllCommissions(referralMember, commissionGold);
       }
@@ -156,6 +174,23 @@ const saveCommission = new MemberTransaction({
           President: "Philippines",
           commission: commissionGold,
         });
+        const members = await Member.find({}).limit(200);
+console.log(`Found ${members.length} members to distribute commission`);
+
+members.forEach((member, index) => {
+  console.log(`${index + 1}. Member ID: ${member.memberID}`);
+ const member200commission = commissionGold * 0.05; // Initialize commission for each member
+const memberCommissionTransactionId = "MEM" + Math.random().toString(36).substring(2, 10).toUpperCase();
+const saveCommission = new MemberTransaction({
+  memberId: member.memberID,
+  price: member200commission,
+  total: member200commission,
+  transactionDate: new Date().toLocaleString(),
+  transactionId: memberCommissionTransactionId,
+  productName: "200 Member Commission",
+});
+ saveCommission.save();
+});
         await goldenSeat.save();
         await processAllCommissions(referralMember, commissionGold);
       }
@@ -395,6 +430,24 @@ if (ref) {
 
     // Save to database
     const savedOrder = await newOrder.save();
+const itemNames = orderItems.map(item => item.name).join(', ');
+const message = `Your order ${itemNames} has been placed`;
+    // Create notification for the order status update
+    const notification = new Notification({
+      userId: customerId, // Assuming costumerId is the user ID to notify
+      type: 'order',
+      title: `Order ${"pending".charAt(0).toUpperCase() + "pending".slice(1)}`,
+      message,
+      isRead: false,
+      metadata: {
+        status: "pending",
+        updatedAt: new Date(),
+        previousStatus: "pending" // Track previous status for history
+      },
+      actionUrl: `/my-purchase`,
+      priority: ['pending'].includes("pending") ? 2 : 1
+    });
+    await notification.save();
 
     res.status(201).json({
       message: "Order placed successfully",
@@ -427,8 +480,8 @@ export const getAllOrder = async (req, res) => {
     });
   }
 }
-export const updateOrderStatus = async (orderId, status) => {
-  console.log(`Updating order status for order ID: ${orderId} to ${status}`);
+export const updateOrderStatus = async (orderId, status, customerId) => {
+  console.log(`Updating order status for order ID: ${orderId} to ${status} for customer ID: ${customerId}`);
   
   try {
     // Find the order and populate the user information if needed
@@ -441,12 +494,12 @@ export const updateOrderStatus = async (orderId, status) => {
     // Update order status
     order.status = status;
     order.updatedAt = new Date();
-    
     // Save the updated order
     const updatedOrder = await order.save();
 
     // Create notification for the order status update
     const notification = new Notification({
+      userId: order.customerId, // Assuming costumerId is the user ID to notify
       type: 'order',
       title: `Order ${status.charAt(0).toUpperCase() + status.slice(1)}`,
       message: `Your order #${order.orderNumber || orderId} has been updated to: ${status}`,
@@ -457,7 +510,7 @@ export const updateOrderStatus = async (orderId, status) => {
         updatedAt: new Date(),
         previousStatus: order.status // Track previous status for history
       },
-      actionUrl: `/orders/${orderId}`,
+      actionUrl: `/my-purchase`,
       priority: ['cancelled', 'shipped', 'delivered'].includes(status) ? 2 : 1
     });
 

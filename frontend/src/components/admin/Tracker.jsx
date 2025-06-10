@@ -50,6 +50,7 @@ const DeliveryTracker = () => {
         // Transform API data to match component structure if needed
         const transformedOrders = data.map(order => ({
           id: order._id || order.id,
+  customerId: order.customerId,
           customerName: order.name || 'N/A',
           customerEmail: order.email || 'N/A',
           customerPhone: order.phone || 'N/A',
@@ -83,7 +84,7 @@ const DeliveryTracker = () => {
     fetchOrders();
   }, []);
 
-  const updateOrderStatus = (orderId, newStatus) => {
+  const updateOrderStatus = (orderId, newStatus,customerId) => {
     setOrders(orders.map(order => 
       order.id === orderId ? { ...order, status: newStatus } : order
     ));
@@ -95,10 +96,9 @@ const DeliveryTracker = () => {
       headers: {
         'Content-Type': 'application/json'
       },
-      body: JSON.stringify({ status: newStatus })
+      body: JSON.stringify({ status: newStatus, customerId })
     })  
   };
-
   const openQRModal = (order) => {
     setSelectedOrder(order);
     setShowQRModal(true);
@@ -463,6 +463,7 @@ const DeliveryTracker = () => {
       order.customerName.toLowerCase().includes(searchTerm.toLowerCase()) ||
       order.customerEmail.toLowerCase().includes(searchTerm.toLowerCase()) ||
       order.item.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      order.customerId.toLowerCase().includes(searchTerm.toLowerCase()) || 
       order.trackingNumber.toLowerCase().includes(searchTerm.toLowerCase()) ||
       order.courierService.toLowerCase().includes(searchTerm.toLowerCase()) ||
       order.address.toLowerCase().includes(searchTerm.toLowerCase());
@@ -836,7 +837,7 @@ const DeliveryTracker = () => {
                         <td className="px-6 py-4 whitespace-nowrap">
                           <select
                             value={order.status}
-                            onChange={(e) => updateOrderStatus(order.id, e.target.value)}
+                            onChange={(e) => updateOrderStatus(order.id, e.target.value,order.customerId)}
                             className="text-sm border border-gray-300 rounded-md px-2 py-1 focus:ring-2 focus:ring-green-500 focus:border-transparent"
                           >
                             <option value="pending">Pending</option>
