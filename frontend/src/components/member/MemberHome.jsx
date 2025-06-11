@@ -130,7 +130,9 @@ const Dashboard = () => {
       .map((word) => word.charAt(0).toUpperCase())
       .join("");
   };
-
+const handleWithdraw = () => {
+window.location.href = "/withdraw";
+}
   const formatFullName = (firstName, lastName) => {
     if (!firstName || !lastName) return "Loading...";
     return (
@@ -541,7 +543,7 @@ const Dashboard = () => {
                   <CardTitle className="text-xl font-semibold">
                     Wallet
                   </CardTitle>
-                  <Button className="bg-green-500 hover:bg-green-600" size="sm">
+                  <Button className="bg-green-500 hover:bg-green-600" size="sm" onClick={handleWithdraw}>
                     Withdraw
                   </Button>
                 </div>
@@ -553,15 +555,7 @@ const Dashboard = () => {
                     <div className="flex items-center gap-3">
                       <h2 className="text-3xl font-bold">
                         {formatAmount(
-                            (MemberTransaction?.total || 0) +
-                            (isNaN(
-                              parseFloat(localStorage.getItem("totalEarnings"))
-                            )
-                              ? 0
-                              : parseFloat(
-                                  localStorage.getItem("totalEarnings")
-                                ))
-                        )}
+                            (MemberTransaction?.total || 0))}
                       </h2>
 
                       <span className="text-sm text-gray-500">

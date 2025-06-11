@@ -31,6 +31,7 @@ import PurchaseHistory from "./components/user/PurchaseHistory";
 import Earnings from "./components/member/Earnings";
 import AccountSettings from "./components/user/AccountSettings";
 import Tracker from "./components/admin/Tracker";
+import WithdrawPage from "./components/member/Withdraw";
 const App = () => {
   const [authState, setAuthState] = useState({
     isAuthenticated: false,
@@ -247,6 +248,14 @@ const App = () => {
           element={
             <ProtectedRoute allowedRoles={["Member"]}>
               <Earnings />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/withdraw"
+          element={
+            <ProtectedRoute allowedRoles={["Member"]}>
+              <WithdrawPage />
             </ProtectedRoute>
           }
         />
