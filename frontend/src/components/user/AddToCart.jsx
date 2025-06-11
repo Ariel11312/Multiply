@@ -1,9 +1,8 @@
-
 import React, { useState, useEffect, useRef } from 'react';
 import { Heart, ShoppingCart, ChevronLeft, ChevronRight, Star, Share2, Truck, Check } from 'lucide-react';
 import Navbar from './Navbar';
 import { useLocation } from 'react-router-dom';
-import { checkMember } from "../../middleware/member";
+import { checkAuth } from "../../middleware/auth";
 
 export default function ItemPage() {
   const [item, setItem] = useState({
@@ -26,7 +25,13 @@ export default function ItemPage() {
   const [quantity, setQuantity] = useState(1);
   const [showModal, setShowModal] = useState(false);
   const [isAddingToCart, setIsAddingToCart] = useState(false);
-      const [memberData, setMemberData] = useState(null);
+  const [authState, setAuthState] = useState({
+    isAuthenticated: false,
+    isCheckingAuth: true,
+    user: null,
+    error: null,
+  });
+  
   // Zoom functionality
   const [showZoom, setShowZoom] = useState(false);
   const imageRef = useRef(null);
@@ -36,12 +41,11 @@ export default function ItemPage() {
   
   useEffect(() => {
     fetchItems();
-     const fetchMemberData = async () => {
-        const member = await checkMember(setMemberData);
-        console.log("Member data after fetch:", member);
-        // This will show the updated data
-      };
-      fetchMemberData();
+    const fetchMemberData = async () => {
+      const member = await checkAuth(setAuthState);
+      console.log("Member data after fetch:", member);
+    };
+    fetchMemberData();
   }, []);
 
   // Traditional image zoom functionality
@@ -103,6 +107,7 @@ export default function ItemPage() {
       };
     }
   }, [showZoom, mainImage, item.images]);
+  
   const location = useLocation();
   const queryParams = new URLSearchParams(location.search);
   const productId = queryParams.get('productId');
@@ -143,8 +148,21 @@ export default function ItemPage() {
     }
   };
   
+  // Check if user is logged in before proceeding
+  const checkLoginStatus = () => {
+    if (!authState.isAuthenticated) {
+      // Redirect to login page
+      window.location.href = '/login';
+      return false;
+    }
+    return true;
+  };
+  
   // Add to cart function
   const addToCart = async () => {
+    // Check login status first
+    if (!checkLoginStatus()) return;
+    
     if (!item._id || isAddingToCart) return;
     
     setIsAddingToCart(true);
@@ -175,7 +193,11 @@ export default function ItemPage() {
       setIsAddingToCart(false);
     }
   };
+  
   const buynow = async () => {
+    // Check login status first
+    if (!checkLoginStatus()) return;
+    
     if (!item._id || isAddingToCart) return;
     
     setIsAddingToCart(true);
@@ -205,6 +227,15 @@ export default function ItemPage() {
     } finally {
       setIsAddingToCart(false);
     }
+  };
+
+  // Handle checkout redirect (if you have a separate checkout button)
+  const handleCheckout = () => {
+    // Check login status first
+    if (!checkLoginStatus()) return;
+    
+    // Proceed to checkout
+    window.location.href = '/checkout';
   };
 
   // Determine if the zoom container should show on the side or below based on screen size
@@ -348,25 +379,25 @@ export default function ItemPage() {
                 </div>
               </div>
 
-<div className="mt-4 bg-gray-50 p-4 rounded-lg">
-  <div className="flex items-baseline">
-<span className="text-3xl font-bold text-green-700">
-  ₱ {parseFloat(memberData ? item.price : item.price * 2).toLocaleString(undefined, {
-    minimumFractionDigits: 2, 
-    maximumFractionDigits: 2
-  })}
-  {!memberData && 
-    <span className="text-xs text-red-500 ml-1">(Non-member price)</span>
-  }
-</span>
-    {item.originalPrice && (
-      <>
-        <span className="text-gray-400 line-through ml-2">₱ {parseFloat(item.originalPrice).toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}</span>
-        <span className="ml-2 bg-green-100 text-green-800 text-xs px-2 py-1 rounded">{item.discount}% OFF</span>
-      </>
-    )}
-  </div>
-</div>
+              <div className="mt-4 bg-gray-50 p-4 rounded-lg">
+                <div className="flex items-baseline">
+                  <span className="text-3xl font-bold text-green-700">
+                    ₱ {parseFloat(authState.user ? item.price : item.price * 2).toLocaleString(undefined, {
+                      minimumFractionDigits: 2, 
+                      maximumFractionDigits: 2
+                    })}
+                    {!authState.user && 
+                      <span className="text-xs text-red-500 ml-1">(Non-member price)</span>
+                    }
+                  </span>
+                  {item.originalPrice && (
+                    <>
+                      <span className="text-gray-400 line-through ml-2">₱ {parseFloat(item.originalPrice).toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}</span>
+                      <span className="ml-2 bg-green-100 text-green-800 text-xs px-2 py-1 rounded">{item.discount}% OFF</span>
+                    </>
+                  )}
+                </div>
+              </div>
 
               <div className="mt-6">
                 <div className="mb-4">
@@ -434,7 +465,7 @@ export default function ItemPage() {
                     )}
                   </button>
                   <button 
-                  onClick={buynow}
+                    onClick={buynow}
                     className={`bg-green-700 text-white hover:bg-green-800 py-3 px-6 rounded-lg font-medium flex-1
                       ${!item.inStock ? 'opacity-50 cursor-not-allowed' : ''}`}
                     disabled={!item.inStock}

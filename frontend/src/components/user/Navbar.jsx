@@ -608,14 +608,17 @@ const fetchNotifications = useCallback(async () => {
                     Be a Member?
                   </li>
                 )}
-                <li
-                  className={`cursor-pointer transition-colors duration-200 hover:text-red-400 ${
-                    active === 4 ? "text-red-500" : ""
-                  }`}
-                  onClick={() => handleNavigation("/my-purchase")}
-                >
-                  My Purchase
-                </li>
+
+                {authState.isAuthenticated && (
+                  <li
+                    className={`cursor-pointer transition-colors duration-200 hover:text-red-400 ${
+                      active === 4 ? "text-red-500" : ""
+                    }`}
+                    onClick={() => handleNavigation("/my-purchase")}
+                  >
+                    My Purchase
+                  </li>
+                )}
               </ul>
             </div>
 

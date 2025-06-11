@@ -59,7 +59,7 @@ const Navigation = () => {
 
             {/* Desktop Navigation */}
             <div className="hidden md:flex items-center space-x-4">
-              <Bell className="h-6 w-6 text-white cursor-pointer hover:text-emerald-200 transition-colors" />
+              {/* <Bell className="h-6 w-6 text-white cursor-pointer hover:text-emerald-200 transition-colors" /> */}
               <User className="h-6 w-6 text-white cursor-pointer hover:text-emerald-200 transition-colors" onClick={() => setIsOpen(true)} />
             </div>
 

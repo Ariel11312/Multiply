@@ -111,8 +111,8 @@ const PurchaseHistory = () => {
                 <span className="ml-2 text-gray-500 text-sm">Order ID: {order._id}</span>
               </div>
               <div className="flex items-center gap-2">
-                <Button onClick={() => console.log('chat')} className="border-gray-300 text-gray-600">💬 Chat</Button>
-                <Button onClick={() => console.log('view shop')} className="border-gray-300 text-gray-600">🏪 View Shop</Button>
+                {/* <Button onClick={() => console.log('chat')} className="border-gray-300 text-gray-600">💬 Chat</Button>
+                <Button onClick={() => console.log('view shop')} className="border-gray-300 text-gray-600">🏪 View Shop</Button> */}
               </div>
             </div>
 
