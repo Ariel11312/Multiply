@@ -128,7 +128,6 @@ const Home = () => {
             <Hero />
           </div>
         </div>
-        <Footer />
       </div>
     </>
   );

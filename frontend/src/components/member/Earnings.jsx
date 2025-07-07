@@ -26,6 +26,11 @@ const DirectSellingCards = () => {
 
   const seats = [
     {
+      title: "e-Senator",
+      price: "1,200,000",
+      icon: <Award className="w-6 h-6" />,
+    },
+    {
       title: "e-Governor",
       price: "750,000",
       icon: <Award className="w-6 h-6" />,
