@@ -3,12 +3,15 @@ import axios from 'axios';
 import { FaShoppingBag, FaSearch } from 'react-icons/fa';
 import { BsCheckCircle } from 'react-icons/bs';
 import Navbar from './Navbar';
+import { checkMember } from "../../middleware/member";
+
 
 const PurchaseHistory = () => {
   const [activeTab, setActiveTab] = useState('All');
   const [orders, setOrders] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [loading, setLoading] = useState(true);
+  const [memberData, setMemberData] = useState(null);
 
   const tabs = ['All', 'To Pay', 'To Ship', 'To Receive', 'Completed', 'Cancelled', 'Return Refund'];
   
@@ -21,8 +24,9 @@ const PurchaseHistory = () => {
     'cancelled': 'Cancelled',
     'refunded': 'Return Refund'
   };
-
+ 
   useEffect(() => {
+        checkMember(setMemberData);
     const fetchOrders = async () => {
       setLoading(true);
       try {
@@ -136,10 +140,12 @@ const PurchaseHistory = () => {
                   <p className="text-sm text-gray-700">x{item.quantity}</p>
                 </div>
                 <div className="text-right">
-                  {item.originalPrice && item.originalPrice !== item.price && (
-                    <p className="text-sm line-through text-gray-400">₱{item.originalPrice}</p>
-                  )}
-                  <p className="text-lg text-green-600 font-semibold">₱{item.price}</p>
+             { item.originalPrice && item.originalPrice !== item.price && (
+    <p className="text-sm line-through text-gray-400">
+        ₱{memberData ? (item.originalPrice * 0.5) : item.originalPrice}
+    </p>
+)}
+                  <p className="text-lg text-green-600 font-semibold">        ₱{memberData ? (item.price * 0.5) : item.price}</p>
                 </div>
               </div>
             ))}
@@ -149,7 +155,7 @@ const PurchaseHistory = () => {
                 <span>Order Total:</span> 
                 <span className="text-lg font-bold text-green-600 ml-2">
                   ₱{order.totalAmount || 
-                    (order.orderItems?.reduce((sum, item) => sum + (item.price * item.quantity), 0) || 0)}
+                    (order.orderItems?.reduce((sum, item) => sum + (memberData ? (item.price * 0.5) : item.price * item.quantity), 0) || 0)}
                 </span>
               </div>
               

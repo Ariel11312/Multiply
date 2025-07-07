@@ -205,17 +205,6 @@ const App = () => {
           path="/my-purchase"
           element={<PurchaseHistory />}
         />
-
-        <Route
-          path="/admin/golden-seats"
-          element={
-            <PublicRoute>
-              <GoldenSeatsTable />
-            </PublicRoute>
-          }
-
-        />
-
         <Route
           path="/admin/dashboard"
           element={
@@ -271,11 +260,22 @@ const App = () => {
         <Route
           path="/admin/items" 
           element={
-            <ProtectedRoute allowedRoles={["Member"]}>
+            <ProtectedRoute allowedRoles={["Admin"]}>
               <ItemsPage />
             </ProtectedRoute>
           }
         />
+
+        <Route
+          path="/admin/golden-seats"
+          element={
+            <ProtectedRoute allowedRoles={["Admin"]}>
+              <GoldenSeatsTable />
+            </ProtectedRoute>
+          }
+
+        />
+
 
         <Route
           path="/member-transactions"

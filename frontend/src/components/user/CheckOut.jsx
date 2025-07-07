@@ -81,7 +81,7 @@ export default function CheckoutPage() {
       const formattedCartItems = cartData.items.map((item) => ({
         _id: item.itemId,
         name: item.name,
-price: memberData ? item.price : item.price * 2,
+        price: memberData ? item.price : item.price * 2,
         image: item.imageUrl,
         quantity: item.quantity,
       }));
@@ -117,7 +117,7 @@ price: memberData ? item.price : item.price * 2,
         postalCode: memberData?.postalCode || prev.postalCode,
         address: memberData?.addressNo || prev.address,
         initialized: true
-      } ) );
+      }));
       
       if (memberData) {
         setLocationNames({
@@ -282,12 +282,11 @@ price: memberData ? item.price : item.price * 2,
     setEditingAddress(!editingAddress);
   };
   const handleView = () => {
-  window.location.href = '/my-purchase';
+    window.location.href = '/my-purchase';
   };
 
   // Validation function
   const validateForm = () => {
-    
     // Check if cart is empty
     if (!cartItems || cartItems.length === 0) {
       setFormError("Your cart is empty. Please add items to your cart before checking out.");
@@ -317,16 +316,16 @@ price: memberData ? item.price : item.price * 2,
       // Create a deep copy to prevent reference issues
       const finalData = {
         customerId: authState.user?._id,
-        email:  authState.user?.email || formData.email.trim(),
+        email: authState.user?.email || formData.email.trim(),
         name: authState.user?.firstName + " " + authState.user?.lastName || formData.name.trim(),
         phone: authState.user?.phoneNumber || formData.phone.trim(),
-        address: memberData.addressNo || formData.address.trim(),
-        region: memberData.region || formData.region,
-        province:  memberData.province || formData.province,
-        city:  memberData.city  || formData.city,
-        barangay:  memberData.barangay || formData.barangay,
+        address: memberData?.addressNo || formData.address.trim(),
+        region: memberData?.region || formData.region,
+        province: memberData?.province || formData.province,
+        city: memberData?.city || formData.city,
+        barangay: memberData?.barangay || formData.barangay,
         postalCode: formData.postalCode || formData.postalCode.trim(),
-        landmark: formData.landmark   || formData.landmark.trim(),
+        landmark: formData.landmark || formData.landmark.trim(),
         paymentMethod: formData.paymentMethod,
         regionName: formData.region,
         provinceName: locationNames.provinceName,
@@ -344,45 +343,43 @@ price: memberData ? item.price : item.price * 2,
       };
       
       // Submit order
-       const response = await fetch(import.meta.env.VITE_API_URL + '/api/order/place-order', {
-         method: 'POST',
-         headers: { 'Content-Type': 'application/json' },
-         credentials: 'include',
-         body: JSON.stringify(finalData)
-       });
+      const response = await fetch(import.meta.env.VITE_API_URL + '/api/order/place-order', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify(finalData)
+      });
       
-       if (!response.ok) {
+      if (!response.ok) {
         const errorData = await response.json();
         throw new Error(errorData.message || "Failed to place order");
       }
       
-// Map through order items and delete each from cart
-for (const item of finalData.orderItems) {
-  try {
-    const itemId = item.productId._id || item.productId;
-
-    
-    const deleteResponse = await fetch(import.meta.env.VITE_API_URL+`/api/cart/items/${itemId}`, {
-      method: 'DELETE',
-      credentials: 'include',
-    });
-    
-    const deleteResult = await deleteResponse.json();
-    
-    if (deleteResponse.ok) {
-    } else {
-      console.error(`Failed to delete item ${itemId}:`, deleteResult);
-    }
-  } catch (deleteError) {
-    console.error(`Error deleting item ${itemId}:`, deleteError);
-    // Continue with the next item even if this one fails
-  }
-}
+      // Map through order items and delete each from cart
+      for (const item of finalData.orderItems) {
+        try {
+          const itemId = item.productId._id || item.productId;
+          
+          const deleteResponse = await fetch(import.meta.env.VITE_API_URL+`/api/cart/items/${itemId}`, {
+            method: 'DELETE',
+            credentials: 'include',
+          });
+          
+          const deleteResult = await deleteResponse.json();
+          
+          if (deleteResponse.ok) {
+          } else {
+            console.error(`Failed to delete item ${itemId}:`, deleteResult);
+          }
+        } catch (deleteError) {
+          console.error(`Error deleting item ${itemId}:`, deleteError);
+          // Continue with the next item even if this one fails
+        }
+      }
 
       // Move to confirmation step
       setStep(3);
-      
-          } catch (error) {
+    } catch (error) {
       console.error("Order error:", error);
       setError(error.message || "Failed to place order. Please try again.");
     } finally {
@@ -390,53 +387,133 @@ for (const item of finalData.orderItems) {
     }
   };
 
-  
   const CartSummary = () => {
-    // Calculate subtotal from cart items
-    const subtotal = cartItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-    const shipping = 150.00;
+    const isMember = memberData !== null;
+    const originalSubtotal = cartItems.reduce(
+      (sum, item) => sum + item.price * item.quantity,
+      0
+    );
+    const memberDiscount = isMember ? originalSubtotal * 0.5 : 0;
+    const subtotal = originalSubtotal - memberDiscount;
+    const shipping = 150.0;
     const total = subtotal + shipping;
-    
+
     return (
       <div className="bg-gray-50 rounded-lg p-6 space-y-4">
-
         <h3 className="text-lg font-medium text-gray-900">Order Summary</h3>
-        
+
         {/* Display cart items */}
-        {cartItems.map((item) => (
-          <div key={item._id} className="flex items-center justify-between py-2 border-b border-gray-200">
-            <div className="flex items-center space-x-4">
-              <img src={import.meta.env.VITE_API_URL + item.image} alt={item.name} className="h-16 w-16 rounded-md" />
-              <div className="text-sm">
-                <h4 className="font-medium text-gray-900">{item.name}</h4>
-                <p className="text-gray-500">₱{item.price.toFixed(2)}</p>
-                <p className="text-gray-500">Quantity: {item.quantity}</p>
+        {cartItems.map((item) => {
+          const originalPrice = item.price;
+          const memberPrice = isMember ? originalPrice * 0.5 : originalPrice;
+          const itemTotal = memberPrice * item.quantity;
+
+          return (
+            <div
+              key={item._id}
+              className="flex items-center justify-between py-2 border-b border-gray-200"
+            >
+              <div className="flex items-center space-x-4">
+                <img
+                  src={import.meta.env.VITE_API_URL + item.image}
+                  alt={item.name}
+                  className="h-16 w-16 rounded-md object-cover"
+                />
+                <div className="text-sm">
+                  <h4 className="font-medium text-gray-900">{item.name}</h4>
+                  <div className="flex items-center space-x-2">
+                    {isMember ? (
+                      <>
+                        <p className="text-gray-400 line-through text-xs">
+                          ₱{originalPrice.toFixed(2)}
+                        </p>
+                        <p className="text-green-600 font-medium">
+                          ₱{memberPrice.toFixed(2)}
+                        </p>
+                        <span className="bg-green-100 text-green-800 text-xs px-2 py-1 rounded-full">
+                          50% OFF
+                        </span>
+                      </>
+                    ) : (
+                      <p className="text-gray-500">
+                        ₱{originalPrice.toFixed(2)}
+                      </p>
+                    )}
+                  </div>
+                  <p className="text-gray-500">Quantity: {item.quantity}</p>
+                </div>
+              </div>
+              <div className="text-sm text-gray-900 font-medium">
+                ₱{itemTotal.toFixed(2)}
               </div>
             </div>
-            <div className="text-sm text-gray-900">₱{(item.price * item.quantity).toFixed(2)}</div>
-          </div>
-        ))}
-        
+          );
+        })}
+
         {/* Summary section */}
-        <div className="border-t border-b py-4">
-          <div className="flex justify-between text-sm py-2">
+        <div className="border-t border-b py-4 space-y-2">
+          <div className="flex justify-between text-sm py-1">
             <span>Subtotal</span>
-            <span>₱{subtotal.toFixed(2)}</span>
+            <span>₱{originalSubtotal.toFixed(2)}</span>
           </div>
-          <div className="flex justify-between text-sm py-2">
+
+          {/* Show member discount if applicable */}
+          {isMember && (
+            <div className="flex justify-between text-sm py-1 text-green-600">
+              <span className="flex items-center">
+                Member Discount (50%)
+                <span className="ml-2 bg-green-100 text-green-800 text-xs px-2 py-1 rounded-full">
+                  MEMBER
+                </span>
+              </span>
+              <span>-₱{memberDiscount.toFixed(2)}</span>
+            </div>
+          )}
+
+          <div className="flex justify-between text-sm py-1">
             <span>Shipping</span>
             <span>₱{shipping.toFixed(2)}</span>
           </div>
         </div>
-        
+
         {/* Total */}
-        <div className="flex justify-between font-medium pt-2">
+        <div className="flex justify-between font-medium text-lg pt-2">
           <span>Total</span>
-          <span>₱{total.toFixed(2)}</span>
+          <span className={isMember ? "text-green-600" : "text-gray-900"}>
+            ₱{total.toFixed(2)}
+          </span>
         </div>
+
+        {/* Member savings indicator */}
+        {isMember && (
+          <div className="bg-green-50 border border-green-200 rounded-lg p-3 mt-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center">
+                <svg
+                  className="h-5 w-5 text-green-500 mr-2"
+                  fill="currentColor"
+                  viewBox="0 0 20 20"
+                >
+                  <path
+                    fillRule="evenodd"
+                    d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                    clipRule="evenodd"
+                  />
+                </svg>
+                <span className="text-sm text-green-800 font-medium">
+                  Member Savings
+                </span>
+              </div>
+              <span className="text-sm text-green-800 font-bold">
+                ₱{memberDiscount.toFixed(2)}
+              </span>
+            </div>
+          </div>
+        )}
       </div>
     );
   };
+
   // Display member contact and address info if available
   const MemberInfoDisplay = () => {
     if (!memberData || !memberData.addressNo) return null;

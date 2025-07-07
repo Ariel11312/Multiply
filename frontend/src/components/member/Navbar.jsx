@@ -1,5 +1,6 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import logo from "../../assets/MULTIPLY-1 remove back.png";
+import { checkMember } from "../../middleware/member";
 import {
   Menu,
   X,
@@ -14,12 +15,9 @@ import {
 
 const Navigation = () => {
   const [isOpen, setIsOpen] = useState(false);
+  const [checkMemberData, setCheckMemberData] = useState("");
+  const [navItems, setNavItems] = useState([]);
 
-  const navItems = [
-    { icon: Home, label: "Home", path: "/" },
-    { icon: Package, label: "Transactions", path: "/member-transactions " },
-    { icon: Users, label: "4 Ways To Earn", path: "/earnings" },
-  ];
   const handleLogout = async () => {
     try {
       const response = await fetch(
@@ -31,36 +29,67 @@ const Navigation = () => {
       );
 
       if (response.ok) {
-        window.location.href= "/";
-        setAuthState({
-          isAuthenticated: false,
-          user: null,
-          isCheckingAuth: false,
-          error: null,
-        });
+        window.location.href = "/";
+        // Note: setAuthState is not defined in this component
+        // You might need to import it from a context or remove this line
+        // setAuthState({
+        //   isAuthenticated: false,
+        //   user: null,
+        //   isCheckingAuth: false,
+        //   error: null,
+        // });
       }
     } catch (error) {
       console.error("Logout error:", error);
     }
   };
 
+  useEffect(() => {
+    checkMember(setCheckMemberData);
+  }, []); // Added dependency array to prevent infinite re-renders
+
+  // Update navItems based on user type
+  useEffect(() => {
+    if (checkMemberData.userType === "Member") {
+      setNavItems([
+        { icon: Home, label: "Home", path: "/" },
+        { icon: Package, label: "Transactions", path: "/member-transactions" }, // Fixed extra space
+        { icon: Users, label: "4 Ways To Earn", path: "/earnings" },
+      ]);
+    } else if (checkMemberData.userType === "Admin") {
+      setNavItems([
+        { icon: Home, label: "Golden Seat Table", path: "/admin/golden-seats" }, // Fixed path
+        { icon: Package, label: "Inventory", path: "/admin/inventory" }, // Fixed path and removed extra space
+        { icon: Users, label: "User Information", path: "/admin/user-information" }, // Fixed path
+        { icon: Users, label: "Package Tracker", path: "/admin/tracker" }, // Fixed path
+      ]);
+    }
+  }, [checkMemberData.userType]);
+
   return (
-   
-   
-   <>
+    <>
       {/* Main Navigation */}
       <nav className="bg-emerald-600 fixed w-full top-0 z-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
             {/* Logo and Brand */}
             <div className="flex items-center">
-              <div className="text-white font-bold text-xl"><img src={logo} alt=""                 className="h-24 sm:h-10 md:h-28 w-auto object-contain transition-all duration-200" /></div>
+              <div className="text-white font-bold text-xl">
+                <img 
+                  src={logo} 
+                  alt="Logo" 
+                  className="h-24 sm:h-10 md:h-28 w-auto object-contain transition-all duration-200" 
+                />
+              </div>
             </div>
 
             {/* Desktop Navigation */}
             <div className="hidden md:flex items-center space-x-4">
               {/* <Bell className="h-6 w-6 text-white cursor-pointer hover:text-emerald-200 transition-colors" /> */}
-              <User className="h-6 w-6 text-white cursor-pointer hover:text-emerald-200 transition-colors" onClick={() => setIsOpen(true)} />
+              <User 
+                className="h-6 w-6 text-white cursor-pointer hover:text-emerald-200 transition-colors" 
+                onClick={() => setIsOpen(true)} 
+              />
             </div>
 
             {/* Mobile Menu Button */}
@@ -119,9 +148,8 @@ const Navigation = () => {
 
               <button
                 onClick={() => {
-                  // Handle logout
                   setIsOpen(false);
-                handleLogout()
+                  handleLogout();
                 }}
                 className="flex items-center w-full px-4 py-3 text-gray-700 hover:bg-emerald-50 hover:text-emerald-600"
               >

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import {
   Search,
   ChevronDown,
@@ -10,7 +10,11 @@ import {
   Calendar,
   Filter,
   X,
+  BarChart3,
+  TrendingUp,
+  PieChart,
 } from "lucide-react";
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, BarChart, Bar, PieChart as RechartsPieChart, Cell } from 'recharts';
 import Navigation from "../member/Navbar";
 import { checkTransaction } from "../../middleware/transaction";
 
@@ -28,6 +32,80 @@ const TransactionHistory = () => {
   const [selectedTransaction, setSelectedTransaction] = useState(null);
   const [isUpdating, setIsUpdating] = useState(false);
   const [updateStatus, setUpdateStatus] = useState(null);
+  const [showStats, setShowStats] = useState(false);
+
+  // Colors for charts
+  const CHART_COLORS = ['#10B981', '#059669', '#047857', '#065F46', '#064E3B', '#FCD34D', '#F59E0B', '#D97706'];
+
+  // Calculate statistics from transactions
+  const statistics = useMemo(() => {
+    if (!transactions.length) return null;
+
+    // Daily transaction amounts
+    const dailyData = transactions.reduce((acc, transaction) => {
+      const date = new Date(transaction.transactionDate).toLocaleDateString();
+      if (!acc[date]) {
+        acc[date] = { date, amount: 0, count: 0 };
+      }
+      acc[date].amount += transaction.price;
+      acc[date].count += 1;
+      return acc;
+    }, {});
+
+    const dailyChart = Object.values(dailyData)
+      .sort((a, b) => new Date(a.date) - new Date(b.date))
+      .slice(-7); // Last 7 days
+
+    // Product distribution
+    const productData = transactions.reduce((acc, transaction) => {
+      const product = transaction.productName || 'Unknown';
+      if (!acc[product]) {
+        acc[product] = { name: product, value: 0, count: 0 };
+      }
+      acc[product].value += transaction.price;
+      acc[product].count += 1;
+      return acc;
+    }, {});
+
+    const productChart = Object.values(productData);
+
+    // Monthly trends
+    const monthlyData = transactions.reduce((acc, transaction) => {
+      const month = new Date(transaction.transactionDate).toLocaleDateString('en-US', { 
+        year: 'numeric', 
+        month: 'short' 
+      });
+      if (!acc[month]) {
+        acc[month] = { month, amount: 0, count: 0 };
+      }
+      acc[month].amount += transaction.price;
+      acc[month].count += 1;
+      return acc;
+    }, {});
+
+    const monthlyChart = Object.values(monthlyData)
+      .sort((a, b) => new Date(a.month + ' 1') - new Date(b.month + ' 1'));
+
+    // Summary stats
+    const totalAmount = transactions.reduce((sum, t) => sum + t.price, 0);
+    const avgAmount = totalAmount / transactions.length;
+    const highestTransaction = Math.max(...transactions.map(t => t.price));
+    const claimedCount = transactions.filter(t => t.claimStatus === 'claimed').length;
+
+    return {
+      dailyChart,
+      productChart,
+      monthlyChart,
+      summary: {
+        totalAmount,
+        avgAmount,
+        highestTransaction,
+        totalTransactions: transactions.length,
+        claimedCount,
+        pendingCount: transactions.length - claimedCount
+      }
+    };
+  }, [transactions]);
 
   const handleClaimClick = (transaction) => {
     setSelectedTransaction(transaction);
@@ -37,7 +115,7 @@ const TransactionHistory = () => {
   const handleCloseModal = () => {
     setShowModal(false);
     setSelectedTransaction(null);
-    setUpdateStatus(null); // Reset update status when closing modal
+    setUpdateStatus(null);
   };
 
   const handleOptionSelect = async (option) => {
@@ -77,7 +155,6 @@ const TransactionHistory = () => {
         message: `Successfully claimed ${option} for transaction #${selectedTransaction.transactionId}`,
       });
       
-      // Update the local transaction state to reflect the change
       setTransactions(prev => prev.map(t => 
         t.transactionId === selectedTransaction.transactionId 
           ? { ...t, claimStatus: "claimed", claimOption: option }
@@ -105,7 +182,6 @@ const TransactionHistory = () => {
         const fetchedTransactions = await checkTransaction(setTransactions);
         
         if (fetchedTransactions) {
-          // Sort by date (newest first) and limit to 10
           const sortedAndLimited = fetchedTransactions
             .sort((a, b) => new Date(b.transactionDate) - new Date(a.transactionDate))
             .slice(0, 10);
@@ -204,6 +280,105 @@ const TransactionHistory = () => {
     }
   };
 
+  // Statistics Cards Component
+  const StatisticsCards = () => {
+    if (!statistics) return null;
+
+    return (
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+        <div className="bg-gradient-to-r from-green-500 to-green-600 p-4 rounded-lg text-white">
+          <div className="text-2xl font-bold">₱{statistics.summary.totalAmount.toLocaleString()}</div>
+          <div className="text-green-100">Total Amount</div>
+        </div>
+        <div className="bg-gradient-to-r from-blue-500 to-blue-600 p-4 rounded-lg text-white">
+          <div className="text-2xl font-bold">{statistics.summary.totalTransactions}</div>
+          <div className="text-blue-100">Total Transactions</div>
+        </div>
+        <div className="bg-gradient-to-r from-purple-500 to-purple-600 p-4 rounded-lg text-white">
+          <div className="text-2xl font-bold">₱{Math.round(statistics.summary.avgAmount).toLocaleString()}</div>
+          <div className="text-purple-100">Average Amount</div>
+        </div>
+        <div className="bg-gradient-to-r from-orange-500 to-orange-600 p-4 rounded-lg text-white">
+          <div className="text-2xl font-bold">{statistics.summary.claimedCount}</div>
+          <div className="text-orange-100">Claimed Rewards</div>
+        </div>
+      </div>
+    );
+  };
+
+  // Charts Component
+  const ChartsSection = () => {
+    if (!statistics) return null;
+
+    return (
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+        {/* Daily Transactions Chart */}
+        <div className="bg-white p-6 rounded-lg border border-green-500">
+          <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
+            <TrendingUp className="text-green-600" size={20} />
+            Daily Transaction Amounts (Last 7 Days)
+          </h3>
+          <ResponsiveContainer width="100%" height={250}>
+            <LineChart data={statistics.dailyChart}>
+              <CartesianGrid strokeDasharray="3 3" />
+              <XAxis dataKey="date" />
+              <YAxis />
+              <Tooltip formatter={(value) => [`₱${value.toLocaleString()}`, 'Amount']} />
+              <Line type="monotone" dataKey="amount" stroke="#10B981" strokeWidth={2} />
+            </LineChart>
+          </ResponsiveContainer>
+        </div>
+
+        {/* Product Distribution Chart */}
+        <div className="bg-white p-6 rounded-lg border border-green-500">
+          <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
+            <PieChart className="text-green-600" size={20} />
+            Product Distribution
+          </h3>
+          <ResponsiveContainer width="100%" height={250}>
+            <RechartsPieChart
+              data={statistics.productChart}
+              cx="50%"
+              cy="50%"
+              outerRadius={80}
+              dataKey="value"
+            >
+              {statistics.productChart.map((entry, index) => (
+                <Cell key={`cell-${index}`} fill={CHART_COLORS[index % CHART_COLORS.length]} />
+              ))}
+              <Tooltip formatter={(value) => [`₱${value.toLocaleString()}`, 'Total Amount']} />
+              <Legend />
+            </RechartsPieChart>
+          </ResponsiveContainer>
+        </div>
+
+        {/* Monthly Trends Chart */}
+        {statistics.monthlyChart.length > 1 && (
+          <div className="bg-white p-6 rounded-lg border border-green-500 lg:col-span-2">
+            <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
+              <BarChart3 className="text-green-600" size={20} />
+              Monthly Transaction Trends
+            </h3>
+            <ResponsiveContainer width="100%" height={300}>
+              <BarChart data={statistics.monthlyChart}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="month" />
+                <YAxis />
+                <Tooltip formatter={(value, name) => [
+                  name === 'amount' ? `₱${value.toLocaleString()}` : value,
+                  name === 'amount' ? 'Total Amount' : 'Transaction Count'
+                ]} />
+                <Legend />
+                <Bar dataKey="amount" fill="#10B981" name="amount" />
+                <Bar dataKey="count" fill="#059669" name="count" />
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+        )}
+      </div>
+    );
+  };
+
   // Filter panel component
   const FilterPanel = ({ isMobile = false }) => (
     <div className={`${isMobile ? "p-4" : "p-6"} space-y-4`}>
@@ -265,6 +440,12 @@ const TransactionHistory = () => {
           <div className="flex justify-between items-center mb-4">
             <div className="flex space-x-2">
               <button
+                onClick={() => setShowStats(!showStats)}
+                className="flex items-center justify-center w-10 h-10 text-green-600 hover:bg-green-50 rounded-lg"
+              >
+                <BarChart3 size={20} />
+              </button>
+              <button
                 onClick={() => exportData("csv")}
                 className="flex items-center justify-center w-10 h-10 text-green-600 hover:bg-green-50 rounded-lg"
               >
@@ -284,6 +465,13 @@ const TransactionHistory = () => {
               </button>
             </div>
           </div>
+
+          {showStats && (
+            <div className="mb-4">
+              <StatisticsCards />
+              <ChartsSection />
+            </div>
+          )}
 
           <div className="relative mb-4">
             <Search
@@ -351,6 +539,10 @@ const TransactionHistory = () => {
       {/* Desktop Layout */}
       <div className="hidden lg:block">
         <div className="max-w-6xl mx-auto p-6">
+          {/* Statistics Dashboard */}
+          <StatisticsCards />
+          <ChartsSection />
+
           <div className="grid grid-cols-12 gap-6">
             {/* Left Sidebar */}
             <div className="col-span-3">

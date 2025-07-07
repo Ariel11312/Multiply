@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Package, MapPin, Clock, CheckCircle, Truck, User, Phone, Mail, Edit3, Eye, X, QrCode, Printer } from 'lucide-react';
 import { QRCodeSVG } from 'qrcode.react';
+import Navbar from '../member/Navbar';
 
 const DeliveryTracker = () => {
   const [orders, setOrders] = useState([]);
@@ -504,6 +505,7 @@ const DeliveryTracker = () => {
     });
 
     return (
+      
       <div ref={printRef} className="bg-white p-8 max-w-md mx-auto" style={{ fontFamily: 'Arial, sans-serif' }}>
         {/* Header */}
         <div className="text-center border-b-2 border-dashed border-gray-300 pb-4 mb-6">
@@ -602,7 +604,11 @@ const DeliveryTracker = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-green-50 to-green-100 p-6">
+   
+   <>
+      <Navbar/>
+   
+   <div className="min-h-screen bg-gradient-to-br from-green-50 to-green-100 p-6">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="bg-white rounded-2xl shadow-xl mb-8 overflow-hidden">
@@ -861,7 +867,7 @@ const DeliveryTracker = () => {
                               onClick={() => openQRModal(order)}
                               className="text-green-600 hover:text-green-900 transition-colors p-1 rounded-full hover:bg-green-50"
                               title="Generate QR Code"
-                            >
+                              >
                               <QRCodeSVG size={16} />
                             </button>
                             <button
@@ -960,7 +966,7 @@ const DeliveryTracker = () => {
                           value={selectedOrder.status}
                           onChange={(e) => updateOrderStatus(selectedOrder.id, e.target.value)}
                           className="block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
-                        >
+                          >
                           <option value="pending">Pending</option>
                           <option value="processing">Processing</option>
                           <option value="shipped">Shipped</option>
@@ -1057,7 +1063,7 @@ const DeliveryTracker = () => {
                   <button
                     onClick={() => openQRModal(selectedOrder)}
                     className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
-                  >
+                    >
                     <QrCode className="mr-2 h-4 w-4" />
                     Generate QR Code
                   </button>
@@ -1071,7 +1077,7 @@ const DeliveryTracker = () => {
                   <button
                     onClick={() => setSelectedOrder(null)}
                     className="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md shadow-sm text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
-                  >
+                    >
                     Close
                   </button>
                 </div>
@@ -1111,7 +1117,7 @@ const DeliveryTracker = () => {
                       includeMargin={true}
                       fgColor="#4f46e5"
                       bgColor="#ffffff"
-                    />
+                      />
                   </div>
                   
                   <div className="text-center mb-6">
@@ -1133,7 +1139,7 @@ const DeliveryTracker = () => {
                     <button
                       onClick={() => setShowQRModal(false)}
                       className="px-4 py-2 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300 transition-colors"
-                    >
+                      >
                       Close
                     </button>
                   </div>
@@ -1152,7 +1158,7 @@ const DeliveryTracker = () => {
                 <button 
                   onClick={() => setShowPrintModal(false)}
                   className="text-gray-400 hover:text-gray-600 transition-colors"
-                >
+                  >
                   <X size={24} />
                 </button>
               </div>
@@ -1164,14 +1170,14 @@ const DeliveryTracker = () => {
                   <button
                     onClick={handlePrint}
                     className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
-                  >
+                    >
                     <Printer className="mr-2 h-4 w-4" />
                     Print Now
                   </button>
                   <button
                     onClick={() => setShowPrintModal(false)}
                     className="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md shadow-sm text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
-                  >
+                    >
                     Cancel
                   </button>
                 </div>
@@ -1181,6 +1187,7 @@ const DeliveryTracker = () => {
         )}
       </div>
     </div>
+        </> 
   );
 };
 
