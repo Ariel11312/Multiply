@@ -454,15 +454,15 @@ export const getReferralTree = async (request, response) => {
                         lastName: user?.lastName || 'User',
                         email: user?.email
                     },
-                    statistics: {
-                        totalEarnings,
-                        commission: totalEarnings * 0.10, // 10% commission
-                        directReferralEarnings, // Use calculated directReferralEarnings
-                        transactionCount: memberTransactions.length,
-                        lastTransaction: memberTransactions.length > 0
-                            ? memberTransactions[memberTransactions.length - 1].createdAt
-                            : null
-                    },
+statistics: {
+    totalEarnings: memberTransactions.reduce((sum, t) => sum + (t.price || 0), 0),
+    commission: memberTransactions.reduce((sum, t) => sum + (t.price || 0), 0),
+    directReferralEarnings, // Use calculated directReferralEarnings
+    transactionCount: memberTransactions.length,
+    lastTransaction: memberTransactions.length > 0
+        ? memberTransactions[memberTransactions.length - 1].createdAt
+        : null
+},
                     children
                 };
             }));

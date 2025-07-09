@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent } from "../ui/card";
 
 const ReferralTreeTable = () => {
@@ -7,6 +7,7 @@ const ReferralTreeTable = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [statistics, setStatistics] = useState(null);
 
   useEffect(() => {
     const fetchReferralTree = async () => {
@@ -26,15 +27,22 @@ const ReferralTreeTable = () => {
   
         const data = await response.json();
         setTreeData(data.data.referralTree);
+        setStatistics(data.data.statistics);
   
-        const totalEarnings =
-          data.data?.statistics?.totalEarningsWithCommissionAndDirectReferral ||
-          "Not available";
-        localStorage.setItem("totalEarnings", totalEarnings);
+        // Store the total earnings from statistics
+        const totalEarnings = data.data?.statistics?.totalEarnings || 0;
+        const totalCommissions = data.data?.statistics?.totalCommissions || 0;
+        const totalDirectReferralEarnings = data.data?.statistics?.totalDirectReferralEarnings || 0;
+        const totalEarningsWithCommissionAndDirectReferral = data.data?.statistics?.totalEarningsWithCommissionAndDirectReferral || 0;
+        
+        // Store in localStorage if needed
+        localStorage.setItem("totalEarnings", totalEarnings.toString());
+        localStorage.setItem("totalCommissions", totalCommissions.toString());
+        localStorage.setItem("totalDirectReferralEarnings", totalDirectReferralEarnings.toString());
+        localStorage.setItem("totalEarningsWithCommissionAndDirectReferral", totalEarningsWithCommissionAndDirectReferral.toString());
   
         // Function to log referral earnings by level
         function logReferralEarningsByLevel(data) {
-          // Initialize an object to store earnings for each level
           const earningsByLevel = {
             1: 0,
             2: 0,
@@ -45,18 +53,11 @@ const ReferralTreeTable = () => {
             7: 0,
           };
   
-          // Function to recursively traverse the tree
           function traverseTree(node, currentLevel) {
-            // Log the current node and level for debugging
-  
-            // If the level is within our range of interest (1-7)
             if (currentLevel >= 1 && currentLevel <= 7) {
-              // Add the direct referral earnings to the appropriate level
-              earningsByLevel[currentLevel] +=
-                node.statistics.directReferralEarnings || 0;
+              earningsByLevel[currentLevel] += node.statistics.directReferralEarnings || 0;
             }
   
-            // Recursively process children
             if (node.children && node.children.length > 0) {
               node.children.forEach((child) => {
                 traverseTree(child, currentLevel + 1);
@@ -64,21 +65,16 @@ const ReferralTreeTable = () => {
             }
           }
   
-          // Start traversing from the referralTree array (level 1)
           if (data.data.referralTree && data.data.referralTree.length > 0) {
             data.data.referralTree.forEach((child) => {
               traverseTree(child, 1);
             });
           }
   
-          // Log the results
-          for (let level = 1; level <= 7; level++) {
-          }
+          console.log("Earnings by level:", earningsByLevel);
         }
   
-        // Call the function with the response data
         logReferralEarningsByLevel(data);
-  
         setIsLoading(false);
       } catch (err) {
         setError(err.message);
@@ -99,17 +95,24 @@ const ReferralTreeTable = () => {
     setIsModalOpen(false);
   };
 
+  // Statistics Card Component
+  const StatisticsCard = () => {
+    if (!statistics) return null;
+    
+    return (
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+      </div>
+    );
+  };
+
   // Render tree node with visual styling
   const renderTreeNode = (node, isLast = false, level = 1) => (
     <div key={node.userDetails.id} className="relative">
       {/* Connecting lines */}
       {level > 1 && (
         <>
-          {/* Vertical line from parent */}
           <div className="absolute -top-6 left-4 w-px h-6 bg-emerald-300"></div>
-          {/* Horizontal line to node */}
           <div className="absolute -top-6 left-4 w-8 h-px bg-emerald-300"></div>
-          {/* Vertical continuation line if not last child */}
           {!isLast && (
             <div className="absolute top-0 left-4 w-px h-full bg-emerald-300"></div>
           )}
@@ -139,19 +142,15 @@ const ReferralTreeTable = () => {
                 </h3>
                 <div className="grid grid-cols-3 gap-4 mt-2 text-sm">
                   <div>
-                    <span className="text-gray-500 block">Wallet Balance</span>
+                    <span className="text-gray-500 block">Total Earnings</span>
                     <span className="font-bold text-emerald-600">
-                      {node.statistics.directReferralEarnings || 0}
+                      {node.statistics.totalEarnings || 0}
                     </span>
                   </div>
                   <div>
-                    <span className="text-gray-500 block">Total Withdraw</span>
-                    <span className="font-bold text-gray-700">0</span>
-                  </div>
-                  <div>
                     <span className="text-gray-500 block">Commission</span>
-                    <span className="font-bold text-emerald-600">
-                      {node.statistics.directReferralEarnings || 0}
+                    <span className="font-bold text-blue-600">
+                      {node.statistics.commission || 0}
                     </span>
                   </div>
                 </div>
@@ -176,22 +175,6 @@ const ReferralTreeTable = () => {
           )}
         </div>
       )}
-    </div>
-  );
-
-  // Render empty slot
-  const renderEmptySlot = (level) => (
-    <div className="ml-8 mb-4">
-      <Card className="border-2 border-dashed border-gray-300 bg-gray-50">
-        <CardContent className="p-4">
-          <div className="text-center text-gray-500">
-            <div className="flex items-center justify-center space-x-2">
-              <div className="w-8 h-8 rounded-full border-2 border-dashed border-gray-400"></div>
-              <span className="text-sm">Empty Slot - Level {level}</span>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
     </div>
   );
 
@@ -221,21 +204,29 @@ const ReferralTreeTable = () => {
                 {node.userDetails.firstName.toLowerCase() + " " + node.userDetails.lastName.toLowerCase()}
                 {isRoot && <span className="ml-2 text-sm font-normal text-emerald-600">(Root)</span>}
               </h3>
-              <div className="grid grid-cols-3 gap-4 mt-2 text-sm">
+              <div className="grid grid-cols-4 gap-4 mt-2 text-sm">
                 <div>
-                  <span className="text-gray-500 block">Wallet Balance</span>
+                  <span className="text-gray-500 block">Total Earnings</span>
                   <span className="font-bold text-emerald-600">
+                    {node.statistics.totalEarnings || 0}
+                  </span>
+                </div>
+                <div>
+                  <span className="text-gray-500 block">Commission</span>
+                  <span className="font-bold text-blue-600">
+                    {node.statistics.commission || 0}
+                  </span>
+                </div>
+                <div>
+                  <span className="text-gray-500 block">Direct Referral</span>
+                  <span className="font-bold text-purple-600">
                     {node.statistics.directReferralEarnings || 0}
                   </span>
                 </div>
                 <div>
-                  <span className="text-gray-500 block">Total Withdraw</span>
-                  <span className="font-bold text-gray-700">0</span>
-                </div>
-                <div>
-                  <span className="text-gray-500 block">Commission</span>
-                  <span className="font-bold text-emerald-600">
-                    {node.statistics.directReferralEarnings || 0}
+                  <span className="text-gray-500 block">Transactions</span>
+                  <span className="font-bold text-gray-700">
+                    {node.statistics.transactionCount || 0}
                   </span>
                 </div>
               </div>
@@ -277,7 +268,6 @@ const ReferralTreeTable = () => {
   const renderCompleteTree = (rootNode) => {
     const levels = [];
     
-    // Level 1 - Root node
     levels.push(
       <div key="level-1" className="mb-8">
         <div className="text-center mb-4">
@@ -288,7 +278,6 @@ const ReferralTreeTable = () => {
       </div>
     );
 
-    // Function to collect nodes at specific level
     const getNodesAtLevel = (node, targetLevel, currentLevel = 1) => {
       if (currentLevel === targetLevel) {
         return [node];
@@ -303,7 +292,6 @@ const ReferralTreeTable = () => {
       return [];
     };
 
-    // Levels 2-7
     for (let level = 2; level <= 7; level++) {
       const nodesAtLevel = getNodesAtLevel(rootNode, level);
       
@@ -326,7 +314,6 @@ const ReferralTreeTable = () => {
             {nodesAtLevel.length > 0 ? (
               nodesAtLevel.map((node, index) => (
                 <div key={node.userDetails.id} className="relative">
-                  {/* Connection line to parent level */}
                   {level > 1 && (
                     <div className="absolute -top-6 left-1/2 transform -translate-x-1/2">
                       <div className="w-px h-6 bg-emerald-300"></div>
@@ -379,6 +366,11 @@ const ReferralTreeTable = () => {
         <p className="text-gray-600">Visual representation of your referral network</p>
       </div>
 
+      {/* Statistics Cards */}
+      <StatisticsCard />
+
+
+
       {treeData.length === 0 ? (
         <Card className="w-full border-2 border-dashed border-gray-300">
           <CardContent className="py-16">
@@ -399,7 +391,6 @@ const ReferralTreeTable = () => {
         </Card>
       ) : (
         <div className="bg-white rounded-lg shadow-lg p-6">
-          {/* Tree visualization */}
           <div className="space-y-2">
             {treeData.slice(0, 7).map((node, index) => 
               renderTreeNode(node, index === Math.min(treeData.length, 7) - 1, 1)
@@ -412,7 +403,6 @@ const ReferralTreeTable = () => {
       {isModalOpen && selectedNode && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 p-4">
           <div className="max-h-[90vh] w-full max-w-6xl overflow-y-auto rounded-xl bg-white shadow-2xl">
-            {/* Modal header */}
             <div className="sticky top-0 bg-white border-b border-gray-200 p-6 rounded-t-xl">
               <div className="flex items-center justify-between">
                 <div className="flex items-center space-x-4">
@@ -438,7 +428,6 @@ const ReferralTreeTable = () => {
               </div>
             </div>
 
-            {/* Modal content */}
             <div className="p-6 bg-gradient-to-b from-emerald-50 to-white">
               {renderCompleteTree(selectedNode)}
             </div>
