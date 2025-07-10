@@ -126,9 +126,38 @@ const Home = () => {
           <AnimatedBackground />
           <div className="relative z-10 ">
             <Hero />
+  <footer className="bg-green-800 text-white py-12">
+    <div className="max-w-6xl mx-auto px-4">
+      <div className="text-center mb-8">
+        <h2 className="text-3xl font-bold mb-4">Contact Us</h2>
+      </div>
+      
+      <div className="grid md:grid-cols-3 gap-8 text-center">
+        <div>
+          <h3 className="text-xl font-semibold mb-2">Email</h3>
+          <p className="text-yellow-300">wemultiply27@gmail.com</p>
+        </div>
+        
+        <div>
+          <h3 className="text-xl font-semibold mb-2">Contact Number</h3>
+          <p className="text-yellow-300">0968 888 1188</p>
+        </div>
+        
+        <div>
+          <h3 className="text-xl font-semibold mb-2">Visit Us</h3>
+          <p className="text-yellow-300">
+            A&C Bldg Gil Carlos Street<br />
+            Poblacion Baliwag, Bulacan
+          </p>
+        </div>
+      </div>
+    </div>
+  </footer>
           </div>
         </div>
       </div>
+
+
     </>
   );
 };
