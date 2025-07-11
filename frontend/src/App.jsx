@@ -32,6 +32,7 @@ import Earnings from "./components/member/Earnings";
 import AccountSettings from "./components/user/AccountSettings";
 import Tracker from "./components/admin/Tracker";
 import WithdrawPage from "./components/member/Withdraw";
+import VPCommissionPage from "./components/admin/VPCommission";
 const App = () => {
   const [authState, setAuthState] = useState({
     isAuthenticated: false,
@@ -271,6 +272,15 @@ const App = () => {
           element={
             <ProtectedRoute allowedRoles={["Admin"]}>
               <GoldenSeatsTable />
+            </ProtectedRoute>
+          }
+
+        />
+        <Route
+          path="/admin/vp-commission"
+          element={
+            <ProtectedRoute allowedRoles={["Admin"]}>
+              <VPCommissionPage />
             </ProtectedRoute>
           }
 

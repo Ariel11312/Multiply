@@ -53,6 +53,7 @@ const Navigation = () => {
     if (checkMemberData.userType === "Member") {
       setNavItems([
         { icon: Home, label: "Home", path: "/" },
+        { icon: Home, label: " Member Home", path: "/member" },
         { icon: Package, label: "Transactions", path: "/member-transactions" }, // Fixed extra space
         { icon: Users, label: "4 Ways To Earn", path: "/earnings" },
       ]);
@@ -62,6 +63,7 @@ const Navigation = () => {
         { icon: Package, label: "Inventory", path: "/admin/inventory" }, // Fixed path and removed extra space
         { icon: Users, label: "User Information", path: "/admin/user-information" }, // Fixed path
         { icon: Users, label: "Package Tracker", path: "/admin/tracker" }, // Fixed path
+        { icon: Users, label: "VP Commission", path: "/admin/vp-commission" }, // Fixed path
       ]);
     }
   }, [checkMemberData.userType]);
