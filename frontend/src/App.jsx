@@ -33,6 +33,8 @@ import AccountSettings from "./components/user/AccountSettings";
 import Tracker from "./components/admin/Tracker";
 import WithdrawPage from "./components/member/Withdraw";
 import VPCommissionPage from "./components/admin/VPCommission";
+import Payments from "./components/member/HitpayPayment";
+
 const App = () => {
   const [authState, setAuthState] = useState({
     isAuthenticated: false,
@@ -178,6 +180,7 @@ const App = () => {
         />
         <Route path="/member-registration" element={<Membership />} />
         <Route path="/account-settings" element={<AccountSettings />} />
+        <Route path="/payments" element={<Payments />} />
         <Route path="/verify-payment" element={<PaymentStatus />} />
         <Route path="/" element={<Home />} />
         <Route path="/items" element={<AddToCart />} />
