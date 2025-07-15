@@ -2,12 +2,12 @@ import axios from "axios";
 import dotenv from "dotenv";
 dotenv.config();
 
-const XENDIT_SECRET_KEY = process.env.XENDIT_SECRET_KEY;
-const XENDIT_API_URL = "https://api.xendit.co";
+const HITPAY_SECRET_KEY = process.env.HITPAY_SECRET_KEY;
+const HITPAY_API_URL = "https://api.hit-pay.com/v1";
 
 // Validate configuration on startup
-if (!XENDIT_SECRET_KEY) {
-    console.error("FATAL: Xendit secret key is not configured");
+if (!HITPAY_SECRET_KEY) {
+    console.error("FATAL: HitPay secret key is not configured");
     process.exit(1);
 }
 
@@ -28,46 +28,35 @@ export const createPayment = async (req, res) => {
             });
         }
 
-        // Prepare invoice data
-        const externalId = `invoice_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-        const roundedAmount = Math.round(Number(amount));
-        
-        const invoiceData = {
-            external_id: externalId,
+        // Prepare payment request data
+        const referenceNumber = `payment_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+        const roundedAmount = Math.round(Number(amount) * 100) / 100; // Round to 2 decimal places
+
+        const paymentData = {
             amount: roundedAmount,
             currency: "PHP",
-            description,
-            invoice_duration: 86400, // 24 hours in seconds
-            customer: {
-                given_names: name || "Customer",
-                email: email || "customer@example.com",
-                mobile_number: phone || "+639123456789",
-            },
-            customer_notification_preference: {
-                invoice_created: ["email"],
-                invoice_reminder: ["email"],
-                invoice_paid: ["email"],
-                invoice_expired: ["email"]
-            },
-            success_redirect_url: `${process.env.PAYMENT_SUCCESS_URL || process.env.VITE_URL}/verify-payment?invoiceId=${externalId}`,
-            failure_redirect_url: `${process.env.PAYMENT_FAILURE_URL || process.env.VITE_URL}/payment-failed?invoiceId=${externalId}`,
-            payment_methods: ["GCASH", "GRABPAY", "PAYMAYA", "BPI", "BDO", "UNIONBANK", "RCBC"],
-            fees: [{
-                type: "ADMIN",
-                value: 0
-            }]
+            name: name || "Customer",
+            email: email || "customer@example.com",
+            phone: phone || "+639123456789",
+            purpose: description,
+            reference_number: referenceNumber,
+            redirect_url: `${process.env.PAYMENT_SUCCESS_URL || process.env.VITE_URL}/verify-payment?referenceNumber=${referenceNumber}`,
+            webhook: `${process.env.WEBHOOK_URL || process.env.VITE_URL}/api/webhook/hitpay`,
+            payment_methods: ["paynow", "grabpay", "card", "fpx"], // Common HitPay payment methods
+            expires_after: 1440, // 24 hours in minutes
+            allow_repeated_payments: false
         };
 
-        console.log("Creating Xendit invoice with data:", invoiceData);
+        console.log("Creating HitPay payment request with data:", paymentData);
 
-        // Create invoice
+        // Create payment request
         const response = await axios.post(
-            `${XENDIT_API_URL}/v2/invoices`,
-            invoiceData,
+            `${HITPAY_API_URL}/payment-requests`,
+            paymentData,
             {
                 headers: {
-                    Authorization: `Basic ${Buffer.from(XENDIT_SECRET_KEY + ":").toString("base64")}`,
-                    "Content-Type": "application/json",
+                    "X-BUSINESS-API-KEY": HITPAY_SECRET_KEY,
+                    "Content-Type": "application/x-www-form-urlencoded",
                 },
                 timeout: 10000 // 10 second timeout
             }
@@ -76,11 +65,11 @@ export const createPayment = async (req, res) => {
         // Return response
         return res.json({
             success: true,
-            checkoutUrl: response.data.invoice_url,
-            invoiceId: response.data.id,
-            externalId: response.data.external_id,
+            checkoutUrl: response.data.url,
+            paymentId: response.data.id,
+            referenceNumber: response.data.reference_number,
             status: response.data.status,
-            expiryDate: response.data.expiry_date,
+            expiryDate: response.data.expires_at,
         });
 
     } catch (error) {
@@ -90,12 +79,12 @@ export const createPayment = async (req, res) => {
             stack: error.stack,
         });
 
-        if (error.response?.data?.error_code) {
+        if (error.response?.data?.error) {
             return res.status(error.response.status || 400).json({
                 success: false,
                 error: {
-                    message: error.response.data.message,
-                    code: error.response.data.error_code,
+                    message: error.response.data.error,
+                    code: error.response.data.error_code || "PAYMENT_ERROR",
                 },
             });
         }
@@ -107,5 +96,50 @@ export const createPayment = async (req, res) => {
                 details: error.message,
             },
         });
+    }
+};
+
+// Optional: Add webhook handler for payment status updates
+export const handleWebhook = async (req, res) => {
+    try {
+        const { payment_id, status, reference_number, amount, currency } = req.body;
+        
+        // Verify webhook signature (recommended for production)
+        // const signature = req.headers['x-hitpay-signature'];
+        // if (!verifyWebhookSignature(req.body, signature)) {
+        //     return res.status(400).json({ error: "Invalid signature" });
+        // }
+
+        console.log("HitPay webhook received:", {
+            payment_id,
+            status,
+            reference_number,
+            amount,
+            currency
+        });
+
+        // Handle different payment statuses
+        switch (status) {
+            case "completed":
+                // Payment successful - update your database
+                console.log(`Payment ${payment_id} completed successfully`);
+                break;
+            case "failed":
+                // Payment failed
+                console.log(`Payment ${payment_id} failed`);
+                break;
+            case "pending":
+                // Payment pending
+                console.log(`Payment ${payment_id} is pending`);
+                break;
+            default:
+                console.log(`Unknown payment status: ${status}`);
+        }
+
+        return res.status(200).json({ success: true });
+
+    } catch (error) {
+        console.error("Webhook processing error:", error);
+        return res.status(500).json({ error: "Webhook processing failed" });
     }
 };
