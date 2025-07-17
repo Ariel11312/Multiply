@@ -584,7 +584,7 @@ const checkPaymentStatus = async (invoiceId) => {
   className="text-green-600 hover:text-green-700 font-medium underline"
   onClick={() => window.open(termsPdf)}
 >
-  terms and conditions
+  Terms and Conditions
 </button>
                 </div>
 
