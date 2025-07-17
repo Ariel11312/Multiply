@@ -4,7 +4,7 @@ import { Check, ChevronDown, Loader2, AlertCircle } from "lucide-react";
 import Navbar from "./Navbar";
 import MemberCategory from "./MemberCategory";
 import axios from "axios";
-
+import termsPdf from '../../assets/Terms-and-Conditions-for-web.pdf';
 function generateCustomString() {
   const prefix = "MUL";
   const characters =
@@ -579,16 +579,13 @@ const checkPaymentStatus = async (invoiceId) => {
                     className="h-5 w-5 text-green-500 focus:ring-green-500 border-gray-300 rounded"
                     required
                   />
-                  <label className="text-sm text-gray-700">
-                    I agree to the{" "}
-                    <button
-                      type="button"
-                      className="text-green-600 hover:text-green-700 font-medium underline"
-                      onClick={() => window.open("/terms", "_blank")}
-                    >
-                      terms and conditions
-                    </button>
-                  </label>
+<button
+  type="button"
+  className="text-green-600 hover:text-green-700 font-medium underline"
+  onClick={() => window.open(termsPdf)}
+>
+  terms and conditions
+</button>
                 </div>
 
                 <button
