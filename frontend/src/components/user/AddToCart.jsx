@@ -3,6 +3,7 @@ import { Heart, ShoppingCart, ChevronLeft, ChevronRight, Star, Share2, Truck, Ch
 import Navbar from './Navbar';
 import { useLocation } from 'react-router-dom';
 import { checkAuth } from "../../middleware/auth";
+import termsPdf from '../../assets/Terms-and-Conditions-for-web.pdf';
 
 export default function ItemPage() {
   const [item, setItem] = useState({
@@ -476,16 +477,13 @@ export default function ItemPage() {
               </div>
 
               <div className="mt-6 border-t border-gray-200 pt-4">
-                <div className="flex items-center text-gray-700 mb-2">
-                  <Truck size={18} className="mr-2" />
-                  <span>Shipping: {item.shipping}</span>
-                </div>
-                <div className="flex items-center text-gray-700">
-                  <div className="mr-2 w-4 h-4 rounded-full bg-green-700 flex items-center justify-center">
-                    <span className="text-white text-xs">✓</span>
-                  </div>
-                  <span>Sold by: {item.seller}</span>
-                </div>
+               <button
+                 type="button"
+                 className="text-green-600 hover:text-green-700 font-medium underline"
+                 onClick={() => window.open(termsPdf)}
+               >
+                 terms and conditions
+               </button>
               </div>
             </div>
           </div>
