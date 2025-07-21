@@ -2,7 +2,7 @@ import Stripe from 'stripe';
 import dotenv from "dotenv";
 dotenv.config();
 
-const STRIPE_SECRET_KEY = "sk_test_51RkbOs08coe2yvK5Y10HTf3VGgduOPm7EY7ZjYbvLgDyym5CtpS5fIV2q2pwkcko77uiMMxqpEBy6fkC9JXALlr300xU9ekLQf";
+const STRIPE_SECRET_KEY = process.env.STRIPE_SECRET_KEY;
 
 // Validate configuration on startup
 if (!STRIPE_SECRET_KEY) {
