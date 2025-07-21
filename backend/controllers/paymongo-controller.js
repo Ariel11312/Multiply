@@ -2,18 +2,18 @@ import Stripe from 'stripe';
 import dotenv from "dotenv";
 dotenv.config();
 
-const stripeSecretKey  = process.env.STRIPE_SECRET_KEY;
+const STRIPE_SECRET_KEY = process.env.STRIPE_SECRET_KEY;
 
 // Validate configuration on startup
-if (!stripeSecretKey ) {
+if (!STRIPE_SECRET_KEY) {
     console.error("FATAL: Stripe secret key is not configured");
-    console.error("Please set stripeSecretKey  in your .env file");
+    console.error("Please set STRIPE_SECRET_KEY in your .env file");
     console.error("Available env vars:", Object.keys(process.env).filter(key => key.includes('STRIPE')));
     process.exit(1);
 }
 
 // Initialize Stripe
-const stripe = new Stripe(stripeSecretKey , {
+const stripe = new Stripe(STRIPE_SECRET_KEY, {
     apiVersion: '2023-10-16', // Use a specific API version
 });
 
