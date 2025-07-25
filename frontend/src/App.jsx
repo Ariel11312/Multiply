@@ -34,6 +34,8 @@ import Tracker from "./components/admin/Tracker";
 import WithdrawPage from "./components/member/Withdraw";
 import VPCommissionPage from "./components/admin/VPCommission";
 import Payments from "./components/member/HitpayPayment";
+import Proof from "./components/user/Proof";
+import PaymentTransaction from "./components/user/PaymentTransaction";
 
 const App = () => {
   const [authState, setAuthState] = useState({
@@ -185,7 +187,9 @@ const App = () => {
         <Route path="/" element={<Home />} />
         <Route path="/items" element={<AddToCart />} />
         <Route path="/shop" element={<EcommerceShop />} />
-
+        <Route path="/proof-of-payment" element={<Proof />} />
+        <Route path="/payment-transaction" element={<PaymentTransaction />} />
+        
         <Route
           path="/verification"
           element={
@@ -264,9 +268,9 @@ const App = () => {
         <Route
           path="/admin/items" 
           element={
-            <ProtectedRoute allowedRoles={["Admin"]}>
-              <ItemsPage />
-            </ProtectedRoute>
+            // <ProtectedRoute allowedRoles={["Admin"]}>
+             <ItemsPage />
+            // </ProtectedRoute>
           }
         />
 

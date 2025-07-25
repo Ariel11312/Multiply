@@ -4,6 +4,7 @@ import { User } from "../models/user.js";
 import { MemberTransaction } from "../models/member-transactions.js";
 import { GoldenSeatOwner } from "../models/golden-seat-owner.js";
 import { goldenseats } from "../models/golden-seats.js";
+import { Payment } from "../models/payment.js";
 
 export const createMember = async (request, response) => {
   try {
@@ -42,7 +43,7 @@ export const createMember = async (request, response) => {
       country,
       userType = "Member",
       role = "sower",
-      memberStatus = "Active",
+      memberStatus = "Pending",
       paymentType,
       referredBy,
       memberDate,
@@ -98,7 +99,7 @@ export const createMember = async (request, response) => {
       const referrer = await Member.findOne({ referralCode: referredBy });
       if (referrer) {
         if (referrer.memberRoot) {
-          const savedMember = new Member({
+          const savedMember = new Payment({
             memberID,
             referralCode,
             memberType: [memberType],
@@ -119,7 +120,7 @@ export const createMember = async (request, response) => {
           savedMember.save();
         }
       } else {
-        const savedMember = new Member({
+        const savedMember = new Payment({
           memberID,
           referralCode,
           memberType: [memberType],
@@ -141,7 +142,7 @@ export const createMember = async (request, response) => {
     } else if (memberType === "Crown" && referredBy) {
       const referrer = await Member.findOne({ referralCode: referredBy });
       if (referrer.memberRoot) {
-        const savedMember = new Member({
+        const savedMember = new Payment({
           memberID,
           referralCode,
           memberType,
@@ -164,7 +165,7 @@ export const createMember = async (request, response) => {
         await savedMember.save();
       }
       if (referrer.memberRoot && referrer.referredRoot) {
-        const savedMember = new Member({
+        const savedMember = new Payment({
           memberID,
           referralCode,
           memberType,
@@ -187,7 +188,7 @@ export const createMember = async (request, response) => {
         await savedMember.save();
       }
     } else {
-      const savedMember = new Member({
+      const savedMember = new Payment({
         memberID,
         referralCode,
         memberType: [memberType],
@@ -420,6 +421,65 @@ export const getMemberById = async (request, response) => {
       message: "An error occurred while fetching member",
     });
   }
+};
+
+export const getPaymentById = async (request, response) => {
+    const memberId = request.params.id;
+    
+    try {
+        // Find all payment records for this member
+        const payments = await Payment.find({ memberID: memberId });
+        
+        if (!payments || payments.length === 0) {
+            return response.status(404).json({
+                success: false,
+                message: "No payment records found for this member",
+                payments: [] // Return empty array for consistency
+            });
+        }
+
+        response.status(200).json({
+            success: true,
+            message: "Payment records retrieved successfully",
+            payments // Return the array of payment documents
+        });
+    } catch (error) {
+        console.error(`Error fetching payments: ${error.message}`);
+        response.status(500).json({
+            success: false,
+            message: "An error occurred while fetching payment records",
+            payments: [] // Return empty array for consistency
+        });
+    }
+};
+export const getProofById = async (request, response) => {
+    const memberId = request.params.id;
+  console.log(memberId)
+    try {
+        // Find all payment records for this member
+        const payments = await Payment.find({ _id: memberId });
+        
+        if (!payments || payments.length === 0) {
+            return response.status(404).json({
+                success: false,
+                message: "No payment records found for this member",
+                payments: [] // Return empty array for consistency
+            });
+        }
+
+        response.status(200).json({
+            success: true,
+            message: "Payment records retrieved successfully",
+            payments // Return the array of payment documents
+        });
+    } catch (error) {
+        console.error(`Error fetching payments: ${error.message}`);
+        response.status(500).json({
+            success: false,
+            message: "An error occurred while fetching payment records",
+            payments: [] // Return empty array for consistency
+        });
+    }
 };
 
 export const updateMember = async (request, response) => {

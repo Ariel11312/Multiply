@@ -96,74 +96,74 @@ const Membership = () => {
 };
 
   // Create payment function to call backend
- const createPayment = async () => {
-  if (paymentType === "Gcash") {
-    try {
-      const response = await axios.post(
-        import.meta.env.VITE_API_URL + "/api/paymongo/create-payment",
-        {
-          amount: memberAmount,
-          description: memberDescription,
-          name: "Customer Name", // Optional, add real customer data if needed
-          email: "customer@example.com", // Optional
-          phone: "+639123456789", // Optional - Xendit prefers international format
-        }
-      );
+//  const createPayment = async () => {
+//   if (paymentType === "Gcash") {
+//     try {
+//       const response = await axios.post(
+//         import.meta.env.VITE_API_URL + "/api/paymongo/create-payment",
+//         {
+//           amount: memberAmount,
+//           description: memberDescription,
+//           name: "Customer Name", // Optional, add real customer data if needed
+//           email: "customer@example.com", // Optional
+//           phone: "+639123456789", // Optional - Xendit prefers international format
+//         }
+//       );
 
-      if (response.data.success) {
-        const paymentUrl = response.data.checkoutUrl;
-        setPaymentUrl(paymentUrl); // Set the URL to redirect the user to Xendit
+//       if (response.data.success) {
+//         const paymentUrl = response.data.checkoutUrl;
+//         setPaymentUrl(paymentUrl); // Set the URL to redirect the user to Xendit
         
-        // Optional: Store invoice details for tracking
-        const invoiceId = response.data.invoiceId;
-        const externalId = response.data.externalId;
+//         // Optional: Store invoice details for tracking
+//         const invoiceId = response.data.invoiceId;
+//         const externalId = response.data.externalId;
         
-        // You can store these for later payment verification
-        console.log("Invoice created:", { invoiceId, externalId });
-      } else {
-        setError("Failed to create payment, please try again.");
-      }
-    } catch (error) {
-      if (error.response?.data?.error) {
-        // Handle Xendit-specific errors
-        const xenditError = error.response.data.error;
-        setError(`Payment failed: ${xenditError.message}`);
-      } else {
-        setError("An error occurred while processing the payment.");
-      }
-      console.error("Payment creation error:", error);
-    }
-  }
-};
+//         // You can store these for later payment verification
+//         console.log("Invoice created:", { invoiceId, externalId });
+//       } else {
+//         setError("Failed to create payment, please try again.");
+//       }
+//     } catch (error) {
+//       if (error.response?.data?.error) {
+//         // Handle Xendit-specific errors
+//         const xenditError = error.response.data.error;
+//         setError(`Payment failed: ${xenditError.message}`);
+//       } else {
+//         setError("An error occurred while processing the payment.");
+//       }
+//       console.error("Payment creation error:", error);
+//     }
+//   }
+// };
 
-// Trigger payment creation when payment type is selected
-if (paymentType === "Gcash") {
-  createPayment();
-}
+// // Trigger payment creation when payment type is selected
+// if (paymentType === "Gcash") {
+//   createPayment();
+// }
 
 // Optional: Function to check payment status
-const checkPaymentStatus = async (invoiceId) => {
-  try {
-    const response = await axios.get(
-      import.meta.env.VITE_API_URL + `/api/xendit/payment-status/${invoiceId}`
-    );
+// const checkPaymentStatus = async (invoiceId) => {
+//   try {
+//     const response = await axios.get(
+//       import.meta.env.VITE_API_URL + `/api/xendit/payment-status/${invoiceId}`
+//     );
     
-    if (response.data.success) {
-      const { status, paidAmount, paymentMethod, paidAt } = response.data;
-      console.log("Payment status:", { status, paidAmount, paymentMethod, paidAt });
+//     if (response.data.success) {
+//       const { status, paidAmount, paymentMethod, paidAt } = response.data;
+//       console.log("Payment status:", { status, paidAmount, paymentMethod, paidAt });
       
-      if (status === "PAID") {
-        // Handle successful payment
-        console.log("Payment completed successfully!");
-      } else if (status === "EXPIRED") {
-        // Handle expired payment
-        setError("Payment has expired. Please try again.");
-      }
-    }
-  } catch (error) {
-    console.error("Error checking payment status:", error);
-  }
-}; 
+//       if (status === "PAID") {
+//         // Handle successful payment
+//         console.log("Payment completed successfully!");
+//       } else if (status === "EXPIRED") {
+//         // Handle expired payment
+//         setError("Payment has expired. Please try again.");
+//       }
+//     }
+//   } catch (error) {
+//     console.error("Error checking payment status:", error);
+//   }
+// }; 
 
   const memberDate = new Intl.DateTimeFormat("en-US", options).format(date);
 
@@ -368,7 +368,7 @@ const checkPaymentStatus = async (invoiceId) => {
       localStorage.setItem("membershipData", JSON.stringify(membershipData));
 
       // Redirect to payment page
-       window.location.href = paymentUrl;
+       window.location.href = import.meta.env.VITE_URL + `/verify-payment`;
     } catch (error) {
       console.error("Error during submission:", error);
       setError("An error occurred. Please try again.");
