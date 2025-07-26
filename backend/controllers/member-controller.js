@@ -724,36 +724,23 @@ export const upgradePackage = async (req, res) => {
 }
 export const createPackage = async (req, res) => {
   try {
-    // Extract token from authorization header
-    const token = req.cookies.token;
 
-    if (!token) {
-      return res.status(401).json({ success: false, message: 'No token provided' });
-    }
-
-    // Verify token and extract user data
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    if (!decoded || !decoded.userId) {
-      return res.status(401).json({ success: false, message: 'Invalid token' });
-    }
-
-    // Get package data from request body
-    const { name, price } = req.body;
+    const { memberType, memberID } = req.body;
     
-    if (!name) {
+    if (!memberType) {
       return res.status(400).json({ success: false, message: 'Package name is required' });
     }
 
     // Find the member by memberID
-    const member = await Member.findOne({ memberID: decoded.userId });
+    const member = await Member.findOne({ memberID });
     
     if (!member) {
       return res.status(404).json({ success: false, message: 'Member not found' });
     }
 
     // Update member's package/type based on the purchase
-    if (!member.memberType.includes(name)) {
-      member.memberType.push(name);
+    if (!member.memberType.includes(memberType)) {
+      member.memberType.push(memberType);
       
       // You might want to update other fields based on the package
       // For example, updating memberStatus or paymentType

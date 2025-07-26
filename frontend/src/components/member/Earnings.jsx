@@ -163,36 +163,25 @@ const DirectSellingCards = () => {
       name: name,
       price: price,
     };
-    const cleanPrice = price.toString().replace(/,/g, "");
-    console.log("Package Data:", cleanPrice);
-    try {
-      const response = await axios.post(
-        import.meta.env.VITE_API_URL + "/api/paymongo/create-payment",
-        {
-          amount: cleanPrice, // Convert to cents
-          description: packageData.name,
-          name: "Customer Name", // Optional, add real customer data if needed
-          email: "customer@example.com", // Optional
-          phone: "09123456789", // Optional
-        }
-      );
-
-      if (response.data.success) {
-        setPaymentUrl(response.data.checkoutUrl); // Set the URL to redirect the user to PayMongo
-        localStorage.setItem(
-          "packages",
-          JSON.stringify({
-            package: "success1",
-            name: packageData.name,
-          })
-        );
-        window.location.href = response.data.checkoutUrl; // Redirect to PayMongo checkout
-      } else {
-
-      }
-    } catch (error) {
-      console.error("Payment creation error:", error);
-    }
+ const response = await fetch(`${import.meta.env.VITE_API_URL}/api/member/createpayment`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+        referralCode: memberData?.referralCode,
+        memberID: memberData?.memberID,
+        memberType:packageData.name,
+        region: memberData?.region,
+        addressNo:memberData?.addressNo,
+        province: memberData?.province,
+        city: memberData?.city,
+        userType:'Upgrade Package',
+        role:memberData?.role,
+        barangay: memberData?.barangay,
+        paymentType: memberData?.paymentType,
+        memberDate: Date(),
+    })
+});
+window.location.href = '/payment-transaction'
   };
 
   const HandleAvailModal = (seat) => {

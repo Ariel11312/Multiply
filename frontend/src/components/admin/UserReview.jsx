@@ -77,13 +77,21 @@ const response = userType === 'Golden Seats'
       },
       body: JSON.stringify(requestBody),
     })
+  : userType === 'Upgrade Package' 
+  ? await fetch(import.meta.env.VITE_API_URL + '/api/member/create-package', {
+      method: 'POST',
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(requestBody),
+    })
   : await fetch(import.meta.env.VITE_API_URL + '/api/member/create-member', {
       method: 'POST',
       headers: {
         "Content-Type": "application/json",
       },
       body: JSON.stringify(requestBody),
-    });      
+    });
       // Debug: Log response details
       console.log('Response status:', response.status);
       console.log('Response headers:', response.headers);
