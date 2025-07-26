@@ -535,24 +535,7 @@ const Membership = () => {
               </div>
 
               {/* Payment Type */}
-              <div className="space-y-2">
-                <label className="block text-sm font-medium text-gray-700">
-                  Type of Payment
-                </label>
-                <div className="relative">
-                  {/* <select
-                    className="w-full px-4 py-3 bg-white border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent appearance-none"
-                    value={paymentType}
-                    onChange={(e) => setPaymentType(e.target.value)}
-                    required
-                  >
-                    <option value="">Select Payment Method</option>
-                    <option value="Gcash">GCash</option>
-                    <option value="Cash">Cash</option>
-                  </select> */}
-                  <ChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 pointer-events-none" />
-                </div>
-              </div>
+
 
               {/* Referral Code */}
               {!memberReferralCode && (

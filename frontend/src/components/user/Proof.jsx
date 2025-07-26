@@ -197,8 +197,8 @@ const handleSubmit = async () => {
     // Re-fetch proofs
     if (typeof ProofCheck === 'function') {
       ProofCheck();
-      alert('Payment proof successfully submitted! ')
-    navigate('/payment-transaction')
+      alert('Payment proof successfully submitted! please wait to approve within  0 - 2 business days')
+    navigate('/')
     }
 
   } catch (error) {

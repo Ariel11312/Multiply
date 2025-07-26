@@ -308,17 +308,28 @@ window.location.href = "/withdraw";
     const amount = parseInt(seat.unlockAmount.toString().replace(/,/g, ""), 10);
 
     try {
-      const response = await axios.post(
-        import.meta.env.VITE_API_URL + "/api/paymongo/create-payment",
-        {
-          amount: amount,
-          description: seat.title,
-          name: "Customer Name", // Optional, add real customer data if needed
-          email: "customer@example.com", // Optional
-          phone: "09123456789", // Optional
-        }
-      );
+      const owner = localStorage.getItem("owner")
+      const selectedSpot = JSON.parse(localStorage.getItem("selectedSpot"))
 
+const response = await fetch(`${import.meta.env.VITE_API_URL}/api/member/createpayment`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+        referralCode: memberData?.referralCode,
+        memberID: memberData?.memberID,
+        memberType:owner,
+        region: memberData?.region,
+        addressNo:'N/A',
+        province: memberData?.province,
+        city: memberData?.city,
+        userType:'Golden Seats',
+        role:selectedSpot.name,
+        barangay: memberData?.barangay,
+        paymentType: memberData?.paymentType,
+        memberDate: Date(),
+    })
+});
+window.location.href = '/payment-transaction'
       if (response.data.success) {
         setPaymentUrl(response.data.checkoutUrl); // Set the URL to redirect the user to PayMongo
         localStorage.setItem(
@@ -332,7 +343,7 @@ window.location.href = "/withdraw";
       } else {
         setError("Failed to create payment, please try again.");
       }
-    } catch (error) {
+     } catch (error) {
       setError("An error occurred while processing the payment.");
       console.error("Payment creation error:", error);
     }

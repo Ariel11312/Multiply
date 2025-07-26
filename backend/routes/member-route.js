@@ -14,7 +14,7 @@ router.get('/memberReferral/:referralCode', memberReferral);
 router.post('/upgrade', upgradePackage);
 router.post('/create-package', createPackage);
 router.post('/reapers', getReapers);
-router.get('/get-all-user-roof', getAllUserProof);
+router.get('/get-all-user-proof', getAllUserProof);
 router.post('/createpayment', createPayment);
 
 export default router;

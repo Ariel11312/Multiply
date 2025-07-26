@@ -8,6 +8,7 @@ import { Payment } from "../models/payment.js";
 import { Proof } from "../models/proof.js";
 
 export const createMember = async (request, response) => {
+    
   try {
     // // Authentication check
     // const token = request.cookies.token;
@@ -75,7 +76,7 @@ export const createMember = async (request, response) => {
         success: false,
         message: `Missing required fields: ${missingFields.join(", ")}`,
       });
-    }
+    } 
 
     // Create new member instance
     const DiamondTransactionId = `DIA${Date.now()}${Math.floor(
@@ -337,6 +338,18 @@ export const createMember = async (request, response) => {
 
       
     }
+    const result = await Payment.findOneAndDelete({memberID:memberID});
+     if (!result) {
+            return res.status(404).json({ 
+                success: false, 
+                message: 'Payment not found' 
+            });
+        }
+        res.json({ 
+            success: true, 
+            message: 'Payment deleted successfully',
+            deletedPayment: result // Optional: return deleted data
+        });
     // Calculate base amount for golden seats commission
     // Save all records
     await Promise.all([
@@ -347,7 +360,6 @@ export const createMember = async (request, response) => {
         { new: true }
       ),
     ]);
-
     return response.status(201).json({
       success: true,
       message: "Member created and golden seats assigned successfully",
@@ -356,26 +368,27 @@ export const createMember = async (request, response) => {
         commission: `${commission * 100}%`,
       },
     });
+
   } catch (error) {
     console.error(
       "Error in member creation and golden seats assignment:",
       error
     );
-
+    
     if (error.name === "JsonWebTokenError") {
       return response.status(401).json({
         success: false,
         message: "Invalid token",
       });
     }
-
+    
     if (error.name === "ValidationError") {
       return response.status(400).json({
         success: false,
         message: error.message,
       });
     }
-
+       
     return response.status(500).json({
       success: false,
       message:
@@ -407,8 +420,6 @@ export const getAllUserProof = async (request, response) => {
     const userProof = await Proof.find({ id: { $in: ids } });
     
     // Fixed console.log - objects need to be stringified or logged separately
-    console.log("Members:", members);
-    console.log("User Proof:", userProof);
     
     response.status(200).json({
       success: true,
@@ -479,7 +490,6 @@ export const getPaymentById = async (request, response) => {
 };
 export const getProofById = async (request, response) => {
     const memberId = request.params.id;
-  console.log(memberId)
     try {
         // Find all payment records for this member
         const payments = await Payment.find({ _id: memberId });
@@ -510,25 +520,14 @@ export const getProofById = async (request, response) => {
 export const updateMember = async (request, response) => {
   try {
     // Extract the token from cookies
-    const token = request.cookies.token;
-    if (!token) {
-      return response.status(401).json({
-        success: false,
-        message: "Authentication token is missing.",
-      });
-    }
-
-    // Verify the token
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    const memberGoldenSeater = decoded.userId; // Extract userId from the token
-    const { position, memberType } = request.body; // Extract position and memberType
+    const { memberType, memberID,role } = request.body; // Extract position and memberType
 
 
     // Find member by memberID
-    const member = await Member.findOne({ memberID: memberGoldenSeater });
+    const member = await Member.findOne({ memberID });
 
     // If no member was found, return 404
-    if (!member) {
+    if (!memberID) {
       return response.status(404).json({
         success: false,
         message: "Member not found or unauthorized",
@@ -559,14 +558,25 @@ export const updateMember = async (request, response) => {
     const spot = request.body.spot;
     // Create a new GoldenSeatOwner document
     const createGoldenSeats = new GoldenSeatOwner({
-      userId: memberGoldenSeater,
-      position,
-      spot: spot,
+      userId: memberID,
+      position:memberType,
+      spot: role,
     });
 
     // Save the new GoldenSeatOwner document
     await createGoldenSeats.save();
-
+    const result = await Payment.findOneAndDelete({memberID:memberID});
+     if (!result) {
+            return res.status(404).json({ 
+                success: false, 
+                message: 'Payment not found' 
+            });
+        }
+        res.json({ 
+            success: true, 
+            message: 'Payment deleted successfully',
+            deletedPayment: result // Optional: return deleted data
+        });
     // Success response
     return response.status(200).json({
       success: true,
@@ -819,17 +829,6 @@ export const getReapers = async (req, res) => {
 
 export const createPayment = async (request, response) => {
   try {
-    // Authentication check
-    const token = request.cookies.token;
-    if (!token) {
-      return response.status(401).json({
-        success: false,
-        message: "Unauthorized",
-      });
-    }
-
-    // Verify JWT token
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
     
     // Fix: Extract data from request.body correctly
     const {
@@ -881,7 +880,6 @@ export const createPayment = async (request, response) => {
       transactionDate,
       productImage,
       country,
-      createdBy: decoded.userId || decoded.id, // Use decoded token info
     });
 
     // Fix: Use await to save the document

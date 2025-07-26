@@ -13,7 +13,7 @@ const AdminApprovalCard = () => {
     try {
       setLoading(true);
       const response = await fetch(
-        import.meta.env.VITE_API_URL + "/api/member/get-all-user-roof",
+        import.meta.env.VITE_API_URL + "/api/member/get-all-user-proof",
         {
           method: "GET",
           headers: { "Content-Type": "application/json" },
@@ -45,50 +45,57 @@ const AdminApprovalCard = () => {
   useEffect(() => {
     fetchUsers();
   }, []);
-
-const handleApprove = async (referralCode,memberID, memberType, addressNo, region, province, city, barangay, userType, role, memberStatus, paymentType, referredBy, memberDate, memberRoot) => {
-  try {
-    const requestBody = {
-      memberID,
-      referralCode,
-      memberType,
-      addressNo,
-      region,
-      province,
-      city,
-      barangay,
-      userType,
-      role,
-      memberStatus: 'Approved',
-      paymentType,
-      referredBy,
-      memberDate,
-      memberRoot
-    };
-
-    // Debug: Log the request body
-    console.log('Request body:', requestBody);
-    console.log('Request body JSON:', JSON.stringify(requestBody, null, 2));
-
-    const response = await fetch(import.meta.env.VITE_API_URL + '/api/member/create-member', {
+  const handleApprove = async (referralCode,memberID, memberType, addressNo, region, province, city, barangay, userType, role, memberStatus, paymentType, referredBy, memberDate, memberRoot) => {
+    try {
+      const requestBody = {
+        memberID,
+        referralCode,
+        memberType,
+        addressNo,
+        region,
+        province,
+        city,
+        barangay,
+        userType,
+        role,
+        memberStatus: 'Approved',
+        paymentType,
+        referredBy,
+        memberDate,
+        memberRoot
+      };
+      
+      console.log(userType)
+      // Debug: Log the request body
+      console.log('Request body:', requestBody);
+      console.log('Request body JSON:', JSON.stringify(requestBody, null, 2));
+const response = userType === 'Golden Seats' 
+  ? await fetch(import.meta.env.VITE_API_URL + '/api/member/update-member', {
+      method: 'PUT',
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(requestBody),
+    })
+  : await fetch(import.meta.env.VITE_API_URL + '/api/member/create-member', {
       method: 'POST',
       headers: {
         "Content-Type": "application/json",
       },
       body: JSON.stringify(requestBody),
-    });
-
-    // Debug: Log response details
-    console.log('Response status:', response.status);
-    console.log('Response headers:', response.headers);
-
-    if (!response.ok) {
-      // Get error details from response
+    });      
+      // Debug: Log response details
+      console.log('Response status:', response.status);
+      console.log('Response headers:', response.headers);
+      window.location.href = "/admin/user-review";  
+      
+      if (!response.ok) {
+        // Get error details from response
       const errorData = await response.text();
       console.log('Error response:', errorData);
       throw new Error(`HTTP error! status: ${response.status}, message: ${errorData}`);
     }
-
+    
     const result = await response.json();
     console.log('Member approved:', result);
 

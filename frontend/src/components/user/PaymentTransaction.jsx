@@ -228,6 +228,14 @@ export default function PaymentTransaction() {
                 return '₱15,000';
             case 'Diamond':
                 return '₱750,000';
+            case 'e-Captain':
+                return '₱25,000';
+            case 'e-Mayor':
+                return '₱250,000';
+            case 'e-Governor':
+                return '₱750,000';
+            case 'e-Senator':
+                return '₱1,200,000';
             default:
                 return 'N/A';
         }
