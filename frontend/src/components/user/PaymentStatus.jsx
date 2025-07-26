@@ -42,7 +42,7 @@ const PaymentStatus = () => {
         method = "POST";
         bodyData = packageData;
       } else {
-        apiUrl = `${import.meta.env.VITE_API_URL}/api/member/create-member`;
+        apiUrl = `${import.meta.env.VITE_API_URL}/api/member/createpayment`;
         method = "POST";
         bodyData = storedData ? JSON.parse(storedData) : {};
       }
@@ -72,7 +72,7 @@ const PaymentStatus = () => {
         setSuccess(true);
         localStorage.clear();
         setTimeout(() => {
-          window.location.href = "/member";
+          window.location.href = "/payment-transaction";
         }, 2000);
       } else if (response.status === 401) {
         processedRef.current = false;

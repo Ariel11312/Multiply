@@ -36,6 +36,7 @@ import VPCommissionPage from "./components/admin/VPCommission";
 import Payments from "./components/member/HitpayPayment";
 import Proof from "./components/user/Proof";
 import PaymentTransaction from "./components/user/PaymentTransaction";
+import UserReview from "./components/admin/UserReview";
 
 const App = () => {
   const [authState, setAuthState] = useState({
@@ -270,6 +271,14 @@ const App = () => {
           element={
             // <ProtectedRoute allowedRoles={["Admin"]}>
              <ItemsPage />
+            // </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/admin/user-review" 
+          element={
+            // <ProtectedRoute allowedRoles={["Admin"]}>
+             <UserReview />
             // </ProtectedRoute>
           }
         />

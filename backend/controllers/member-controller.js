@@ -5,20 +5,21 @@ import { MemberTransaction } from "../models/member-transactions.js";
 import { GoldenSeatOwner } from "../models/golden-seat-owner.js";
 import { goldenseats } from "../models/golden-seats.js";
 import { Payment } from "../models/payment.js";
+import { Proof } from "../models/proof.js";
 
 export const createMember = async (request, response) => {
   try {
-    // Authentication check
-    const token = request.cookies.token;
-    if (!token) {
-      return response.status(401).json({
-        success: false,
-        message: "Unauthorized",
-      });
-    }
+    // // Authentication check
+    // const token = request.cookies.token;
+    // if (!token) {
+    //   return response.status(401).json({
+    //     success: false,
+    //     message: "Unauthorized",
+    //   });
+    // }
 
-    // Verify JWT token
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    // // Verify JWT token
+    // const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
     // Function to format current date
     function formatCurrentDate() {
@@ -32,7 +33,7 @@ export const createMember = async (request, response) => {
 
     // Destructure and set default values from request body
     const {
-      memberID = decoded.userId,
+      memberID,
       referralCode,
       memberType,
       addressNo,
@@ -41,14 +42,14 @@ export const createMember = async (request, response) => {
       barangay,
       region,
       country,
-      userType = "Member",
-      role = "sower",
-      memberStatus = "Pending",
+      userType,
+      role,
+      memberStatus,
       paymentType,
       referredBy,
       memberDate,
       productImage = "",
-      paymentMethod = "",
+      paymentMethod,
       transactionDate = new Date(),
     } = request.body;
 
@@ -99,7 +100,7 @@ export const createMember = async (request, response) => {
       const referrer = await Member.findOne({ referralCode: referredBy });
       if (referrer) {
         if (referrer.memberRoot) {
-          const savedMember = new Payment({
+          const savedMember = new Member({
             memberID,
             referralCode,
             memberType: [memberType],
@@ -120,7 +121,7 @@ export const createMember = async (request, response) => {
           savedMember.save();
         }
       } else {
-        const savedMember = new Payment({
+        const savedMember = new Member({
           memberID,
           referralCode,
           memberType: [memberType],
@@ -142,7 +143,7 @@ export const createMember = async (request, response) => {
     } else if (memberType === "Crown" && referredBy) {
       const referrer = await Member.findOne({ referralCode: referredBy });
       if (referrer.memberRoot) {
-        const savedMember = new Payment({
+        const savedMember = new Member({
           memberID,
           referralCode,
           memberType,
@@ -165,7 +166,7 @@ export const createMember = async (request, response) => {
         await savedMember.save();
       }
       if (referrer.memberRoot && referrer.referredRoot) {
-        const savedMember = new Payment({
+        const savedMember = new Member({
           memberID,
           referralCode,
           memberType,
@@ -188,7 +189,7 @@ export const createMember = async (request, response) => {
         await savedMember.save();
       }
     } else {
-      const savedMember = new Payment({
+      const savedMember = new Member({
         memberID,
         referralCode,
         memberType: [memberType],
@@ -210,10 +211,10 @@ export const createMember = async (request, response) => {
     // Calculate referral earnings
     const calculateReferralEarnings = (memberType) => {
       const earningsMap = {
-        X1: 500 * 0.05,
-        X2: 1000 * 0.05,
-        X3: 3000 * 0.05,
-        X5: 5000 * 0.05,
+        X1: 750 * 0.05,
+        X2: 1500 * 0.05,
+        X3: 4500 * 0.05,
+        X5: 7500 * 0.05,
         Crown: 0,
         Diamond: 250000,
       };
@@ -389,6 +390,30 @@ export const getAllMembers = async (request, response) => {
     response.status(200).json({
       success: true,
       members,
+    });
+  } catch (error) {
+    console.error(`Error fetching members: ${error.message}`);
+    response.status(500).json({
+      success: false,
+      message: "An error occurred while fetching members",
+    });
+  }
+};
+export const getAllUserProof = async (request, response) => {
+  try {
+    const members = await Payment.find();
+    const ids = members.map(member => member._id.toString());
+    
+    const userProof = await Proof.find({ id: { $in: ids } });
+    
+    // Fixed console.log - objects need to be stringified or logged separately
+    console.log("Members:", members);
+    console.log("User Proof:", userProof);
+    
+    response.status(200).json({
+      success: true,
+      members,
+      userProof, // Added userProof to response
     });
   } catch (error) {
     console.error(`Error fetching members: ${error.message}`);
@@ -788,6 +813,110 @@ export const getReapers = async (req, res) => {
       memberType: [], // Always return array even on error
       message: "Server error while fetching reapers",
       error: process.env.NODE_ENV === 'development' ? error.message : undefined
+    });
+  }
+};
+
+export const createPayment = async (request, response) => {
+  try {
+    // Authentication check
+    const token = request.cookies.token;
+    if (!token) {
+      return response.status(401).json({
+        success: false,
+        message: "Unauthorized",
+      });
+    }
+
+    // Verify JWT token
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    
+    // Fix: Extract data from request.body correctly
+    const {
+      memberID, // Remove `: decoded` - this was wrong
+      referralCode,
+      memberType,
+      addressNo,
+      province,
+      city,
+      barangay,
+      region,
+      country,
+      userType = "Member",
+      role = 'sower',
+      memberStatus = "Pending",
+      paymentType,
+      referredBy,
+      memberDate,
+      productImage = "",
+      paymentMethod,
+      transactionDate = new Date(),
+    } = request.body;
+
+    // Validation: Check required fields
+    if (!memberID || !memberType || !paymentType) {
+      return response.status(400).json({
+        success: false,
+        message: "Missing required fields: memberID, memberType, or paymentType",
+      });
+    }
+
+    // Create new payment document
+    const savedMember = new Payment({
+      memberID,
+      referralCode,
+      memberType,
+      addressNo,
+      region,
+      province,
+      city,
+      barangay,
+      userType,
+      role,
+      memberStatus,
+      paymentType,
+      referredBy,
+      memberDate,
+      paymentMethod, // Add missing fields if needed
+      transactionDate,
+      productImage,
+      country,
+      createdBy: decoded.userId || decoded.id, // Use decoded token info
+    });
+
+    // Fix: Use await to save the document
+    const result = await savedMember.save();
+
+    // Return success response
+    return response.status(201).json({
+      success: true,
+      message: "Payment created successfully",
+      data: result,
+    });
+
+  } catch (error) {
+    console.error('Error creating payment:', error);
+    
+    // Handle specific errors
+    if (error.name === 'ValidationError') {
+      return response.status(400).json({
+        success: false,
+        message: "Validation error",
+        errors: Object.values(error.errors).map(err => err.message),
+      });
+    }
+    
+    if (error.name === 'JsonWebTokenError') {
+      return response.status(401).json({
+        success: false,
+        message: "Invalid token",
+      });
+    }
+
+    return response.status(500).json({
+      success: false,
+      message: "Internal server error",
+      error: error.message,
     });
   }
 };

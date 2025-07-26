@@ -35,7 +35,7 @@ const Membership = () => {
   const [barangays, setBarangays] = useState([]);
   const [memberType, setMemberType] = useState("");
   const [addressNo, setAddressNo] = useState("");
-  const [paymentType, setPaymentType] = useState("");
+  const [paymentType, setPaymentType] = useState("Bank");
   const [selectedProvince, setSelectedProvince] = useState("");
   const [selectedCity, setSelectedCity] = useState("");
   const [selectedRegion, setSelectedRegion] = useState("");
@@ -540,7 +540,7 @@ const Membership = () => {
                   Type of Payment
                 </label>
                 <div className="relative">
-                  <select
+                  {/* <select
                     className="w-full px-4 py-3 bg-white border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent appearance-none"
                     value={paymentType}
                     onChange={(e) => setPaymentType(e.target.value)}
@@ -549,7 +549,7 @@ const Membership = () => {
                     <option value="">Select Payment Method</option>
                     <option value="Gcash">GCash</option>
                     <option value="Cash">Cash</option>
-                  </select>
+                  </select> */}
                   <ChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 pointer-events-none" />
                 </div>
               </div>

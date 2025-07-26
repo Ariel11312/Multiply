@@ -1,5 +1,5 @@
 import express from 'express';
-import { createMember, createPackage, getMemberById, getPaymentById, getProofById, getReapers, memberReferral, updateMember, upgradePackage } from '../controllers/member-controller.js';
+import { createMember, createPackage, createPayment, getAllUserProof, getMemberById, getPaymentById, getProofById, getReapers, memberReferral, updateMember, upgradePackage } from '../controllers/member-controller.js';
 import { getReferralTree, referrals } from '../controllers/referrals.js';
 const router = express.Router();
 
@@ -14,5 +14,7 @@ router.get('/memberReferral/:referralCode', memberReferral);
 router.post('/upgrade', upgradePackage);
 router.post('/create-package', createPackage);
 router.post('/reapers', getReapers);
+router.get('/get-all-user-roof', getAllUserProof);
+router.post('/createpayment', createPayment);
 
 export default router;
