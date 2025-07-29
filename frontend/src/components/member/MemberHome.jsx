@@ -305,7 +305,6 @@ window.location.href = "/withdraw";
 
   const CreatePayment = async (seat) => {
     setSelectedSeat(seat);
-    const amount = parseInt(seat.unlockAmount.toString().replace(/,/g, ""), 10);
 
     try {
       const owner = localStorage.getItem("owner")

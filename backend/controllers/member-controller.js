@@ -6,6 +6,7 @@ import { GoldenSeatOwner } from "../models/golden-seat-owner.js";
 import { goldenseats } from "../models/golden-seats.js";
 import { Payment } from "../models/payment.js";
 import { Proof } from "../models/proof.js";
+import { Withdraw } from "../models/witthdraw.js";
 
 export const createMember = async (request, response) => {
     
@@ -416,15 +417,19 @@ export const getAllUserProof = async (request, response) => {
   try {
     const members = await Payment.find();
     const ids = members.map(member => member._id.toString());
+    const userIds = members.map(member => member.memberID.toString());
     
     const userProof = await Proof.find({ id: { $in: ids } });
-    
+    const user = await User.find({ _id: { $in: userIds } })
+    const withdraw = await Withdraw.find({ memberID: { $in: userIds } })
     // Fixed console.log - objects need to be stringified or logged separately
     
     response.status(200).json({
       success: true,
       members,
       userProof, // Added userProof to response
+      user, // Added userProof to response
+      withdraw,
     });
   } catch (error) {
     console.error(`Error fetching members: ${error.message}`);
@@ -902,6 +907,81 @@ export const createPayment = async (request, response) => {
       success: false,
       message: "Internal server error",
       error: error.message,
+    });
+  }
+};
+
+
+export const approvWithdraw = async (request, response) => {
+  try {
+    // Log request body for debugging
+    console.log(request.body);
+    
+    const {
+      withdrawalId,
+      amount,
+      paymentMethod,
+    } = request.body;
+
+    // Validate required fields
+    if (!withdrawalId || !amount || !paymentMethod) {
+      return response.status(400).json({
+        success: false,
+        message: 'Missing required fields: withdrawalId, amount, or paymentMethod'
+      });
+    }
+
+    const DiamondTransactionId = `WTA${Date.now()}${Math.floor(
+      Math.random() * 1000
+    )}`;
+
+    const transactionDate = new Date();
+
+    // Create new member transaction
+    const newMemberTransaction = new MemberTransaction({
+      memberId: withdrawalId,
+      transactionId: DiamondTransactionId,
+      productName: `Withdrawal`,
+      quantity: 1,
+      price: -amount,
+      total: -amount,
+      paymentMethod,
+      transactionDate,
+    });
+
+    await newMemberTransaction.save();
+
+    // Update withdrawal status
+    const updateWithdrawal = await Withdraw.findOneAndUpdate(
+      { _id: withdrawalId }, // Fixed: Use _id instead of memberID
+      { status: 'Approved' },
+      { new: true }
+    );
+
+    // Check if withdrawal was found and updated
+    if (!updateWithdrawal) {
+      return response.status(404).json({
+        success: false,
+        message: 'Withdrawal not found'
+      });
+    }
+
+    // Send success response
+    return response.status(200).json({
+      success: true,
+      message: 'Withdrawal approved successfully',
+      data: {
+        transaction: newMemberTransaction,
+        withdrawal: updateWithdrawal
+      }
+    });
+
+  } catch (error) {
+    console.error('Error approving withdrawal:', error);
+    return response.status(500).json({
+      success: false,
+      message: 'Internal server error',
+      error: error.message
     });
   }
 };

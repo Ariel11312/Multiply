@@ -15,6 +15,19 @@ export default function WithdrawPage() {
   const [MemberTransaction, setMemberTransaction] = useState(null);
   const [memberData, setMemberData] = useState(null);
   const [authState, setAuthState] = useState();
+  
+  // User account information state
+  const [userInfo, setUserInfo] = useState({
+    // GCash information
+    gcashNumber: '',
+    gcashName: '',
+    
+    // Bank information
+    bankName: '',
+    accountNumber: '',
+    accountName: ''
+  });
+
   const balance = MemberTransaction?.total || 0;
   const minWithdraw = 500;
   const maxWithdraw = 10000;
@@ -55,8 +68,8 @@ export default function WithdrawPage() {
       id: 'gcash', 
       name: 'GCash', 
       icon: Smartphone, 
-      fee: 5.99, 
-      time: 'Instant',
+      fee: 0, 
+      time: '1-3 business days',
       description: 'Fast and convenient mobile wallet transfer'
     },
     { 
@@ -83,8 +96,50 @@ export default function WithdrawPage() {
       newErrors.amount = 'Insufficient balance';
     }
 
+    // Validate user account information based on selected method
+    if (selectedMethod === 'gcash') {
+      if (!userInfo.gcashNumber) {
+        newErrors.gcashNumber = 'GCash number is required';
+      } else if (!/^09\d{9}$/.test(userInfo.gcashNumber)) {
+        newErrors.gcashNumber = 'Please enter a valid GCash number (e.g., 09123456789)';
+      }
+      
+      if (!userInfo.gcashName.trim()) {
+        newErrors.gcashName = 'Account name is required';
+      }
+    } else if (selectedMethod === 'bank') {
+      if (!userInfo.bankName.trim()) {
+        newErrors.bankName = 'Bank name is required';
+      }
+      
+      if (!userInfo.accountNumber.trim()) {
+        newErrors.accountNumber = 'Account number is required';
+      } else if (userInfo.accountNumber.length < 10) {
+        newErrors.accountNumber = 'Account number must be at least 10 digits';
+      }
+      
+      if (!userInfo.accountName.trim()) {
+        newErrors.accountName = 'Account name is required';
+      }
+    }
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
+  };
+
+  const handleUserInfoChange = (field, value) => {
+    setUserInfo(prev => ({
+      ...prev,
+      [field]: value
+    }));
+    
+    // Clear error when user starts typing
+    if (errors[field]) {
+      setErrors(prev => ({
+        ...prev,
+        [field]: ''
+      }));
+    }
   };
 
   const handleSubmit = () => {
@@ -92,26 +147,48 @@ export default function WithdrawPage() {
       setShowConfirmation(true);
     }
   };
-const handleBack = () => {
-  setShowTransactionStatus(false);
-  setShowSuccess(false);
-  setShowConfirmation(false);
-  setAmount('');
-  window.location.href = '/member';
-};
 
+  const handleBack = () => {
+    setShowTransactionStatus(false);
+    setShowSuccess(false);
+    setShowConfirmation(false);
+    setAmount('');
+    window.location.href = '/member';
+  };
 
-  const confirmWithdraw = () => {
+  const confirmWithdraw = async () => {
+    const withdrawAmount = parseFloat(amount);
+    const selectedMethodData = withdrawMethods.find(m => m.id === selectedMethod);
+    
     // Create new transaction
     const newTransaction = {
       id: `TXN${String(transactions.length + 1).padStart(3, '0')}`,
+      userId: memberData.memberID,
+      memberID:memberData.memberID,
       amount: withdrawAmount,
       method: selectedMethodData.name,
       status: 'pending',
       date: new Date().toISOString().split('T')[0],
       estimatedArrival: selectedMethodData.time,
-      fee: totalFee
+      fee: withdrawAmount * 0.05,
+      accountInfo: selectedMethod === 'gcash' 
+        ? { number: userInfo.gcashNumber, name: userInfo.gcashName }
+        : { bankName: userInfo.bankName, accountNumber: userInfo.accountNumber, accountName: userInfo.accountName }
     };
+
+    try {
+const response = await fetch(`${import.meta.env.VITE_API_URL}/api/member/createwithdraw`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(newTransaction)
+  })    
+   
+  if(response.ok){
+    alert("confirm")
+  }
+    } catch (error) {
+      
+    }
 
     setTransactions(prev => [newTransaction, ...prev]);
     setCurrentTransaction(newTransaction);
@@ -123,6 +200,13 @@ const handleBack = () => {
       setShowTransactionStatus(true);
       // Reset form
       setAmount('');
+      setUserInfo({
+        gcashNumber: '',
+        gcashName: '',
+        bankName: '',
+        accountNumber: '',
+        accountName: ''
+      });
     }, 3000);
   };
 
@@ -164,7 +248,7 @@ const handleBack = () => {
 
   const selectedMethodData = withdrawMethods.find(m => m.id === selectedMethod);
   const withdrawAmount = parseFloat(amount) || 0;
-  const totalFee = selectedMethodData?.fee || 0;
+  const totalFee = amount * 0.05 || 0;
   const netAmount = withdrawAmount - totalFee;
   
   useEffect(() => {
@@ -367,7 +451,7 @@ const handleBack = () => {
         {/* Header */}
         <div className="flex items-center mb-8">
           <button className="p-2 hover:bg-white/50 rounded-xl transition-colors mr-3">
-            <ArrowLeft className="w-6 h-6 text-gray-700"  onClick={handleBack}/>
+            <ArrowLeft className="w-6 h-6 text-gray-700" onClick={handleBack}/>
           </button>
           <h1 className="text-2xl font-bold text-gray-900">Withdraw Funds</h1>
         </div>
@@ -452,9 +536,6 @@ const handleBack = () => {
                           </div>
                         </div>
                         <div className="text-right">
-                          <p className="text-lg font-bold text-gray-900 mb-1">
-                            {method.fee = 10 ? '10' : `₱${method.fee}`}
-                          </p>
                           <div className={`w-5 h-5 rounded-full border-2 ${
                             selectedMethod === method.id
                               ? 'border-green-500 bg-green-500'
@@ -472,15 +553,156 @@ const handleBack = () => {
               </div>
             </div>
 
+            {/* Account Information Section */}
+            <div className="mb-6">
+              <label className="block text-sm font-medium text-gray-700 mb-3">
+                Account Information
+              </label>
+              
+              {selectedMethod === 'gcash' && (
+                <div className="space-y-4 border border-gray-200 rounded-xl p-4 bg-blue-50">
+                  <div className="flex items-center mb-2">
+                    <Smartphone className="w-5 h-5 text-blue-600 mr-2" />
+                    <span className="font-medium text-blue-900">GCash Account Details</span>
+                  </div>
+                  
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      GCash Mobile Number
+                    </label>
+                    <input
+                      type="tel"
+                      value={userInfo.gcashNumber}
+                      onChange={(e) => handleUserInfoChange('gcashNumber', e.target.value)}
+                      placeholder="09123456789"
+                      className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent ${
+                        errors.gcashNumber ? 'border-red-300' : 'border-gray-300'
+                      }`}
+                    />
+                    {errors.gcashNumber && (
+                      <p className="text-red-500 text-sm mt-1 flex items-center">
+                        <AlertCircle className="w-4 h-4 mr-1" />
+                        {errors.gcashNumber}
+                      </p>
+                    )}
+                  </div>
+                  
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Account Name (as registered in GCash)
+                    </label>
+                    <input
+                      type="text"
+                      value={userInfo.gcashName}
+                      onChange={(e) => handleUserInfoChange('gcashName', e.target.value)}
+                      placeholder="Juan Dela Cruz"
+                      className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent ${
+                        errors.gcashName ? 'border-red-300' : 'border-gray-300'
+                      }`}
+                    />
+                    {errors.gcashName && (
+                      <p className="text-red-500 text-sm mt-1 flex items-center">
+                        <AlertCircle className="w-4 h-4 mr-1" />
+                        {errors.gcashName}
+                      </p>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {selectedMethod === 'bank' && (
+                <div className="space-y-4 border border-gray-200 rounded-xl p-4 bg-blue-50">
+                  <div className="flex items-center mb-2">
+                    <Building className="w-5 h-5 text-blue-600 mr-2" />
+                    <span className="font-medium text-blue-900">Bank Account Details</span>
+                  </div>
+                  
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Bank Name
+                    </label>
+                    <select
+                      value={userInfo.bankName}
+                      onChange={(e) => handleUserInfoChange('bankName', e.target.value)}
+                      className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent ${
+                        errors.bankName ? 'border-red-300' : 'border-gray-300'
+                      }`}
+                    >
+                      <option value="">Select Bank</option>
+                      <option value="BDO">BDO Unibank</option>
+                      <option value="BPI">Bank of the Philippine Islands</option>
+                      <option value="Metrobank">Metrobank</option>
+                      <option value="Security Bank">Security Bank</option>
+                      <option value="PNB">Philippine National Bank</option>
+                      <option value="UnionBank">UnionBank</option>
+                      <option value="Land Bank">Land Bank of the Philippines</option>
+                      <option value="RCBC">Rizal Commercial Banking Corporation</option>
+                      <option value="EastWest">EastWest Bank</option>
+                      <option value="PSBank">Philippine Savings Bank</option>
+                      <option value="Other">Other</option>
+                    </select>
+                    {errors.bankName && (
+                      <p className="text-red-500 text-sm mt-1 flex items-center">
+                        <AlertCircle className="w-4 h-4 mr-1" />
+                        {errors.bankName}
+                      </p>
+                    )}
+                  </div>
+                  
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Account Number
+                    </label>
+                    <input
+                      type="text"
+                      value={userInfo.accountNumber}
+                      onChange={(e) => handleUserInfoChange('accountNumber', e.target.value)}
+                      placeholder="1234567890"
+                      className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent ${
+                        errors.accountNumber ? 'border-red-300' : 'border-gray-300'
+                      }`}
+                    />
+                    {errors.accountNumber && (
+                      <p className="text-red-500 text-sm mt-1 flex items-center">
+                        <AlertCircle className="w-4 h-4 mr-1" />
+                        {errors.accountNumber}
+                      </p>
+                    )}
+                  </div>
+                  
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Account Name (as registered in Bank)
+                    </label>
+                    <input
+                      type="text"
+                      value={userInfo.accountName}
+                      onChange={(e) => handleUserInfoChange('accountName', e.target.value)}
+                      placeholder="Juan Dela Cruz"
+                      className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent ${
+                        errors.accountName ? 'border-red-300' : 'border-gray-300'
+                      }`}
+                    />
+                    {errors.accountName && (
+                      <p className="text-red-500 text-sm mt-1 flex items-center">
+                        <AlertCircle className="w-4 h-4 mr-1" />
+                        {errors.accountName}
+                      </p>
+                    )}
+                  </div>
+                </div>
+              )}
+            </div>
+
             {/* Info Note */}
-            <div className="bg-blue-50 rounded-xl p-4 mb-6">
+            <div className="bg-yellow-50 rounded-xl p-4 mb-6">
               <div className="flex items-start">
-                <AlertCircle className="w-5 h-5 text-blue-600 mr-3 mt-0.5 flex-shrink-0" />
+                <AlertCircle className="w-5 h-5 text-yellow-600 mr-3 mt-0.5 flex-shrink-0" />
                 <div>
-                  <p className="text-sm text-blue-800 font-medium mb-1">Account Details</p>
-                  <p className="text-sm text-blue-700">
-                    Account details will be provided by our secure payment processor during the withdrawal process. 
-                    No need to enter account information manually.
+                  <p className="text-sm text-yellow-800 font-medium mb-1">Important Reminder</p>
+                  <p className="text-sm text-yellow-700">
+                    Please ensure that the account information provided is accurate and matches your official records. 
+                    Incorrect information may delay or prevent the processing of your withdrawal.
                   </p>
                 </div>
               </div>
@@ -521,7 +743,7 @@ const handleBack = () => {
       {/* Confirmation Modal */}
       {showConfirmation && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-2xl p-6 max-w-md w-full">
+          <div className="bg-white rounded-2xl p-6 max-w-md w-full max-h-[90vh] overflow-y-auto">
             <h3 className="text-xl font-bold text-gray-900 mb-4">Confirm Withdrawal</h3>
             <div className="space-y-3 mb-6">
               <div className="flex justify-between">
@@ -545,9 +767,43 @@ const handleBack = () => {
                 <span className="font-bold text-gray-900">₱{netAmount.toFixed(2)}</span>
               </div>
             </div>
+
+            {/* Account Details in Confirmation */}
+            <div className="bg-gray-50 rounded-xl p-4 mb-4">
+              <h4 className="font-medium text-gray-900 mb-2">Account Details</h4>
+              {selectedMethod === 'gcash' ? (
+                <div className="text-sm space-y-1">
+                  <div className="flex justify-between">
+                    <span className="text-gray-600">GCash Number:</span>
+                    <span className="font-medium">{userInfo.gcashNumber}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-gray-600">Account Name:</span>
+                    <span className="font-medium">{userInfo.gcashName}</span>
+                  </div>
+                </div>
+              ) : (
+                <div className="text-sm space-y-1">
+                  <div className="flex justify-between">
+                    <span className="text-gray-600">Bank:</span>
+                    <span className="font-medium">{userInfo.bankName}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-gray-600">Account Number:</span>
+                    <span className="font-medium">{userInfo.accountNumber}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-gray-600">Account Name:</span>
+                    <span className="font-medium">{userInfo.accountName}</span>
+                  </div>
+                </div>
+              )}
+            </div>
+
             <div className="bg-yellow-50 rounded-xl p-3 mb-4">
               <p className="text-sm text-yellow-800">
-                <strong>Note:</strong> Account details will be provided by our secure payment processor to complete this transaction.
+                <strong>Note:</strong> Please verify your account details are correct before confirming. 
+                Withdrawals cannot be cancelled once processed.
               </p>
             </div>
             <div className="flex space-x-3">
