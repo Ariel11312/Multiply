@@ -173,6 +173,7 @@ try {
         w._id === withdrawalId ? { ...w, status: 'Approved' } : w
       )
     );
+    window.location.href = '/admin/user-review'
   }
 } catch (error) {
   console.error('Error approving withdrawal:', error);

@@ -953,7 +953,7 @@ export const approvWithdraw = async (request, response) => {
 
     // Update withdrawal status
     const updateWithdrawal = await Withdraw.findOneAndUpdate(
-      { _id: withdrawalId }, // Fixed: Use _id instead of memberID
+      { memberID: withdrawalId }, // Fixed: Use _id instead of memberID
       { status: 'Approved' },
       { new: true }
     );
