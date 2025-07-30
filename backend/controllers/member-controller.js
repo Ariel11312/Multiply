@@ -7,7 +7,7 @@ import { goldenseats } from "../models/golden-seats.js";
 import { Payment } from "../models/payment.js";
 import { Proof } from "../models/proof.js";
 import { Withdraw } from "../models/witthdraw.js";
-
+import { Notification } from '../models/notification.js';
 export const createMember = async (request, response) => {
     
   try {
@@ -67,6 +67,21 @@ export const createMember = async (request, response) => {
       paymentType,
       memberDate,
     };
+         const notification = new Notification({
+          userId:memberID, // Assuming costumerId is the user ID to notify
+          title: 'Membership ' +memberType+' Approved',
+          message: 'Membership' +memberType+' Approved by the admin, thank you!',
+          isRead: false,
+          metadata: {
+            status: "pending",
+            updatedAt: new Date(),
+            previousStatus: "pending" // Track previous status for history
+          },
+          actionUrl: `/member`,
+          priority: ['pending'].includes("pending") ? 2 : 1
+        });
+        await notification.save();
+
 
     const missingFields = Object.entries(requiredFields)
       .filter(([_, value]) => !value)
@@ -211,46 +226,65 @@ export const createMember = async (request, response) => {
       await savedMember.save();
     }
     // Calculate referral earnings
-    const calculateReferralEarnings = (memberType) => {
-      const earningsMap = {
-        X1: 750 * 0.05,
-        X2: 1500 * 0.05,
-        X3: 4500 * 0.05,
-        X5: 7500 * 0.05,
-        Crown: 0,
-        Diamond: 250000,
-      };
+const calculateReferralEarnings = (memberType) => {
+  const earningsMap = {
+    X1: 750 * 0.05,
+    X2: 1500 * 0.05,
+    X3: 4500 * 0.05,
+    X5: 7500 * 0.05,
+    Crown: 0,
+    Diamond: 250000,
+  };
+  
+  return earningsMap[memberType] || 0;
+};
 
-      return earningsMap[memberType] || 0;
-    };
-    // Calculate golden seats commission rates
-    const commissionRates = {
-      X1: 10,
-      X2: 20,
-      X3: 60,
-      X5: 100,
-      Crown: 0,
-      Diamond: 250000,
-    };
+// Calculate golden seats commission rates
+const commissionRates = {
+  X1: 10,
+  X2: 20,
+  X3: 60,
+  X5: 100,
+  Crown: 0,
+  Diamond: 250000,
+};
 
-    const commission = commissionRates[memberType] || 0;
+const commission = commissionRates[memberType] || 0;
 
-    // Create hierarchical structure for golden seats
-    const goldenSeatsHierarchy = {
-      captain: barangay, // Barangay Captain
-      mayor: city, // City Mayor
-      governor: province, // Provincial Governor
-      senator: region, // Senator (same as province for now)
-      vicePresident: country, // VP (same as province for now)
-      President: country, // President (same as province for now)
-    };
+// Create golden seats entry with proper validation
+const goldenSeats = new goldenseats({
+  captain: barangay || "", // Ensure it's a string, not undefined
+  mayor: city || "", // Ensure it's a string, not undefined
+  governor: province || "", // Ensure it's a string, not undefined
+  senator: region || "", // Ensure it's a string, not undefined
+  vicePresident: country || "", // Ensure it's a string, not undefined
+  President: country || "", // Optional but provide value if available
+  commission: commission,
+});
 
-    // Create golden seats entry
-    const goldenSeats = new goldenseats({
-      ...goldenSeatsHierarchy,
-      commission: commission,
-    });
+// Alternative approach with explicit validation:
+/*
+const goldenSeats = new goldenseats({
+  captain: String(barangay || ""),
+  mayor: String(city || ""),
+  governor: String(province || ""),
+  senator: String(region || ""),
+  vicePresident: String(country || ""),
+  President: String(country || ""),
+  commission: commission,
+});
+*/
 
+// Debug logging (remove in production)
+console.log('Golden Seats Data:', {
+  captain: barangay,
+  mayor: city,
+  governor: province,
+  senator: region,
+  vicePresident: country,
+  President: country,
+  commission: commission
+});
     // Handle referral transactions
     if (referredBy) {
       const referrer = await Member.findOne({ referralCode: referredBy });
@@ -340,17 +374,6 @@ export const createMember = async (request, response) => {
       
     }
     const result = await Payment.findOneAndDelete({memberID:memberID});
-     if (!result) {
-            return res.status(404).json({ 
-                success: false, 
-                message: 'Payment not found' 
-            });
-        }
-        res.json({ 
-            success: true, 
-            message: 'Payment deleted successfully',
-            deletedPayment: result // Optional: return deleted data
-        });
     // Calculate base amount for golden seats commission
     // Save all records
     await Promise.all([
@@ -421,8 +444,7 @@ export const getAllUserProof = async (request, response) => {
     
     const userProof = await Proof.find({ id: { $in: ids } });
     const user = await User.find({ _id: { $in: userIds } })
-    const withdraw = await Withdraw.find({ memberID: { $in: userIds } })
-    // Fixed console.log - objects need to be stringified or logged separately
+    const withdraw = await Withdraw.find({ memberID: { $in: userIds } }).populate('memberID');    // Fixed console.log - objects need to be stringified or logged separately
     
     response.status(200).json({
       success: true,
@@ -527,7 +549,7 @@ export const updateMember = async (request, response) => {
     // Extract the token from cookies
     const { memberType, memberID,role } = request.body; // Extract position and memberType
 
-
+console.log("update")
     // Find member by memberID
     const member = await Member.findOne({ memberID });
 
@@ -570,6 +592,8 @@ export const updateMember = async (request, response) => {
 
     // Save the new GoldenSeatOwner document
     await createGoldenSeats.save();
+      
+
     const result = await Payment.findOneAndDelete({memberID:memberID});
      if (!result) {
             return res.status(404).json({ 
@@ -596,7 +620,6 @@ export const updateMember = async (request, response) => {
     });
   }
 };
-
 export const deleteMember = async (request, response) => {
   try {
     // Check if user exists and is authenticated
@@ -731,7 +754,21 @@ export const createPackage = async (req, res) => {
   try {
 
     const { memberType, memberID } = req.body;
-    
+         const notification = new Notification({
+          userId:memberID, // Assuming costumerId is the user ID to notify
+          title: 'Membership ' +memberType+' Approved',
+          message: 'Membership ' +memberType+' upgrade Approved by the admin, thank you!',
+          isRead: false,
+          metadata: {
+            status: "pending",
+            updatedAt: new Date(),
+            previousStatus: "pending" // Track previous status for history
+          },
+          actionUrl: `/member`,
+          priority: ['pending'].includes("pending") ? 2 : 1
+        });
+        await notification.save();
+
     if (!memberType) {
       return res.status(400).json({ success: false, message: 'Package name is required' });
     }
@@ -752,7 +789,7 @@ export const createPackage = async (req, res) => {
       
       // Save the updated member
       await member.save();
-      
+          const result = await Payment.findOneAndDelete({memberID:memberID});
       // Return success response
       return res.status(200).json({
         success: true,
@@ -876,7 +913,7 @@ export const createPayment = async (request, response) => {
 
     // Fix: Use await to save the document
     const result = await savedMember.save();
-
+  
     // Return success response
     return response.status(201).json({
       success: true,
@@ -918,6 +955,7 @@ export const approvWithdraw = async (request, response) => {
     console.log(request.body);
     
     const {
+      id,
       withdrawalId,
       amount,
       paymentMethod,
@@ -950,10 +988,23 @@ export const approvWithdraw = async (request, response) => {
     });
 
     await newMemberTransaction.save();
-
+         const notification = new Notification({
+          userId:withdrawalId, // Assuming costumerId is the user ID to notify
+          title: 'Withdrawal',
+          message: 'Withdrawal for' +amount+' has been Approved by the admin, thank you!',
+          isRead: false,
+          metadata: {
+            status: "pending",
+            updatedAt: new Date(),
+            previousStatus: "pending" // Track previous status for history
+          },
+          actionUrl: `/member`,
+          priority: ['pending'].includes("pending") ? 2 : 1
+        });
+        await notification.save();
     // Update withdrawal status
     const updateWithdrawal = await Withdraw.findOneAndUpdate(
-      { memberID: withdrawalId }, // Fixed: Use _id instead of memberID
+      { _id: id }, // Fixed: Use _id instead of memberID
       { status: 'Approved' },
       { new: true }
     );
@@ -984,4 +1035,127 @@ export const approvWithdraw = async (request, response) => {
       error: error.message
     });
   }
+};
+export const rejectWithdraw = async (request, response) => {
+  try {
+    // Log request body for debugging
+    console.log(request.body);
+    
+    const {
+      id,
+      withdrawalId,
+      amount,
+      paymentMethod,
+    } = request.body;
+
+    // Validate required fields
+    if (!withdrawalId || !amount || !paymentMethod) {
+      return response.status(400).json({
+        success: false,
+        message: 'Missing required fields: withdrawalId, amount, or paymentMethod'
+      });
+    }
+
+
+         const notification = new Notification({
+          userId:withdrawalId, // Assuming costumerId is the user ID to notify
+          title: 'Withdrawal',
+          message: 'Withdrawal for ' +amount+' has been Rejected by the admin, please contact our admin immediately thank you!',
+          isRead: false,
+          metadata: {
+            status: "pending",
+            updatedAt: new Date(),
+            previousStatus: "pending" // Track previous status for history
+          },
+          actionUrl: `/member`,
+          priority: ['pending'].includes("pending") ? 2 : 1
+        });
+        await notification.save();
+    // Update withdrawal status
+    const updateWithdrawal = await Withdraw.findOneAndUpdate(
+      { _id: id }, // Fixed: Use _id instead of memberID
+      { status: 'Rejected' },
+      { new: true }
+    );
+
+    // Check if withdrawal was found and updated
+    if (!updateWithdrawal) {
+      return response.status(404).json({
+        success: false,
+        message: 'Withdrawal not found'
+      });
+    }
+
+    // Send success response
+    return response.status(200).json({
+      success: true,
+      message: 'Withdrawal approved successfully',
+      data: {
+        withdrawal: updateWithdrawal
+      }
+    });
+
+  } catch (error) {
+    console.error('Error approving withdrawal:', error);
+    return response.status(500).json({
+      success: false,
+      message: 'Internal server error',
+      error: error.message
+    });
+  }
+};
+export const declineMembership = async (request, response) => {   
+  try {     
+    // Log request body for debugging     
+    console.log(request.body);     
+    const { memberId,userId } = request.body;
+    
+    // Check if memberId is provided
+    if (!memberId) {
+      return response.status(400).json({
+        success: false,
+        message: 'Member ID is required'
+      });
+    }
+    
+    // Execute the delete operation and await it
+    const deleteMemberApproval = await Payment.findByIdAndDelete(memberId);
+    
+    // Check if the document was found and deleted
+    if (!deleteMemberApproval) {
+      return response.status(404).json({
+        success: false,
+        message: 'Member not found'
+      });
+    }
+     const notification = new Notification({
+          userId, // Assuming costumerId is the user ID to notify
+          title: `Membership Declined`,
+          message: 'Your membership declined due to not enough proof',
+          isRead: false,
+          metadata: {
+            status: "pending",
+            updatedAt: new Date(),
+            previousStatus: "pending" // Track previous status for history
+          },
+          actionUrl: `/`,
+          priority: ['pending'].includes("pending") ? 2 : 1
+        });
+        await notification.save();
+    
+    // Return success response
+    return response.status(200).json({
+      success: true,
+      message: 'Membership declined successfully',
+      data: deleteMemberApproval
+    });
+    
+  } catch (error) {     
+    console.error('Error decline membership:', error);     
+    return response.status(500).json({       
+      success: false,       
+      message: 'Internal server error',       
+      error: error.message     
+    });   
+  } 
 };

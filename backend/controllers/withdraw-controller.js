@@ -20,7 +20,7 @@ export const createWithdrawal = async (req, res) => {
 
     await withdrawal.save();
     // Validate required fields
-    if (!memberID || !amount || !paymentMethod || !accountNumber || !accountName) {
+    if (!memberID || !amount || !method ) {
       return res.status(400).json({
         success: false,
         message: 'All fields are required'

@@ -1,3 +1,4 @@
+import { Package } from "lucide-react";
 import { useEffect, useState, useRef } from "react";
 import { useLocation } from "react-router-dom";
 
@@ -28,7 +29,7 @@ const PaymentStatus = () => {
 
       const isGoldenSeat = goldenSeatData && goldenSeatData.GoldenSeat === "success";
       const isPackage = packageData !== null;
-
+console.log(packageData)
       if (isGoldenSeat) {
         const position = goldenSeatData?.position || "";
         const spot = selectedSpot?.name || "";

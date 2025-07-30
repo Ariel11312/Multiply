@@ -1,5 +1,5 @@
 import express from 'express';
-import { approvWithdraw, createMember, createPackage, createPayment, getAllUserProof, getMemberById, getPaymentById, getProofById, getReapers, memberReferral, updateMember, upgradePackage } from '../controllers/member-controller.js';
+import { approvWithdraw, createMember, createPackage, createPayment, declineMembership, getAllUserProof, getMemberById, getPaymentById, getProofById, getReapers, memberReferral, rejectWithdraw, updateMember, upgradePackage } from '../controllers/member-controller.js';
 import { getReferralTree, referrals } from '../controllers/referrals.js';
 import { createWithdrawal } from '../controllers/withdraw-controller.js';
 const router = express.Router();
@@ -19,5 +19,7 @@ router.get('/get-all-user-proof', getAllUserProof);
 router.post('/createpayment', createPayment);
 router.post('/createwithdraw', createWithdrawal);
 router.post('/approvewithdraw', approvWithdraw);
+router.post('/declinemembership', declineMembership);
+router.post('/rejectwithdraw', rejectWithdraw);
 
 export default router;

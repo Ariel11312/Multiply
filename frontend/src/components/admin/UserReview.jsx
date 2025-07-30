@@ -96,7 +96,7 @@ const AdminApprovalCard = () => {
           body: JSON.stringify(requestBody),
         }
       );
-
+window.location.href = '/admin/user-review'
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
@@ -117,17 +117,18 @@ const AdminApprovalCard = () => {
     }
   };
 
-  const handleDeclineMember = async (memberId) => {
+  const handleDeclineMember = async (memberId, userId) => {
+    
     try {
       setIsProcessing(true);
       const response = await fetch(
-        `${import.meta.env.VITE_API_URL}/api/member/decline/${memberId}`,
-        {
-          method: 'PUT',
-          headers: { "Content-Type": "application/json" },
-          credentials: "include",
-        }
-      );
+  `${import.meta.env.VITE_API_URL}/api/member/declinemembership`,
+  {
+    method: 'POST',
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ memberId: memberId,messageToMember: "Your membership request due to not enough proof",userId:userId })
+  }
+);
       
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
@@ -150,7 +151,7 @@ const AdminApprovalCard = () => {
   };
 
   // Withdrawal approval functions
-  const handleApproveWithdrawal = async (withdrawalId,paymentMethod,accountNumber,walletAddress,amount) => {
+  const handleApproveWithdrawal = async (id,withdrawalId,paymentMethod,accountNumber,walletAddress,amount) => {
 try {
   setIsProcessing(true);
   const response = await fetch(
@@ -158,7 +159,7 @@ try {
     {
       method: 'POST',
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ withdrawalId,paymentMethod,accountNumber,walletAddress,amount }), // Fixed: wrapped in object
+      body: JSON.stringify({ id,withdrawalId,paymentMethod,accountNumber,walletAddress,amount }), // Fixed: wrapped in object
     }
   );
 
@@ -183,18 +184,19 @@ try {
   
 }
 
-  const handleRejectWithdrawal = async (withdrawalId) => {
+  const handleRejectWithdrawal = async (id,withdrawalId,paymentMethod,accountNumber,walletAddress,amount)  => {
     try {
       setIsProcessing(true);
-      const response = await fetch(
-        `${import.meta.env.VITE_API_URL}/api/withdraw/reject/${withdrawalId}`,
-        {
-          method: 'PUT',
-          headers: { "Content-Type": "application/json" },
-          credentials: "include",
-        }
-      );
+   const response = await fetch(
+    `${import.meta.env.VITE_API_URL}/api/member/rejectwithdraw`,
+    {
+      method: 'POST',
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ id,withdrawalId,paymentMethod,accountNumber,walletAddress,amount }), // Fixed: wrapped in object
+    }
+  );
 
+window.location.href = '/admin/user-review'
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
@@ -444,7 +446,7 @@ try {
                               <span>Approve</span>
                             </button>
                             <button
-                              onClick={() => handleDeclineMember(member._id)}
+                              onClick={() => handleDeclineMember(member._id,member.memberID)}
                               className="flex items-center space-x-2 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
                               disabled={isProcessing}
                             >
@@ -490,7 +492,7 @@ try {
                             </div>
                             <div>
                               <h3 className="text-lg font-semibold text-gray-900">
-                                {userInfo.firstName} {userInfo.lastName || ''}
+                                {withdrawal.accountName} 
                               </h3>
                               <p className="text-sm text-gray-600">
                                 {withdrawal.paymentMethod} Withdrawal
@@ -526,7 +528,7 @@ try {
                         {withdrawal.status?.toLowerCase() === 'pending' && (
                           <div className="flex space-x-3">
                             <button
-                              onClick={() => handleApproveWithdrawal(withdrawal.memberID, withdrawal.paymentMethod, withdrawal.accountNumber, withdrawal.walletAddress, withdrawal.amount)}
+                              onClick={() => handleApproveWithdrawal(withdrawal._id,withdrawal.memberID, withdrawal.paymentMethod, withdrawal.accountNumber, withdrawal.walletAddress, withdrawal.amount)}
                               className="flex items-center space-x-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
                               disabled={isProcessing}
                             >
@@ -538,7 +540,7 @@ try {
                               <span>Approve</span>
                             </button>
                             <button
-                              onClick={() => handleRejectWithdrawal(withdrawal._id)}
+                              onClick={() => handleRejectWithdrawal(withdrawal._id,withdrawal.memberID, withdrawal.paymentMethod, withdrawal.accountNumber, withdrawal.walletAddress, withdrawal.amount)}
                               className="flex items-center space-x-2 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
                               disabled={isProcessing}
                             >

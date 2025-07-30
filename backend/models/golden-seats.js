@@ -23,11 +23,11 @@ const goldenSeatsSchema = new mongoose.Schema({
     },
     President:{
         type:String,
-        required:true
+        required:false
     },
     commission:{
         type:Number,
-        required: true
+        required: false
     }
 })
 
