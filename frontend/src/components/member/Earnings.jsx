@@ -138,7 +138,7 @@ const DirectSellingCards = () => {
       borderColor: "border-amber-400",
       shadowColor: "shadow-amber-200",
       features: [
-        "avail GOLDEN SEAT & earn passive income inside your jurisdiction for 7 years",
+        "avail GOLDEN SEAT & earn passive income inside your jurisdiction for 3 years",
         "avail e-Governor for 750,000 per seat",
         "avail e-Mayor for 250,000 per seat ",
         "avail e-Captain for 25,000 per seat",
@@ -362,7 +362,7 @@ window.location.href = '/payment-transaction'
                       )}
                       {pkg.id === 4 && (
                         <p className="text-lg font-medium mt-2">
-                          Territorial Leadership
+                          Distributorship
                         </p>
                       )}
                     </div>

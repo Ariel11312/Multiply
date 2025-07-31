@@ -96,7 +96,6 @@ const AdminApprovalCard = () => {
           body: JSON.stringify(requestBody),
         }
       );
-window.location.href = '/admin/user-review'
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
@@ -174,7 +173,6 @@ try {
         w._id === withdrawalId ? { ...w, status: 'Approved' } : w
       )
     );
-    window.location.href = '/admin/user-review'
   }
 } catch (error) {
   console.error('Error approving withdrawal:', error);
@@ -196,7 +194,6 @@ try {
     }
   );
 
-window.location.href = '/admin/user-review'
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
@@ -328,7 +325,7 @@ window.location.href = '/admin/user-review'
           <div className="space-y-6">
             <h2 className="text-xl font-semibold text-gray-800">Member Applications ({members.length})</h2>
             
-            {members.length === 0 ? (
+            {withdrawals.length === 0 ? (
               <div className="bg-white rounded-lg shadow-md p-8 text-center">
                 <p className="text-gray-600">No member applications found.</p>
               </div>

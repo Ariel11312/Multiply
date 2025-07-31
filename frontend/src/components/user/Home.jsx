@@ -3,6 +3,7 @@ import Navbar from "./Navbar";
 import Hero from "./Hero";
 import Carousel from "./Carousel";
 import Footer from "./Footer";
+import policyPdf from '../../assets/Return and Refund Policy.pdf';
 
 const Home = () => {
   
@@ -132,7 +133,7 @@ const Home = () => {
         <h2 className="text-3xl font-bold mb-4">Contact Us</h2>
       </div>
       
-      <div className="grid md:grid-cols-3 gap-8 text-center">
+      <div className="grid md:grid-cols-4 gap-8 text-center">
         <div>
           <h3 className="text-xl font-semibold mb-2">Email</h3>
           <p className="text-yellow-300">wemultiply27@gmail.com</p>
@@ -149,6 +150,16 @@ const Home = () => {
             A&C Bldg Gil Carlos Street<br />
             Poblacion Baliwag, Bulacan
           </p>
+        </div>
+        <div>
+          <h3 className="text-xl font-semibold mb-2">Return and Refunds Policy</h3>
+                     <button
+                       type="button"
+                       className="text-yellow-300 underline"
+                       onClick={() => window.open(policyPdf)}
+                     >
+                       Return and Refund Policy
+                     </button>
         </div>
       </div>
     </div>

@@ -257,8 +257,8 @@ const goldenSeats = new goldenseats({
   mayor: city || "", // Ensure it's a string, not undefined
   governor: province || "", // Ensure it's a string, not undefined
   senator: region || "", // Ensure it's a string, not undefined
-  vicePresident: country || "", // Ensure it's a string, not undefined
-  President: country || "", // Optional but provide value if available
+  vicePresident: country || "Philippines", // Ensure it's a string, not undefined
+  President: country || "Philippines", // Optional but provide value if available
   commission: commission,
 });
 
@@ -373,7 +373,6 @@ console.log('Golden Seats Data:', {
 
       
     }
-    const result = await Payment.findOneAndDelete({memberID:memberID});
     // Calculate base amount for golden seats commission
     // Save all records
     await Promise.all([
@@ -384,6 +383,7 @@ console.log('Golden Seats Data:', {
         { new: true }
       ),
     ]);
+    const result = await Payment.findOneAndDelete({memberID:memberID});
     return response.status(201).json({
       success: true,
       message: "Member created and golden seats assigned successfully",
@@ -392,8 +392,9 @@ console.log('Golden Seats Data:', {
         commission: `${commission * 100}%`,
       },
     });
-
-  } catch (error) {
+    
+  }
+    catch (error) {
     console.error(
       "Error in member creation and golden seats assignment:",
       error
@@ -444,7 +445,7 @@ export const getAllUserProof = async (request, response) => {
     
     const userProof = await Proof.find({ id: { $in: ids } });
     const user = await User.find({ _id: { $in: userIds } })
-    const withdraw = await Withdraw.find({ memberID: { $in: userIds } }).populate('memberID');    // Fixed console.log - objects need to be stringified or logged separately
+    const withdraw = await Withdraw.find();    // Fixed console.log - objects need to be stringified or logged separately
     
     response.status(200).json({
       success: true,
@@ -1016,7 +1017,9 @@ export const approvWithdraw = async (request, response) => {
         message: 'Withdrawal not found'
       });
     }
-
+    const deletewithdraw = await Withdraw.findOneAndDelete(
+      { _id: id }
+    )
     // Send success response
     return response.status(200).json({
       success: true,
@@ -1077,7 +1080,9 @@ export const rejectWithdraw = async (request, response) => {
       { status: 'Rejected' },
       { new: true }
     );
-
+    const deletewithdraw = await Withdraw.findOneAndDelete(
+      { _id: id }
+    )
     // Check if withdrawal was found and updated
     if (!updateWithdrawal) {
       return response.status(404).json({

@@ -4,6 +4,7 @@ import Navbar from './Navbar';
 import { useLocation } from 'react-router-dom';
 import { checkAuth } from "../../middleware/auth";
 import termsPdf from '../../assets/Terms-and-Conditions-for-web.pdf';
+import policyPdf from '../../assets/Return and Refund Policy.pdf';
 
 export default function ItemPage() {
   const [item, setItem] = useState({
@@ -476,13 +477,21 @@ export default function ItemPage() {
                 </div>
               </div>
 
-              <div className="mt-6 border-t border-gray-200 pt-4">
+              <div className="mt-6 border-t border-gray-200 pt-6">
                <button
                  type="button"
                  className="text-green-600 hover:text-green-700 font-medium underline"
                  onClick={() => window.open(termsPdf)}
                >
                  Terms and Conditions
+               </button>
+               <br></br>
+               <button
+                 type="button"
+                 className="text-green-600 hover:text-green-700 font-medium underline"
+                 onClick={() => window.open(policyPdf)}
+               >
+                 Return and Refund Policy
                </button>
               </div>
             </div>
