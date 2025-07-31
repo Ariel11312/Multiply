@@ -325,7 +325,7 @@ try {
           <div className="space-y-6">
             <h2 className="text-xl font-semibold text-gray-800">Member Applications ({members.length})</h2>
             
-            {withdrawals.length === 0 ? (
+            {members.length === 0 ? (
               <div className="bg-white rounded-lg shadow-md p-8 text-center">
                 <p className="text-gray-600">No member applications found.</p>
               </div>
