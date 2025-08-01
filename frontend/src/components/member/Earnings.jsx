@@ -19,7 +19,7 @@ const DirectSellingCards = () => {
   const [showModal, setShowModal] = useState(false);
   const [selectedSeat, setSelectedSeat] = useState(null);
   const [hoveredCard, setHoveredCard] = useState(null);
- const [paymentUrl, setPaymentUrl] = useState("");
+  const [paymentUrl, setPaymentUrl] = useState("");
   useEffect(() => {
     checkMember(setMemberData);
   }, []);
@@ -67,9 +67,8 @@ const DirectSellingCards = () => {
       ],
       getReferralLink: (referralCode) =>
         referralCode
-          ? `${
-              import.meta.env.VITE_URL
-            }/referral-verification?referral=${referralCode}&type=Crown`
+          ? `${import.meta.env.VITE_URL
+          }/referral-verification?referral=${referralCode}&type=Crown`
           : "",
     },
     // 2. Super Direct Selling (Blue/Diamond Design)
@@ -93,9 +92,8 @@ const DirectSellingCards = () => {
       ],
       getReferralLink: (referralCode) =>
         referralCode
-          ? `${
-              import.meta.env.VITE_URL
-            }/referral-verification?referral=${referralCode}&type=Diamond`
+          ? `${import.meta.env.VITE_URL
+          }/referral-verification?referral=${referralCode}&type=Diamond`
           : "",
     },
     // 3. 7 Levels Passive Income
@@ -122,9 +120,8 @@ const DirectSellingCards = () => {
       ],
       getReferralLink: (referralCode, subPackage) =>
         referralCode && subPackage
-          ? `${
-              import.meta.env.VITE_URL
-            }/referral-verification?referral=${referralCode}&type=${subPackage}`
+          ? `${import.meta.env.VITE_URL
+          }/referral-verification?referral=${referralCode}&type=${subPackage}`
           : "",
     },
     // 4. Golden Seats
@@ -163,25 +160,25 @@ const DirectSellingCards = () => {
       name: name,
       price: price,
     };
- const response = await fetch(`${import.meta.env.VITE_API_URL}/api/member/createpayment`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
+    const response = await fetch(`${import.meta.env.VITE_API_URL}/api/member/createpayment`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
         referralCode: memberData?.referralCode,
         memberID: memberData?.memberID,
-        memberType:packageData.name,
+        memberType: packageData.name,
         region: memberData?.region,
-        addressNo:memberData?.addressNo,
+        addressNo: memberData?.addressNo,
         province: memberData?.province,
         city: memberData?.city,
-        userType:'Upgrade Package',
-        role:memberData?.role,
+        userType: 'Upgrade Package',
+        role: memberData?.role,
         barangay: memberData?.barangay,
         paymentType: memberData?.paymentType,
         memberDate: Date(),
-    })
-});
-window.location.href = '/payment-transaction'
+      })
+    });
+    window.location.href = '/payment-transaction'
   };
 
   const HandleAvailModal = (seat) => {
@@ -193,9 +190,8 @@ window.location.href = '/payment-transaction'
   // Simple component for the Podluck Icon
   const PodluckIcon = ({ availed }) => (
     <div
-      className={`w-8 h-8 rounded-full flex items-center justify-center ${
-        availed ? "bg-green-100 text-green-500" : "bg-gray-100 text-gray-500"
-      }`}
+      className={`w-8 h-8 rounded-full flex items-center justify-center ${availed ? "bg-green-100 text-green-500" : "bg-gray-100 text-gray-500"
+        }`}
     >
       <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
         <path
@@ -258,11 +254,9 @@ window.location.href = '/payment-transaction'
             {packages.slice(0, 2).map((pkg) => (
               <div
                 key={pkg.id}
-                className={`bg-white rounded-xl border-2 ${
-                  pkg.borderColor
-                } shadow-lg overflow-hidden transition-all duration-300 transform ${
-                  hoveredCard === pkg.id ? "scale-105 shadow-xl" : ""
-                } hover:shadow-2xl relative flex flex-col h-full`} // Changed to flex-col h-full
+                className={`bg-white rounded-xl border-2 ${pkg.borderColor
+                  } shadow-lg overflow-hidden transition-all duration-300 transform ${hoveredCard === pkg.id ? "scale-105 shadow-xl" : ""
+                  } hover:shadow-2xl relative flex flex-col h-full`} // Changed to flex-col h-full
                 onMouseEnter={() => setHoveredCard(pkg.id)}
                 onMouseLeave={() => setHoveredCard(null)}
               >
@@ -300,13 +294,12 @@ window.location.href = '/payment-transaction'
                     {pkg.features.map((feature, index) => (
                       <li key={index} className="flex items-start">
                         <svg
-                          className={`h-5 w-5 ${
-                            pkg.id === 1
+                          className={`h-5 w-5 ${pkg.id === 1
                               ? "text-yellow-500"
                               : pkg.id === 3
-                              ? "text-blue-500"
-                              : "text-green-500"
-                          } mr-2 mt-0.5`}
+                                ? "text-blue-500"
+                                : "text-green-500"
+                            } mr-2 mt-0.5`}
                           fill="none"
                           viewBox="0 0 24 24"
                           stroke="currentColor"
@@ -343,11 +336,9 @@ window.location.href = '/payment-transaction'
             {packages.slice(2, 4).map((pkg) => (
               <div
                 key={pkg.id}
-                className={`bg-white rounded-xl border-2 ${
-                  pkg.borderColor
-                } shadow-lg overflow-hidden transition-all duration-300 transform ${
-                  hoveredCard === pkg.id ? "scale-105 shadow-xl" : ""
-                } hover:shadow-2xl flex flex-col h-full`} // Added flex flex-col h-full
+                className={`bg-white rounded-xl border-2 ${pkg.borderColor
+                  } shadow-lg overflow-hidden transition-all duration-300 transform ${hoveredCard === pkg.id ? "scale-105 shadow-xl" : ""
+                  } hover:shadow-2xl flex flex-col h-full`} // Added flex flex-col h-full
                 onMouseEnter={() => setHoveredCard(pkg.id)}
                 onMouseLeave={() => setHoveredCard(null)}
               >
@@ -362,7 +353,7 @@ window.location.href = '/payment-transaction'
                       )}
                       {pkg.id === 4 && (
                         <p className="text-lg font-medium mt-2">
-                          Distributorship
+                          Territorial Distributorship
                         </p>
                       )}
                     </div>
@@ -377,9 +368,8 @@ window.location.href = '/payment-transaction'
                     {pkg.features.slice(0, 4).map((feature, index) => (
                       <li key={index} className="flex items-start">
                         <svg
-                          className={`h-5 w-5 ${
-                            pkg.id === 4 ? "text-amber-500" : "text-green-500"
-                          } mr-2 mt-0.5`}
+                          className={`h-5 w-5 ${pkg.id === 4 ? "text-amber-500" : "text-green-500"
+                            } mr-2 mt-0.5`}
                           fill="none"
                           viewBox="0 0 24 24"
                           stroke="currentColor"
@@ -425,9 +415,9 @@ window.location.href = '/payment-transaction'
           if (pkg.id === 2 && selectedPackage) {
             referralLink = pkg.getReferralLink
               ? pkg.getReferralLink(
-                  memberData?.referralCode,
-                  selectedPackage.name
-                )
+                memberData?.referralCode,
+                selectedPackage.name
+              )
               : null;
           } else if (pkg.getReferralLink) {
             referralLink = pkg.getReferralLink(memberData?.referralCode);
@@ -445,9 +435,8 @@ window.location.href = '/payment-transaction'
           return (
             <div
               key={pkg.id}
-              className={`fixed inset-0 z-50 flex items-center justify-center p-4 ${
-                openModal === pkg.id ? "block" : "hidden"
-              }`}
+              className={`fixed inset-0 z-50 flex items-center justify-center p-4 ${openModal === pkg.id ? "block" : "hidden"
+                }`}
             >
               <div
                 className="absolute inset-0 bg-black bg-opacity-50"
@@ -548,95 +537,96 @@ window.location.href = '/payment-transaction'
                 )}
 
                 {/* QR Code or Upgrade Message */}
-                {openModal === pkg.id && (
-                  <div className="p-6 flex flex-col items-center">
-                    {isEligibleForPackage && referralLink ? (
-                      <div
-                        className={`p-4 rounded-lg ${
-                          pkg.id === 1
-                            ? "bg-yellow-50"
-                            : pkg.id === 3
-                            ? "bg-blue-50"
-                            : "bg-green-50"
-                        }`}
-                      >
-                        <QRCodeCanvas
-                          value={referralLink}
-                          size={200}
-                          bgColor="transparent"
-                          fgColor={
-                            pkg.id === 1
-                              ? "#ca8a04"
-                              : pkg.id === 3
-                              ? "#3b82f6"
-                              : "#059669"
-                          }
-                          level="H"
-                          className="mb-4"
-                        />
-                        <p className="text-sm text-gray-500 text-center mt-2">
-                          Scan this QR code to join
-                        </p>
-                      </div>
-                    ) : (
-                      <div className="text-center">
-                        <p className="text-red-500 mb-4">
-                          You need to upgrade your membership to access this
-                          package.
-                        </p>
-                        {pkg.id !== 2 && (
-                          <button
-                            onClick={() =>
-                              handlePackage(pkg.packageType, pkg.price)
-                            }
-                            className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors"
-                          >
-                            Avail this Package
-                          </button>
-                        )}
-                        {pkg.id === 2 && (
-                          <>
-                            <p className="text-sm font-medium text-gray-700 mt-3 mb-2">
-                              Choose a sub-package:
-                            </p>
-                            <div className="space-y-3">
-                              {pkg.subPackages.map((subPkg, index) => (
-                                <div
-                                  key={index}
-                                  className="p-3 border rounded-lg hover:shadow-md transition-shadow"
-                                >
-                                  <div className="flex justify-between items-center">
-                                    <div>
-                                      <span className="font-medium text-gray-800">
-                                        {subPkg.name}
-                                      </span>
-                                      <span className="block text-green-600 font-bold">
-                                        ₱{subPkg.price}
-                                      </span>
-                                    </div>
-                                    <button
-                                      onClick={() =>
-                                        handlePackage(
-                                          subPkg.packageType,
-                                          subPkg.price
-                                        )
-                                      }
-                                      className={`px-4 py-2 text-white rounded-md 
+{openModal === pkg.id && (
+  <div className="p-6 flex flex-col items-center">
+    {isEligibleForPackage && referralLink ? (
+      <div
+        className={`p-4 rounded-lg ${pkg.id === 1
+            ? "bg-yellow-50"
+            : pkg.id === 3
+              ? "bg-blue-50"
+              : "bg-green-50"
+          }`}
+      >
+        <QRCodeCanvas
+          value={referralLink}
+          size={200}
+          bgColor="transparent"
+          fgColor={
+            pkg.id === 1
+              ? "#ca8a04"
+              : pkg.id === 3
+                ? "#3b82f6"
+                : "#059669"
+          }
+          level="H"
+          className="mb-4"
+        />
+        <p className="text-sm text-gray-500 text-center mt-2">
+          Scan this QR code to join
+        </p>
+      </div>
+    ) : (
+      <div className="text-center">
+        {pkg.id !== 2 && pkg.id !== 4 && (
+          <>
+            <p className="text-red-500 mb-4">
+              You need to upgrade your membership to access this
+              package.
+            </p>
+            <button
+              onClick={() =>
+                handlePackage(pkg.packageType, pkg.price)
+              }
+              className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors"
+            >
+              Avail this Package
+            </button>
+          </>
+        )}
+        {pkg.id === 2 && (
+          <>
+            <p className="text-sm font-medium text-gray-700 mt-3 mb-2">
+              Choose a sub-package:
+            </p>
+            <div className="space-y-3">
+              {pkg.subPackages.map((subPkg, index) => (
+                <div
+                  key={index}
+                  className="p-3 border rounded-lg hover:shadow-md transition-shadow"
+                >
+                  <div className="flex justify-between items-center">
+                    <div>
+                      <span className="font-medium text-gray-800">
+                        {subPkg.name}
+                      </span>
+                      <span className="block text-green-600 font-bold">
+                        ₱{subPkg.price}
+                      </span>
+                    </div>
+                    <button
+                      onClick={() =>
+                        handlePackage(
+                          subPkg.packageType,
+                          subPkg.price
+                        )
+                      }
+                      className={`px-4 py-2 text-white rounded-md 
                 bg-gradient-to-r ${pkg.color} hover:${pkg.hoverColor} 
                 transition-all transform hover:scale-105`}
-                                    >
-                                      Avail
-                                    </button>
-                                  </div>
-                                </div>
-                              ))}
-                            </div>
-                          </>
-                        )}
-                      </div>
-                    )}
+                    >
+                      Avail
+                    </button>
                   </div>
-                )}
+                </div>
+              ))}
+            </div>
+          </>
+        )}
+      </div>
+    )}
+  </div>
+)}
 
                 {/* Package Features */}
                 <div className="p-6">
@@ -647,15 +637,14 @@ window.location.href = '/payment-transaction'
                     {pkg.features.map((feature, index) => (
                       <li key={index} className="flex items-start">
                         <svg
-                          className={`h-5 w-5 ${
-                            pkg.id === 1
+                          className={`h-5 w-5 ${pkg.id === 1
                               ? "text-yellow-500"
                               : pkg.id === 3
-                              ? "text-blue-500"
-                              : pkg.id === 4
-                              ? "text-amber-500"
-                              : "text-green-500"
-                          } mr-2 mt-0.5`}
+                                ? "text-blue-500"
+                                : pkg.id === 4
+                                  ? "text-amber-500"
+                                  : "text-green-500"
+                            } mr-2 mt-0.5`}
                           fill="none"
                           viewBox="0 0 24 24"
                           stroke="currentColor"

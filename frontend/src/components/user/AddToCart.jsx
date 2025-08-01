@@ -5,6 +5,7 @@ import { useLocation } from 'react-router-dom';
 import { checkAuth } from "../../middleware/auth";
 import termsPdf from '../../assets/Terms-and-Conditions-for-web.pdf';
 import policyPdf from '../../assets/Return and Refund Policy.pdf';
+import { checkMember } from '../../middleware/member';
 
 export default function ItemPage() {
   const [item, setItem] = useState({
@@ -27,12 +28,7 @@ export default function ItemPage() {
   const [quantity, setQuantity] = useState(1);
   const [showModal, setShowModal] = useState(false);
   const [isAddingToCart, setIsAddingToCart] = useState(false);
-  const [authState, setAuthState] = useState({
-    isAuthenticated: false,
-    isCheckingAuth: true,
-    user: null,
-    error: null,
-  });
+  const [memberData, SetMemberData] = useState();
   
   // Zoom functionality
   const [showZoom, setShowZoom] = useState(false);
@@ -44,7 +40,7 @@ export default function ItemPage() {
   useEffect(() => {
     fetchItems();
     const fetchMemberData = async () => {
-      const member = await checkAuth(setAuthState);
+      const member = await checkMember(SetMemberData);
       console.log("Member data after fetch:", member);
     };
     fetchMemberData();
@@ -384,11 +380,11 @@ export default function ItemPage() {
               <div className="mt-4 bg-gray-50 p-4 rounded-lg">
                 <div className="flex items-baseline">
                   <span className="text-3xl font-bold text-green-700">
-                    ₱ {parseFloat(authState.user ? item.price : item.price * 2).toLocaleString(undefined, {
+                    ₱ {parseFloat(memberData ? item.price : item.price * 2).toLocaleString(undefined, {
                       minimumFractionDigits: 2, 
                       maximumFractionDigits: 2
                     })}
-                    {!authState.user && 
+                    {!memberData && 
                       <span className="text-xs text-red-500 ml-1">(Non-member price)</span>
                     }
                   </span>

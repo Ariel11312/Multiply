@@ -565,7 +565,7 @@ window.location.href = '/payment-transaction'
                     <div className="flex items-center gap-3">
                       <h2 className="text-3xl font-bold">
                         {formatAmount(
-                            (MemberTransaction?.total || 0))}
+                            (MemberTransaction?.total || 0) + totalCommission)}
                       </h2>
 
                       <span className="text-sm text-gray-500">
@@ -594,20 +594,17 @@ window.location.href = '/payment-transaction'
                     <div className="space-y-1">
                       <p className="text-sm text-gray-600">This Month</p>
                       <p className="text-lg font-semibold">
-                        {formatAmount(MemberTransaction?.totalIncomeThisMonth)}
-                      </p>
+                       {formatAmount(
+                          (MemberTransaction?.total || 0) + totalCommission
+                        )}   </p>
                     </div>
                     <div className="space-y-1">
                       <p className="text-sm text-gray-600">
                         Referrals & Commissions Earnings
                       </p>
                       <p className="tet-lg font-semibold">
-                        {formatAmount(
-                          isNaN(
-                            parseFloat(localStorage.getItem("totalEarnings"))
-                          )
-                            ? 0
-                            : parseFloat(localStorage.getItem("totalEarnings"))
+    {formatAmount(
+                          (MemberTransaction?.total || 0) + totalCommission
                         )}
                       </p>
                     </div>
@@ -620,7 +617,7 @@ window.location.href = '/payment-transaction'
                       <p className="text-sm text-gray-600">Total Earnings</p>
                       <p className="text-2xl font-bold text-green-600">
                         {formatAmount(
-                          (MemberTransaction?.total || 0)
+                          (MemberTransaction?.total || 0) + totalCommission
                         )}
                       </p>
                     </div>
