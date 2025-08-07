@@ -13,6 +13,8 @@ import {
   BarChart3,
   TrendingUp,
   PieChart,
+  ChevronLeft,
+  ChevronRight,
 } from "lucide-react";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, BarChart, Bar, PieChart as RechartsPieChart, Cell } from 'recharts';
 import Navigation from "../member/Navbar";
@@ -33,6 +35,10 @@ const TransactionHistory = () => {
   const [isUpdating, setIsUpdating] = useState(false);
   const [updateStatus, setUpdateStatus] = useState(null);
   const [showStats, setShowStats] = useState(false);
+
+  // Pagination states
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
 
   // Colors for charts
   const CHART_COLORS = ['#10B981', '#059669', '#047857', '#065F46', '#064E3B', '#FCD34D', '#F59E0B', '#D97706'];
@@ -107,6 +113,16 @@ const TransactionHistory = () => {
     };
   }, [transactions]);
 
+  // Pagination logic
+  const totalPages = Math.ceil(filteredTransactions.length / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const currentTransactions = filteredTransactions.slice(startIndex, endIndex);
+
+  const handlePageChange = (page) => {
+    setCurrentPage(page);
+  };
+
   const handleClaimClick = (transaction) => {
     setSelectedTransaction(transaction);
     setShowModal(true);
@@ -175,19 +191,18 @@ const TransactionHistory = () => {
     }
   };
 
-  // Fetch transactions with limit and sorting
+  // Fetch transactions with limit and sorting - Remove the slice(0, 10) to get all data
   useEffect(() => {
     const fetchTransactions = async () => {
       try {
         const fetchedTransactions = await checkTransaction(setTransactions);
         
         if (fetchedTransactions) {
-          const sortedAndLimited = fetchedTransactions
-            .sort((a, b) => new Date(b.transactionDate) - new Date(a.transactionDate))
-            .slice(0, 10);
+          const sortedTransactions = fetchedTransactions
+            .sort((a, b) => new Date(b.transactionDate) - new Date(a.transactionDate));
           
-          setTransactions(sortedAndLimited);
-          setFilteredTransactions(sortedAndLimited);
+          setTransactions(sortedTransactions);
+          setFilteredTransactions(sortedTransactions);
         }
       } catch (error) {
         console.error("Error fetching transactions:", error);
@@ -236,6 +251,7 @@ const TransactionHistory = () => {
     }
 
     setFilteredTransactions(filtered);
+    setCurrentPage(1); // Reset to first page when filtering
   }, [searchQuery, dateRange, selectedSalesperson, priceRange, transactions]);
 
   // Export functionality
@@ -379,6 +395,79 @@ const TransactionHistory = () => {
     );
   };
 
+  // Pagination Component
+  const Pagination = () => {
+    if (totalPages <= 1) return null;
+
+    const getVisiblePages = () => {
+      const delta = 2;
+      const range = [];
+      const rangeWithDots = [];
+
+      for (let i = Math.max(2, currentPage - delta); i <= Math.min(totalPages - 1, currentPage + delta); i++) {
+        range.push(i);
+      }
+
+      if (currentPage - delta > 2) {
+        rangeWithDots.push(1, '...');
+      } else {
+        rangeWithDots.push(1);
+      }
+
+      rangeWithDots.push(...range);
+
+      if (currentPage + delta < totalPages - 1) {
+        rangeWithDots.push('...', totalPages);
+      } else {
+        rangeWithDots.push(totalPages);
+      }
+
+      return rangeWithDots;
+    };
+
+    return (
+      <div className="flex items-center justify-between mt-6 px-4 py-3 bg-white border-t border-green-100">
+        <div className="text-sm text-gray-600">
+          Showing {startIndex + 1} to {Math.min(endIndex, filteredTransactions.length)} of {filteredTransactions.length} results
+        </div>
+        <div className="flex items-center space-x-2">
+          <button
+            onClick={() => handlePageChange(currentPage - 1)}
+            disabled={currentPage === 1}
+            className="px-3 py-1 text-sm border border-gray-300 rounded-md disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50"
+          >
+            <ChevronLeft size={16} />
+          </button>
+          
+          {getVisiblePages().map((page, index) => (
+            <button
+              key={index}
+              onClick={() => typeof page === 'number' && handlePageChange(page)}
+              disabled={page === '...'}
+              className={`px-3 py-1 text-sm border rounded-md ${
+                page === currentPage
+                  ? 'bg-green-600 text-white border-green-600'
+                  : page === '...'
+                  ? 'border-transparent cursor-default'
+                  : 'border-gray-300 hover:bg-gray-50'
+              }`}
+            >
+              {page}
+            </button>
+          ))}
+          
+          <button
+            onClick={() => handlePageChange(currentPage + 1)}
+            disabled={currentPage === totalPages}
+            className="px-3 py-1 text-sm border border-gray-300 rounded-md disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50"
+          >
+            <ChevronRight size={16} />
+          </button>
+        </div>
+      </div>
+    );
+  };
+
   // Filter panel component
   const FilterPanel = ({ isMobile = false }) => (
     <div className={`${isMobile ? "p-4" : "p-6"} space-y-4`}>
@@ -490,9 +579,10 @@ const TransactionHistory = () => {
           {isFilterOpen && <FilterPanel isMobile={true} />}
         </div>
 
+        {/* Mobile transaction cards with pagination */}
         <div className="space-y-4 p-4">
-          {filteredTransactions.length > 0 ? (
-            filteredTransactions.map((transaction) => (
+          {currentTransactions.length > 0 ? (
+            currentTransactions.map((transaction) => (
               <div 
                 key={transaction.transactionId} 
                 className="flex items-center gap-3 bg-white shadow-sm rounded-lg p-3 border border-gray-100"
@@ -534,6 +624,9 @@ const TransactionHistory = () => {
             </div>
           )}
         </div>
+
+        {/* Mobile Pagination */}
+        <Pagination />
       </div>
 
       {/* Desktop Layout */}
@@ -557,7 +650,7 @@ const TransactionHistory = () => {
               <div className="bg-white rounded-lg border border-green-500">
                 <div className="p-4 border-b border-green-100">
                   <div className="flex justify-between items-center mb-4">
-                    <h1 className="text-xl font-semibold">Transactions (Showing {filteredTransactions.length} of {transactions.length})</h1>
+                    <h1 className="text-xl font-semibold">Transactions (Showing {startIndex + 1}-{Math.min(endIndex, filteredTransactions.length)} of {filteredTransactions.length})</h1>
                     <div className="flex gap-4">
                       <button
                         onClick={() => exportData("csv")}
@@ -590,59 +683,69 @@ const TransactionHistory = () => {
                   </div>
                 </div>
 
-                <div className="p-4">
-                  <table className="w-full">
-                    <thead>
-                      <tr className="border-b border-gray-200">
-                        <th className="text-left pb-3">Transaction</th>
-                        <th className="text-left pb-3">Items</th>
-                        <th className="text-left pb-3">Amount</th>
-                        <th className="text-left pb-3">Date</th>
-                        <th className="text-left pb-3">ID</th>
-                        <th className="text-left pb-3">Action</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {filteredTransactions.map((transaction) => (
-                        <tr
-                          key={transaction.transactionId}
-                          className="hover:bg-green-50"
-                        >
-                          <td className="py-3">
-                            <div className="flex items-center gap-3">
-                              <div className="bg-green-50 p-2 rounded-lg">
-                                <Camera size={20} className="text-green-600" />
-                              </div>
-                              <span>
-                                {transaction.user?.firstName}{" "}
-                                {transaction.user?.lastName}
-                              </span>
-                            </div>
-                          </td>
-                          <td className="py-3">{transaction.productName}</td>
-                          <td className="py-3">₱{transaction.price}</td>
-                          <td className="py-3">
-                            {new Date(transaction.transactionDate).toLocaleDateString()}
-                          </td>
-                          <td className="py-3 text-gray-400">
-                            #{transaction.transactionId}
-                          </td>
-                          <td className="py-3">
-                            {transaction.productName === "Crown Referral Bonus" &&
-                              transaction.claimStatus !== "claimed" && (
-                                <button
-                                  className="bg-green-600 hover:bg-green-700 text-white font-medium py-2 px-4 rounded-lg"
-                                  onClick={() => handleClaimClick(transaction)}
-                                >
-                                  Claim
-                                </button>
-                              )}
-                          </td>
+                {/* Table with horizontal scroll */}
+                <div className="overflow-x-auto">
+                  <div className="p-4 min-w-[800px]"> {/* Minimum width ensures horizontal scroll when needed */}
+                    <table className="w-full">
+                      <thead>
+                        <tr className="border-b border-gray-200">
+                          <th className="text-left pb-3 whitespace-nowrap">Transaction</th>
+                          <th className="text-left pb-3 whitespace-nowrap">Items</th>
+                          <th className="text-left pb-3 whitespace-nowrap">Amount</th>
+                          <th className="text-left pb-3 whitespace-nowrap">Date</th>
+                          <th className="text-left pb-3 whitespace-nowrap">ID</th>
+                          <th className="text-left pb-3 whitespace-nowrap">Action</th>
                         </tr>
-                      ))}
-                    </tbody>
-                  </table>
+                      </thead>
+                      <tbody>
+                        {currentTransactions.map((transaction) => (
+                          <tr
+                            key={transaction.transactionId}
+                            className="hover:bg-green-50"
+                          >
+                            <td className="py-3 whitespace-nowrap">
+                              <div className="flex items-center gap-3">
+                                <div className="bg-green-50 p-2 rounded-lg">
+                                  <Camera size={20} className="text-green-600" />
+                                </div>
+                                <span className="min-w-0">
+                                  {transaction.user?.firstName}{" "}
+                                  {transaction.user?.lastName}
+                                </span>
+                              </div>
+                            </td>
+                            <td className="py-3">
+                              <div className="max-w-[200px] truncate" title={transaction.productName}>
+                                {transaction.productName}
+                              </div>
+                            </td>
+                            <td className="py-3 whitespace-nowrap">₱{transaction.price}</td>
+                            <td className="py-3 whitespace-nowrap">
+                              {new Date(transaction.transactionDate).toLocaleDateString()}
+                            </td>
+                            <td className="py-3 text-gray-400 whitespace-nowrap">
+                              #{transaction.transactionId}
+                            </td>
+                            <td className="py-3 whitespace-nowrap">
+                              {transaction.productName === "Crown Referral Bonus" &&
+                                transaction.claimStatus !== "claimed" && (
+                                  <button
+                                    className="bg-green-600 hover:bg-green-700 text-white font-medium py-2 px-4 rounded-lg"
+                                    onClick={() => handleClaimClick(transaction)}
+                                  >
+                                    Claim
+                                  </button>
+                                )}
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
                 </div>
+
+                {/* Desktop Pagination */}
+                <Pagination />
               </div>
             </div>
           </div>

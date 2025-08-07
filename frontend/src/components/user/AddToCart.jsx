@@ -30,6 +30,12 @@ export default function ItemPage() {
   const [isAddingToCart, setIsAddingToCart] = useState(false);
   const [memberData, SetMemberData] = useState();
   
+    const [authState, setAuthState] = useState({
+      isAuthenticated: false,
+      isCheckingAuth: true,
+      user: null,
+      error: null,
+    });
   // Zoom functionality
   const [showZoom, setShowZoom] = useState(false);
   const imageRef = useRef(null);
@@ -38,6 +44,7 @@ export default function ItemPage() {
   const containerRef = useRef(null);
   
   useEffect(() => {
+        checkAuth(setAuthState);
     fetchItems();
     const fetchMemberData = async () => {
       const member = await checkMember(SetMemberData);

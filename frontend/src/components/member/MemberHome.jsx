@@ -49,9 +49,8 @@ const topReapers = [
 const PodluckIcon = ({ availed }) => {
   return (
     <div
-      className={`w-6 h-6 rounded-full flex items-center justify-center border-2 border-green-500 ${
-        availed ? "bg-green-500" : ""
-      }`}
+      className={`w-6 h-6 rounded-full flex items-center justify-center border-2 border-green-500 ${availed ? "bg-green-500" : ""
+        }`}
     >
       {availed ? (
         <Unlock size={16} className="text-white" />
@@ -130,9 +129,9 @@ const Dashboard = () => {
       .map((word) => word.charAt(0).toUpperCase())
       .join("");
   };
-const handleWithdraw = () => {
-window.location.href = "/withdraw";
-}
+  const handleWithdraw = () => {
+    window.location.href = "/withdraw";
+  }
   const formatFullName = (firstName, lastName) => {
     if (!firstName || !lastName) return "Loading...";
     return (
@@ -310,25 +309,25 @@ window.location.href = "/withdraw";
       const owner = localStorage.getItem("owner")
       const selectedSpot = JSON.parse(localStorage.getItem("selectedSpot"))
 
-const response = await fetch(`${import.meta.env.VITE_API_URL}/api/member/createpayment`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-        referralCode: memberData?.referralCode,
-        memberID: memberData?.memberID,
-        memberType:owner,
-        region: memberData?.region,
-        addressNo:'N/A',
-        province: memberData?.province,
-        city: memberData?.city,
-        userType:'Golden Seats',
-        role:selectedSpot.name,
-        barangay: memberData?.barangay,
-        paymentType: memberData?.paymentType,
-        memberDate: Date(),
-    })
-});
-window.location.href = '/payment-transaction'
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/member/createpayment`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          referralCode: memberData?.referralCode,
+          memberID: memberData?.memberID,
+          memberType: owner,
+          region: memberData?.region,
+          addressNo: 'N/A',
+          province: memberData?.province,
+          city: memberData?.city,
+          userType: 'Golden Seats',
+          role: selectedSpot.name,
+          barangay: memberData?.barangay,
+          paymentType: memberData?.paymentType,
+          memberDate: Date(),
+        })
+      });
+      window.location.href = '/payment-transaction'
       if (response.data.success) {
         setPaymentUrl(response.data.checkoutUrl); // Set the URL to redirect the user to PayMongo
         localStorage.setItem(
@@ -342,7 +341,7 @@ window.location.href = '/payment-transaction'
       } else {
         setError("Failed to create payment, please try again.");
       }
-     } catch (error) {
+    } catch (error) {
       setError("An error occurred while processing the payment.");
       console.error("Payment creation error:", error);
     }
@@ -565,7 +564,7 @@ window.location.href = '/payment-transaction'
                     <div className="flex items-center gap-3">
                       <h2 className="text-3xl font-bold">
                         {formatAmount(
-                            (MemberTransaction?.total || 0) + totalCommission)}
+                          (MemberTransaction?.total || 0) + totalCommission)}
                       </h2>
 
                       <span className="text-sm text-gray-500">
@@ -594,7 +593,7 @@ window.location.href = '/payment-transaction'
                     <div className="space-y-1">
                       <p className="text-sm text-gray-600">This Month</p>
                       <p className="text-lg font-semibold">
-                       {formatAmount(
+                        {formatAmount(
                           (MemberTransaction?.total || 0) + totalCommission
                         )}   </p>
                     </div>
@@ -603,7 +602,7 @@ window.location.href = '/payment-transaction'
                         Referrals & Commissions Earnings
                       </p>
                       <p className="tet-lg font-semibold">
-    {formatAmount(
+                        {formatAmount(
                           (MemberTransaction?.total || 0) + totalCommission
                         )}
                       </p>
@@ -641,10 +640,11 @@ window.location.href = '/payment-transaction'
                 {seats.map((seat, index) => (
                   <div
                     key={index}
-                    onClick={() => HandleAvailModal(seat)}
-                    className={`flex items-center mb-3 cursor-pointer p-2 rounded-lg hover:bg-zinc-300 ${
-                      !seat.availed ? "opacity-60" : ""
-                    }`}
+                    onClick={seat.availed ? undefined : () => HandleAvailModal(seat)}
+                    className={`flex items-center mb-3 p-2 rounded-lg transition-colors ${seat.availed
+                        ? " cursor-not-allowed bg-gray-100"
+                        : "opacity-60 cursor-pointer hover:bg-zinc-300"
+                      }`}
                   >
                     <div className="podluckIcon mr-3">
                       <PodluckIcon availed={seat.availed} />
@@ -905,8 +905,8 @@ window.location.href = '/payment-transaction'
                 <Seatlist />
               </div>
               {selectedSeat.title === "e-World - Philippines" ||
-              selectedSeat.title === "e-President" ||
-              selectedSeat.title === "e-Vice President" ? (
+                selectedSeat.title === "e-President" ||
+                selectedSeat.title === "e-Vice President" ? (
                 <div className="bg-yellow-50 p-3 rounded border border-yellow-200">
                   <h5 className="font-medium text-yellow-800 mb-2">Note:</h5>
                   <p className="text-yellow-800">

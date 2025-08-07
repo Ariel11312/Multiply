@@ -16,12 +16,12 @@ const Seatlist = () => {
   const [selectedBarangay, setSelectedBarangay] = useState("");
   const [selectedBarangayName, setSelectedBarangayName] = useState("");
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
 
   // States for confirmation animation
   const [confirmed, setConfirmed] = useState(false);
   const [showCheck, setShowCheck] = useState(false);
   const [showNCRModal, setShowNCRModal] = useState(false);
-
 
   // Current view state (region, province, city, barangay)
   const [currentView, setCurrentView] = useState("region");
@@ -51,13 +51,11 @@ const Seatlist = () => {
     // Special case for NCR (regionCode "130000000")
     setLoading(true);
     if (position === "e-Governor" && regionCode === "130000000") {
-    alert("The NCR don't have a province.")
-    return       
-    }else if(regionCode === "130000000"){
+      alert("The NCR don't have a province.");
+      setLoading(false);
+      return;       
+    } else if(regionCode === "130000000") {
       try {
-        // Show modal for NCR
-        
-        
         // For NCR, fetch cities directly
         const response = await fetch(
           `https://psgc.gitlab.io/api/regions/${regionCode}/cities-municipalities/`
@@ -130,7 +128,9 @@ const Seatlist = () => {
       console.error("Error fetching cities:", error);
     }
     setLoading(false);
-  };  // Fetch barangays for selected city
+  };
+
+  // Fetch barangays for selected city
   const fetchBarangays = async (cityCode) => {
     if (position === "e-Mayor") {
       setLoading(false);
@@ -246,6 +246,8 @@ const Seatlist = () => {
     setSelectedBarangayName(barangay.name);
     setCurrentView("summary");
   };
+
+  // Early returns for special positions
   if (position === "e-World - Philippines") {
     localStorage.setItem(
       "selectedSpot",
@@ -254,7 +256,7 @@ const Seatlist = () => {
         name: "Philippines",
       })
     );
-    return;
+    return null;
   }
   if (position === "e-President") {
     localStorage.setItem(
@@ -264,7 +266,7 @@ const Seatlist = () => {
         name: "Philippines",
       })
     );
-    return;
+    return null;
   }
   if (position === "e-Vice President") {
     localStorage.setItem(
@@ -274,111 +276,114 @@ const Seatlist = () => {
         name: "Philippines",
       })
     );
-    return;
+    return null;
   }
-const handleConfirm = async () => {
-  try {
-    setLoading(true);
-    
-    // First fetch current seat ownership data
-    const response = await fetch(`${import.meta.env.VITE_API_URL}/api/golden/golden-seat-owner`, {
-      method: 'GET',
-      headers: { "Content-Type": "application/json" },
-      credentials: 'include'
-    });
 
-    if (!response.ok) {
-      throw new Error("Failed to fetch seat ownership data");
-    }
+  const handleConfirm = async () => {
+    try {
+      setLoading(true);
+      setError("");
+      
+      // First fetch current seat ownership data
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/golden/golden-seat-owner`, {
+        method: 'GET',
+        headers: { "Content-Type": "application/json" },
+        credentials: 'include'
+      });
 
-    const seatData = await response.json();
-    
-    // Create the location object based on the selected values
-    const locationData = {
-      region: { code: selectedRegion, name: selectedRegionName },
-      province: { code: selectedProvince, name: selectedProvinceName },
-      city: { code: selectedCity, name: selectedCityName },
-      barangay: { code: selectedBarangay, name: selectedBarangayName },
-    };
-
-    // Check if the selected spot is already occupied
-    const isOccupied = seatData.members?.some(member => {
-      if (position === "e-Senator") {
-        return member.position === position && member.spot === selectedRegionName;
-      } else if (position === "e-Governor") {
-        return member.position === position && member.spot === selectedProvinceName;
-      } else if (position === "e-Mayor") {
-        return member.position === position && member.spot === selectedCityName;
-      } else if (position === "e-Captain") {
-        return member.position === position && member.spot === selectedBarangayName;
+      if (!response.ok) {
+        throw new Error("Failed to fetch seat ownership data");
       }
-      return false;
-    });
 
-    if (isOccupied) {
-      alert("This position is already occupied for the selected location");
-      return;
+      const seatData = await response.json();
+      
+      // Create the location object based on the selected values
+      const locationData = {
+        region: { code: selectedRegion, name: selectedRegionName },
+        province: { code: selectedProvince, name: selectedProvinceName },
+        city: { code: selectedCity, name: selectedCityName },
+        barangay: { code: selectedBarangay, name: selectedBarangayName },
+      };
+
+      // Check if the selected spot is already occupied
+      const isOccupied = seatData.members?.some(member => {
+        if (position === "e-Senator") {
+          return member.position === position && member.spot === selectedRegionName;
+        } else if (position === "e-Governor") {
+          return member.position === position && member.spot === selectedProvinceName;
+        } else if (position === "e-Mayor") {
+          return member.position === position && member.spot === selectedCityName;
+        } else if (position === "e-Captain") {
+          return member.position === position && member.spot === selectedBarangayName;
+        }
+        return false;
+      });
+
+      if (isOccupied) {
+        alert("This position is already occupied for the selected location");
+        return;
+      }
+
+      // Save full location data to localStorage
+      localStorage.setItem("selectedLocation", JSON.stringify(locationData));
+
+      // Save position-specific spot if not already occupied
+      let spotData = {};
+      if (position === "e-World - Philippines" || position === "e-President" || position === "e-Vice President") {
+        spotData = {
+          code: "",
+          name: "Philippines"
+        };
+      } else if (position === "e-Senator" && selectedRegionName) {
+        spotData = {
+          code: selectedRegion,
+          name: selectedRegionName
+        };
+      } else if (position === "e-Governor" && selectedProvinceName) {
+        spotData = {
+          code: selectedProvince,
+          name: selectedProvinceName
+        };
+      } else if (position === "e-Mayor" && selectedCityName) {
+        spotData = {
+          code: selectedCity,
+          name: selectedCityName
+        };
+      } else if (position === "e-Captain" && selectedBarangayName) {
+        spotData = {
+          code: selectedBarangay,
+          name: selectedBarangayName
+        };
+      }
+
+      if (Object.keys(spotData).length > 0) {
+        localStorage.setItem("selectedSpot", JSON.stringify(spotData));
+      }
+
+      // Save to backend
+      const saveResponse = await fetch(`${import.meta.env.VITE_API_URL}/api/golden/golden-seat-owner`, {
+        method: 'POST',
+        headers: { "Content-Type": "application/json" },
+        credentials: 'include',
+        body: JSON.stringify({
+          position,
+          spot: spotData.name || selectedRegionName || selectedProvinceName || selectedCityName || selectedBarangayName
+        })
+      });
+
+      if (!saveResponse.ok) {
+        throw new Error("Failed to save seat assignment");
+      }
+
+      setConfirmed(true);
+    } catch (error) {
+      console.error("Confirmation error:", error);
+      setError(error.message);
+    } finally {
+      setLoading(false);
     }
+  };
 
-    // Save full location data to localStorage
-    localStorage.setItem("selectedLocation", JSON.stringify(locationData));
-
-    // Save position-specific spot if not already occupied
-    let spotData = {};
-    if (position === "e-World - Philippines" || position === "e-President" || position === "e-Vice President") {
-      spotData = {
-        code: "",
-        name: "Philippines"
-      };
-    } else if (position === "e-Senator" && selectedRegionName) {
-      spotData = {
-        code: selectedRegion,
-        name: selectedRegionName
-      };
-    } else if (position === "e-Governor" && selectedProvinceName) {
-      spotData = {
-        code: selectedProvince,
-        name: selectedProvinceName
-      };
-    } else if (position === "e-Mayor" && selectedCityName) {
-      spotData = {
-        code: selectedCity,
-        name: selectedCityName
-      };
-    } else if (position === "e-Captain" && selectedBarangayName) {
-      spotData = {
-        code: selectedBarangay,
-        name: selectedBarangayName
-      };
-    }
-
-    if (Object.keys(spotData).length > 0) {
-      localStorage.setItem("selectedSpot", JSON.stringify(spotData));
-    }
-
-    // Save to backend
-    const saveResponse = await fetch(`${import.meta.env.VITE_API_URL}/api/golden/golden-seat-owner`, {
-      method: 'POST',
-      headers: { "Content-Type": "application/json" },
-      credentials: 'include',
-      body: JSON.stringify({
-        position,
-        spot: spotData.name || selectedRegionName || selectedProvinceName || selectedCityName || selectedBarangayName
-      })
-    });
-
-    if (!saveResponse.ok) {
-      throw new Error("Failed to save seat assignment");
-    }
-
-    setConfirmed(true);
-  } catch (error) {
-    console.error("Confirmation error:", error);
-    setError(error.message);
-  } finally {
-    setLoading(false);
-  }
-};
   const goBack = () => {
     if (currentView === "province") {
       setCurrentView("region");
@@ -396,7 +401,6 @@ const handleConfirm = async () => {
       setCurrentView("barangay");
     }
   };
-  
 
   // Helper for card grid rendering
   const renderCardGrid = (items, onSelect) => {
@@ -415,40 +419,43 @@ const handleConfirm = async () => {
       </div>
     );
   };
-const NCRModal = () => {
-  if (!showNCRModal) return null;
-  
-  return (
-    <div className="fixed inset-0 flex items-center justify-center z-50 bg-black bg-opacity-50">
-      <div className="bg-white rounded-lg shadow-xl w-full max-w-md mx-4">
-        <div className="flex items-center justify-between border-b p-4">
-          <h3 className="text-lg font-medium text-gray-900">Information</h3>
-          <button 
-            className="text-gray-400 hover:text-gray-500 focus:outline-none"
-            onClick={closeNCRModal}
-          >
-            <span className="text-2xl">&times;</span>
-          </button>
-        </div>
-        
-        <div className="p-6">
-          <p className="text-gray-700">
-            NCR (National Capital Region) does not have provinces. You will be directed to select a city directly.
-          </p>
-        </div>
-        
-        <div className="bg-gray-50 px-4 py-3 flex justify-end rounded-b-lg">
-          <button
-            className="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-            onClick={closeNCRModal}
-          >
-            OK
-          </button>
+
+  // NCR Modal Component
+  const NCRModal = () => {
+    if (!showNCRModal) return null;
+    
+    return (
+      <div className="fixed inset-0 flex items-center justify-center z-50 bg-black bg-opacity-50">
+        <div className="bg-white rounded-lg shadow-xl w-full max-w-md mx-4">
+          <div className="flex items-center justify-between border-b p-4">
+            <h3 className="text-lg font-medium text-gray-900">Information</h3>
+            <button 
+              className="text-gray-400 hover:text-gray-500 focus:outline-none"
+              onClick={() => setShowNCRModal(false)}
+            >
+              <span className="text-2xl">&times;</span>
+            </button>
+          </div>
+          
+          <div className="p-6">
+            <p className="text-gray-700">
+              NCR (National Capital Region) does not have provinces. You will be directed to select a city directly.
+            </p>
+          </div>
+          
+          <div className="bg-gray-50 px-4 py-3 flex justify-end rounded-b-lg">
+            <button
+              className="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              onClick={() => setShowNCRModal(false)}
+            >
+              OK
+            </button>
+          </div>
         </div>
       </div>
-    </div>
-  );
-};
+    );
+  };
+
   // Render breadcrumb navigation
   const renderBreadcrumb = () => {
     return (
@@ -564,23 +571,37 @@ const NCRModal = () => {
         <h3 className="text-lg font-medium mb-4">Selected Spot</h3>
         <div className="space-y-2">{locationInfo}</div>
 
-        {/* Conditional rendering of the button or check mark */}
-        {!showCheck ? (
-          <button
-            className="mt-4 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 flex items-center justify-center"
-            onClick={handleConfirm}
-          >
-            Confirm Selection
-          </button>
-        ) : (
-          <div className="mt-4 flex items-center">
-            <div className="w-full flex justify-center">
-              <div className="bg-green-600 text-white rounded-full p-2 animate-bounce">
-                <Check className="h-6 w-6" />
-              </div>
-            </div>
+        {/* Show error message if any */}
+        {error && (
+          <div className="mt-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded">
+            {error}
           </div>
         )}
+
+        {/* Updated button with disabled state */}
+        <button
+          className={`mt-4 px-4 py-2 rounded-lg flex items-center justify-center transition-colors ${
+            showCheck || loading
+              ? 'bg-gray-400 text-gray-200 cursor-not-allowed' 
+              : 'bg-green-600 text-white hover:bg-green-700'
+          }`}
+          onClick={handleConfirm}
+          disabled={showCheck || loading}
+        >
+          {loading ? (
+            <>
+              <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+              Processing...
+            </>
+          ) : showCheck ? (
+            <>
+              <Check className="h-4 w-4 mr-2" />
+              Confirmed
+            </>
+          ) : (
+            'Confirm Selection'
+          )}
+        </button>
 
         {showCheck && (
           <div className="text-center mt-2 text-green-600 font-medium">
@@ -624,7 +645,7 @@ const NCRModal = () => {
           {currentView === "city" && (
             <div>
               <h3 className="text-lg font-medium mb-2">
-                Select City/Municipality in {selectedProvinceName}
+                Select City/Municipality in {selectedProvinceName || selectedRegionName}
               </h3>
               {renderCardGrid(cities, handleCitySelect)}
             </div>
@@ -657,40 +678,9 @@ const NCRModal = () => {
           )}
         </>
       )}
-    </div>
-  );
-};
-const NCRModal = () => {
-  if (!showNCRModal) return null;
-  
-  return (
-    <div className="fixed inset-0 flex items-center justify-center z-50 bg-black bg-opacity-50">
-      <div className="bg-white rounded-lg shadow-xl w-full max-w-md mx-4">
-        <div className="flex items-center justify-between border-b p-4">
-          <h3 className="text-lg font-medium text-gray-900">Information</h3>
-          <button 
-            className="text-gray-400 hover:text-gray-500 focus:outline-none"
-            onClick={() => setShowNCRModal(false)}
-          >
-            <span className="text-2xl">&times;</span>
-          </button>
-        </div>
-        
-        <div className="p-6">
-          <p className="text-gray-700">
-            NCR (National Capital Region) does not have provinces. You will be directed to select a city directly.
-          </p>
-        </div>
-        
-        <div className="bg-gray-50 px-4 py-3 flex justify-end rounded-b-lg">
-          <button
-            className="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-            onClick={() => setShowNCRModal(false)}
-          >
-            OK
-          </button>
-        </div>
-      </div>
+
+      {/* Render NCR Modal */}
+      <NCRModal />
     </div>
   );
 };

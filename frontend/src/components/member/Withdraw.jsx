@@ -3,6 +3,7 @@ import { ArrowLeft, CreditCard, Building, Smartphone, AlertCircle, CheckCircle, 
 import { checkMemberTransaction } from '../../middleware/memberTransaction';
 import { checkMember } from '../../middleware/member';
 import { checkAuth } from '../../middleware/auth';
+import GoldenSeats from "./GoldenSeatsCommision";
 
 export default function WithdrawPage() {
   const [amount, setAmount] = useState('');
@@ -12,10 +13,11 @@ export default function WithdrawPage() {
   const [showTransactionStatus, setShowTransactionStatus] = useState(false);
   const [currentTransaction, setCurrentTransaction] = useState(null);
   const [errors, setErrors] = useState({});
-  const [MemberTransaction, setMemberTransaction] = useState(null);
+  const [memberTransaction, setMemberTransaction] = useState(null);
   const [memberData, setMemberData] = useState(null);
   const [authState, setAuthState] = useState();
-  
+  const [totalCommission, setTotalCommission] = useState(0);
+
   // User account information state
   const [userInfo, setUserInfo] = useState({
     // GCash information
@@ -28,7 +30,9 @@ export default function WithdrawPage() {
     accountName: ''
   });
 
-  const balance = MemberTransaction?.total || 0;
+  // Calculate balance properly
+  const memberBalance = memberTransaction?.total || 0;
+  const balance = memberBalance + totalCommission;
   const minWithdraw = 500;
   const maxWithdraw = 10000;
 
@@ -163,8 +167,8 @@ export default function WithdrawPage() {
     // Create new transaction
     const newTransaction = {
       id: `TXN${String(transactions.length + 1).padStart(3, '0')}`,
-      userId: memberData.memberID,
-      memberID:memberData.memberID,
+      userId: memberData?.memberID,
+      memberID: memberData?.memberID,
       amount: withdrawAmount,
       method: selectedMethodData.name,
       status: 'pending',
@@ -177,17 +181,17 @@ export default function WithdrawPage() {
     };
 
     try {
-const response = await fetch(`${import.meta.env.VITE_API_URL}/api/member/createwithdraw`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(newTransaction)
-  })    
-   
-  if(response.ok){
-    alert("confirm")
-  }
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/member/createwithdraw`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(newTransaction)
+      });    
+     
+      if (response.ok) {
+        alert("Withdrawal confirmed");
+      }
     } catch (error) {
-      
+      console.error("Error processing withdrawal:", error);
     }
 
     setTransactions(prev => [newTransaction, ...prev]);
@@ -248,7 +252,7 @@ const response = await fetch(`${import.meta.env.VITE_API_URL}/api/member/createw
 
   const selectedMethodData = withdrawMethods.find(m => m.id === selectedMethod);
   const withdrawAmount = parseFloat(amount) || 0;
-  const totalFee = amount * 0.05 || 0;
+  const totalFee = withdrawAmount * 0.05 || 0;
   const netAmount = withdrawAmount - totalFee;
   
   useEffect(() => {
@@ -256,6 +260,11 @@ const response = await fetch(`${import.meta.env.VITE_API_URL}/api/member/createw
     checkMemberTransaction(setMemberTransaction);
     checkAuth(setAuthState);
   }, []);
+
+  // Commission change handler
+  const handleCommissionChange = (commission) => {
+    setTotalCommission(commission || 0);
+  };
 
   if (showSuccess) {
     return (
@@ -456,12 +465,21 @@ const response = await fetch(`${import.meta.env.VITE_API_URL}/api/member/createw
           <h1 className="text-2xl font-bold text-gray-900">Withdraw Funds</h1>
         </div>
 
+        {/* GoldenSeats Commission Component */}
+        <p className="hidden">
+
+        <GoldenSeats onCommissionChange={handleCommissionChange}  />
+        </p>
+
         {/* Balance Card */}
         <div className="bg-gradient-to-r from-green-600 to-green-600 rounded-2xl p-6 text-white mb-8">
           <div className="flex justify-between items-center">
             <div>
               <p className="text-green-100 text-sm">Available Balance</p>
               <p className="text-3xl font-bold">₱{balance.toLocaleString()}</p>
+              <p className="text-green-200 text-xs mt-1">
+                Member Balance: ₱{memberBalance.toLocaleString()} + Commission: ₱{totalCommission.toLocaleString()}
+              </p>
             </div>
             <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center">
               <CreditCard className="w-6 h-6" />

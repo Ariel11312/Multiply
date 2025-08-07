@@ -399,7 +399,8 @@ const DirectSellingCards = () => {
                   {/* Added mt-auto and pt-0 */}
                   <button
                     onClick={() => setOpenModal(pkg.id)}
-                    className={`w-full bg-gradient-to-r ${pkg.color} hover:${pkg.hoverColor} text-white font-medium py-3 px-4 rounded-lg transition duration-200 transform hover:-translate-y-1`}
+                    className={`w-full bg-gradient-to-r cursor-not-allowed ${pkg.color} hover:${pkg.hoverColor} text-white font-medium py-3 px-4 rounded-lg transition duration-200 transform hover:-translate-y-1`}
+                  disabled={!memberData || (pkg.id === 2)}
                   >
                     Click Here
                   </button>
