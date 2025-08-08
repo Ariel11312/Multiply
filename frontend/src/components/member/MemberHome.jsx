@@ -32,13 +32,6 @@ import SevenLayer from "./SevenLayer";
 import GoldenSeats from "./GoldenSeatsCommision";
 import Seatlist from "./SeatList";
 
-// const topProducts = [
-//   { id: 1, name: "X1 Package", sales: 150, revenue: 750000 },
-//   { id: 2, name: "X2 Package", sales: 120, revenue: 480000 },
-//   { id: 3, name: "X3 Package", sales: 90, revenue: 270000 },
-//   { id: 4, name: "X5 Package", sales: 90, revenue: 270000 },
-// ];
-
 const topReapers = [
   { id: 1, name: "", referrals: 50, earnings: 0 },
   { id: 2, name: "", referrals: 45, earnings: 0 },
@@ -49,8 +42,9 @@ const topReapers = [
 const PodluckIcon = ({ availed }) => {
   return (
     <div
-      className={`w-6 h-6 rounded-full flex items-center justify-center border-2 border-green-500 ${availed ? "bg-green-500" : ""
-        }`}
+      className={`w-6 h-6 rounded-full flex items-center justify-center border-2 border-green-500 ${
+        availed ? "bg-green-500" : ""
+      }`}
     >
       {availed ? (
         <Unlock size={16} className="text-white" />
@@ -73,6 +67,7 @@ const topOfficials = [
   { id: 3, role: "Mayor", name: "", supporters: 0 },
   { id: 4, role: "Captain", name: "", supporters: 0 },
 ];
+
 const quotaLevels = [
   {
     title: "Reaper",
@@ -105,6 +100,7 @@ const quotaLevels = [
     className: "bg-red-50 border-red-200",
   },
 ];
+
 const Dashboard = () => {
   const referralCode = "MULq0AhCQVlfedGurFM9tQtl";
 
@@ -112,12 +108,61 @@ const Dashboard = () => {
   const [showModal, setShowModal] = useState(false);
   const [availModal, setAvailModal] = useState(false);
   const [selectedSeat, setSelectedSeat] = useState(null);
+  const [selectedSpot, setSelectedSpot] = useState(null); // Fixed: Initialize as state
   const [paymentUrl, setPaymentUrl] = useState("");
   const [error, setError] = useState("");
   const [totalCommission, setTotalCommission] = useState(0);
   const [selectedPackage, setSelectedPackage] = useState(null);
   const [packageModalOpen, setPackageModalOpen] = useState(false);
   const [packageShowModal, setPackageShowModal] = useState(false);
+
+  // Clear selectedSpot on component mount (page refresh) and manage cleanup
+  useEffect(() => {
+    // Clear selectedSpot immediately on component mount (page refresh)
+    localStorage.removeItem("selectedSpot");
+    setSelectedSpot(null);
+
+    const clearSpotOnUnload = () => {
+      localStorage.removeItem("selectedSpot");
+    };
+
+    // Clear on page refresh/close
+    window.addEventListener('beforeunload', clearSpotOnUnload);
+    
+    return () => {
+      // Cleanup: remove event listener and clear localStorage
+      window.removeEventListener('beforeunload', clearSpotOnUnload);
+      localStorage.removeItem("selectedSpot");
+    };
+  }, []);
+
+  // Monitor selectedSpot from localStorage with 1s interval (only after initial clear)
+  useEffect(() => {
+    const checkSelectedSpot = () => {
+      const storedSpot = localStorage.getItem("selectedSpot");
+      if (storedSpot) {
+        try {
+          const parsedSpot = JSON.parse(storedSpot);
+          setSelectedSpot(parsedSpot);
+        } catch (error) {
+          console.error("Error parsing selectedSpot from localStorage:", error);
+          setSelectedSpot(null);
+          localStorage.removeItem("selectedSpot");
+        }
+      } else {
+        setSelectedSpot(null);
+      }
+    };
+
+    // Set up interval to check every 1 second (don't check immediately since we cleared on mount)
+    const interval = setInterval(checkSelectedSpot, 1000);
+
+    // Cleanup interval on unmount
+    return () => {
+      clearInterval(interval);
+    };
+  }, []);
+
   useEffect(() => {
     checkAuth(setAuthState);
   }, []);
@@ -129,9 +174,11 @@ const Dashboard = () => {
       .map((word) => word.charAt(0).toUpperCase())
       .join("");
   };
+
   const handleWithdraw = () => {
     window.location.href = "/withdraw";
-  }
+  };
+
   const formatFullName = (firstName, lastName) => {
     if (!firstName || !lastName) return "Loading...";
     return (
@@ -160,10 +207,12 @@ const Dashboard = () => {
   const toggleVisibility = () => {
     setIsVisible(!isVisible);
   };
+
   const HandlePackageAvailModal = (pkg) => {
     setSelectedPackage(pkg);
     setPackageModalOpen(true);
   };
+
   const formatAmount = (amount) => {
     if (amount == null) return "₱ 0.00";
 
@@ -178,6 +227,7 @@ const Dashboard = () => {
 
     return `₱ ${formattedAmount}`;
   };
+
   const packages = [
     {
       id: 1,
@@ -226,7 +276,8 @@ const Dashboard = () => {
       });
     }
   };
-  const [positions, setPositions] = useState([]); // Store API positions
+
+  const [positions, setPositions] = useState([]);
   const [seats, setSeats] = useState([
     {
       title: "e-World - Philippines",
@@ -272,13 +323,12 @@ const Dashboard = () => {
         const ownedPositions = apiResponse.members.map(
           (member) => member.position
         );
-        setPositions(ownedPositions); // Update state with owned positions
+        setPositions(ownedPositions);
 
-        // Update seats based on owned positions
         setSeats((prevSeats) =>
           prevSeats.map((seat) => ({
             ...seat,
-            availed: ownedPositions.includes(seat.title), // Unlock if owned
+            availed: ownedPositions.includes(seat.title),
           }))
         );
       } catch (error) {
@@ -293,7 +343,7 @@ const Dashboard = () => {
     checkMember(setMemberData);
     checkMemberTransaction(setMemberTransaction);
     checkAuth(setAuthState);
-    fetchReferrals(setReferralList, setReferralStats); // fetch referral data
+    fetchReferrals(setReferralList, setReferralStats);
   }, []);
 
   const HandleAvailModal = (seat) => {
@@ -306,30 +356,41 @@ const Dashboard = () => {
     setSelectedSeat(seat);
 
     try {
-      const owner = localStorage.getItem("owner")
-      const selectedSpot = JSON.parse(localStorage.getItem("selectedSpot"))
+      const owner = localStorage.getItem("owner");
+      const storedSpot = localStorage.getItem("selectedSpot");
+      const parsedSpot = storedSpot ? JSON.parse(storedSpot) : null;
 
-      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/member/createpayment`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          referralCode: memberData?.referralCode,
-          memberID: memberData?.memberID,
-          memberType: owner,
-          region: memberData?.region,
-          addressNo: 'N/A',
-          province: memberData?.province,
-          city: memberData?.city,
-          userType: 'Golden Seats',
-          role: selectedSpot.name,
-          barangay: memberData?.barangay,
-          paymentType: memberData?.paymentType,
-          memberDate: Date(),
-        })
-      });
-      window.location.href = '/payment-transaction'
-      if (response.data.success) {
-        setPaymentUrl(response.data.checkoutUrl); // Set the URL to redirect the user to PayMongo
+      if (!parsedSpot || !parsedSpot.name) {
+        setError("Please select a valid spot first.");
+        return;
+      }
+
+      const response = await fetch(
+        `${import.meta.env.VITE_API_URL}/api/member/createpayment`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            referralCode: memberData?.referralCode,
+            memberID: memberData?.memberID,
+            memberType: owner,
+            region: memberData?.region,
+            addressNo: "N/A",
+            province: memberData?.province,
+            city: memberData?.city,
+            userType: "Golden Seats",
+            role: parsedSpot.name,
+            barangay: memberData?.barangay,
+            paymentType: memberData?.paymentType,
+            memberDate: Date(),
+          }),
+        }
+      );
+
+      const responseData = await response.json();
+
+      if (responseData.success) {
+        setPaymentUrl(responseData.checkoutUrl);
         localStorage.setItem(
           "memberGoldenSeat",
           JSON.stringify({
@@ -337,7 +398,12 @@ const Dashboard = () => {
             position: selectedSeat.title,
           })
         );
-        window.location.href = response.data.checkoutUrl; // Redirect to PayMongo checkout
+        
+        // Clear the selected spot after successful payment creation
+        setSelectedSpot(null);
+        localStorage.removeItem("selectedSpot");
+        
+        window.location.href = responseData.checkoutUrl;
       } else {
         setError("Failed to create payment, please try again.");
       }
@@ -345,6 +411,23 @@ const Dashboard = () => {
       setError("An error occurred while processing the payment.");
       console.error("Payment creation error:", error);
     }
+  };
+
+  // Handle spot selection update from Seatlist component
+  const handleSpotSelection = (spot) => {
+    setSelectedSpot(spot);
+    // Only temporarily store in localStorage for the current session
+    if (spot && spot.name) {
+      localStorage.setItem("selectedSpot", JSON.stringify(spot));
+    } else {
+      localStorage.removeItem("selectedSpot");
+    }
+  };
+
+  // Clear selection function
+  const clearSpotSelection = () => {
+    setSelectedSpot(null);
+    localStorage.removeItem("selectedSpot");
   };
 
   const InfoModal = () => {
@@ -415,18 +498,19 @@ const Dashboard = () => {
       </div>
     );
   };
+
   useEffect(() => {
     const storedSeat = localStorage.getItem("seat");
 
     if (storedSeat) {
       const exampleSeat = {
-        title: storedSeat.replace(/"/g, ""), // Remove quotes if they exist
-        // ...other seat properties if needed
+        title: storedSeat.replace(/"/g, ""),
       };
 
       HandleAvailModal(exampleSeat);
     }
-  }, []); // Empty dependency array means it runs once on mount
+  }, []);
+
   return (
     <>
       <Navbar />
@@ -448,13 +532,9 @@ const Dashboard = () => {
                   authState?.user?.lastName
                 )}
               </h1>
-              <div className="flex items-center gap-3">
-                {/* Commented code for referral remains the same */}
-              </div>
             </div>
           </div>
-          <div className="w-full max-w-xs">
-          </div>
+          <div className="w-full max-w-xs"></div>
         </div>
 
         {/* Cards Container with improved spacing */}
@@ -545,14 +625,17 @@ const Dashboard = () => {
                 </div>
               </CardContent>
             </Card>
+
             {/* Wallet Card */}
             <Card className="w-full h-full">
               <CardHeader className="pb-2">
                 <div className="flex items-center justify-between">
-                  <CardTitle className="text-xl font-semibold">
-                    Wallet
-                  </CardTitle>
-                  <Button className="bg-green-500 hover:bg-green-600" size="sm" onClick={handleWithdraw}>
+                  <CardTitle className="text-xl font-semibold">Wallet</CardTitle>
+                  <Button
+                    className="bg-green-500 hover:bg-green-600"
+                    size="sm"
+                    onClick={handleWithdraw}
+                  >
                     Withdraw
                   </Button>
                 </div>
@@ -564,7 +647,8 @@ const Dashboard = () => {
                     <div className="flex items-center gap-3">
                       <h2 className="text-3xl font-bold">
                         {formatAmount(
-                          (MemberTransaction?.total || 0) + totalCommission)}
+                          (MemberTransaction?.total || 0) + totalCommission
+                        )}
                       </h2>
 
                       <span className="text-sm text-gray-500">
@@ -595,13 +679,14 @@ const Dashboard = () => {
                       <p className="text-lg font-semibold">
                         {formatAmount(
                           (MemberTransaction?.total || 0) + totalCommission
-                        )}   </p>
+                        )}
+                      </p>
                     </div>
                     <div className="space-y-1">
                       <p className="text-sm text-gray-600">
                         Referrals & Commissions Earnings
                       </p>
-                      <p className="tet-lg font-semibold">
+                      <p className="text-lg font-semibold">
                         {formatAmount(
                           (MemberTransaction?.total || 0) + totalCommission
                         )}
@@ -624,6 +709,7 @@ const Dashboard = () => {
                 </div>
               </CardContent>
             </Card>
+
             <Card>
               <CardHeader>
                 <div className="flex justify-between items-center">
@@ -640,11 +726,14 @@ const Dashboard = () => {
                 {seats.map((seat, index) => (
                   <div
                     key={index}
-                    onClick={seat.availed ? undefined : () => HandleAvailModal(seat)}
-                    className={`flex items-center mb-3 p-2 rounded-lg transition-colors ${seat.availed
+                    onClick={
+                      seat.availed ? undefined : () => HandleAvailModal(seat)
+                    }
+                    className={`flex items-center mb-3 p-2 rounded-lg transition-colors ${
+                      seat.availed
                         ? " cursor-not-allowed bg-gray-100"
                         : "opacity-60 cursor-pointer hover:bg-zinc-300"
-                      }`}
+                    }`}
                   >
                     <div className="podluckIcon mr-3">
                       <PodluckIcon availed={seat.availed} />
@@ -662,41 +751,6 @@ const Dashboard = () => {
                 ))}
               </CardContent>
             </Card>
-            {/* <Card>
-              <CardHeader>
-                <div className="flex justify-between items-center">
-                  <div className="text-xl font-semibold">Packages</div>
-                  <button
-                    onClick={() => setPackageShowModal(true)}
-                    className="text-gray-500 hover:text-gray-700"
-                  >
-                    <HelpCircle size={20} />
-                  </button>
-                </div>
-              </CardHeader>
-              <CardContent>
-                {packages.map((pkg, index) => (
-                  <div
-                    key={index}
-                    onClick={() => HandlePackageAvailModal(pkg)}
-                    className={`flex items-center mb-3 cursor-pointer p-2 rounded-lg hover:bg-zinc-300 ${
-                      !pkg.availed ? "opacity-60" : ""
-                    }`}
-                  >
-                    <div className="podluckIcon mr-3">
-                      <PodluckIcon availed={pkg.availed} />
-                    </div>
-                    <p className="text-gray-800">{ (pkg.name + " " + pkg.price  || "")}</p>
-
-                    {pkg.availed && (
-                      <div className="ml-auto">
-                        <CheckCircle size={16} className="text-green-500" />
-                      </div>
-                    )}
-                  </div>
-                ))}
-              </CardContent>
-            </Card> */}
           </div>
         </div>
         <SevenLayer />
@@ -839,36 +893,6 @@ const Dashboard = () => {
                 </div>
               </CardContent>
             </Card>
-
-            {/* Top Products Section
-            <Card className="w-full">
-              <CardHeader>
-                <div className="flex items-center gap-3">
-                  <Package className="h-6 w-6 text-blue-500" />
-                  <CardTitle>Top Products/Packages</CardTitle>
-                </div>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-6">
-                  {topProducts.map((product, index) => (
-                    <div key={product.id} className="flex items-center gap-4">
-                      <div className="flex-shrink-0 w-8 h-8 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center font-semibold">
-                        {index + 1}
-                      </div>
-                      <div className="flex-1 grid grid-cols-3 gap-4">
-                        <span className="font-medium">{product.name}</span>
-                        <span className="text-gray-600">
-                          {product.sales} sales
-                        </span>
-                        <span className="text-green-600 font-semibold">
-                          ₱{product.revenue.toLocaleString()}
-                        </span>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card> */}
           </div>
         </div>
       </div>
@@ -889,7 +913,12 @@ const Dashboard = () => {
                 <span className="ml-2 font-semibold">{selectedSeat.title}</span>
               </div>
 
-              {/* Unlock Price */}
+              {error && (
+                <div className="bg-red-50 p-3 rounded border border-red-200">
+                  <p className="text-red-800 text-sm">{error}</p>
+                </div>
+              )}
+
               <p>Unlock this seat for {selectedSeat.unlockAmount} Pesos.</p>
 
               {/* Benefits Section */}
@@ -900,13 +929,25 @@ const Dashboard = () => {
                   <li>Commissions for every member availed products</li>
                 </ul>
               </div>
+
               <h2>Select: {selectedSeat.title} Spot</h2>
+
               <div className="overflow-auto w-full h-80">
-                <Seatlist />
+                <Seatlist onSpotSelect={handleSpotSelection} />
               </div>
+
+              {/* Show current selection */}
+              {selectedSpot && (
+                <div className="bg-blue-50 p-3 rounded border border-blue-200">
+                  <p className="text-blue-800 text-sm">
+                    <strong>Selected spot:</strong> {selectedSpot.name || "N/A"}
+                  </p>
+                </div>
+              )}
+
               {selectedSeat.title === "e-World - Philippines" ||
-                selectedSeat.title === "e-President" ||
-                selectedSeat.title === "e-Vice President" ? (
+              selectedSeat.title === "e-President" ||
+              selectedSeat.title === "e-Vice President" ? (
                 <div className="bg-yellow-50 p-3 rounded border border-yellow-200">
                   <h5 className="font-medium text-yellow-800 mb-2">Note:</h5>
                   <p className="text-yellow-800">
@@ -916,18 +957,33 @@ const Dashboard = () => {
               ) : (
                 <button
                   onClick={() => CreatePayment(selectedSeat)}
-                  className="w-full py-2 bg-green-500 text-white rounded hover:bg-green-600"
+                  disabled={!selectedSpot || !selectedSpot.name}
+                  className={`w-full py-2 rounded transition-colors ${
+                    selectedSpot && selectedSpot.name
+                      ? "bg-green-500 text-white hover:bg-green-600"
+                      : "bg-gray-400 text-gray-200 cursor-not-allowed"
+                  }`}
                 >
-                  Unlock {selectedSeat.title} Seat
+                  {selectedSpot && selectedSpot.name
+                    ? `Unlock ${selectedSeat.title} Seat`
+                    : "Please select a spot first"}
                 </button>
               )}
 
-              {/* Payment Button */}
+              {/* Show spot selection status */}
+              {(!selectedSpot || !selectedSpot.name) && (
+                <div className="bg-red-50 p-3 rounded border border-red-200">
+                  <p className="text-red-800 text-sm">
+                    Please select a location spot to enable the unlock button.
+                  </p>
+                </div>
+              )}
 
               {/* Close Button */}
               <button
                 onClick={() => {
                   setAvailModal(false);
+                  clearSpotSelection(); // Use the clear function
                   localStorage.removeItem("seat");
                 }}
                 className="absolute top-2 right-4 text-gray-500 hover:text-gray-700"
@@ -984,33 +1040,6 @@ const Dashboard = () => {
           </div>
         </div>
       )}
-
-      {/* Info Modal */}
-      {/* {packageShowModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg w-full max-w-md mx-4">
-            <div className="p-4 border-b flex justify-between items-center">
-              <h3 className="text-lg font-semibold">About Packages</h3>
-              <button 
-                onClick={() => setPackageShowModal(false)}
-                className="text-gray-500 hover:text-gray-700"
-              >
-                <X size={20} />
-              </button>
-            </div>
-            <div className="p-4">
-              <p className="text-gray-700 mb-4">
-                Our packages provide different levels of service and features.
-                Currently active packages are highlighted and marked with a green checkmark.
-              </p>
-              <p className="text-gray-700">
-                Click on any package to view its benefits and details.
-                Contact support if you need assistance selecting the right package for your needs.
-              </p>
-            </div>
-          </div>
-        </div>
-      )} */}
     </>
   );
 };

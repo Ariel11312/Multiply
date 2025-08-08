@@ -291,10 +291,14 @@ const Seatlist = () => {
         credentials: 'include'
       });
 
-      if (!response.ok) {
-        throw new Error("Failed to fetch seat ownership data");
-      }
-
+if (!response.ok) {
+    // Store availability status
+    localStorage.setItem("Available", "This place is Available for the selected position");
+  
+    
+    // Throw error with meaningful message
+    throw new Error("This place is Available for the selected position");
+}
       const seatData = await response.json();
       
       // Create the location object based on the selected values
@@ -372,7 +376,7 @@ const Seatlist = () => {
       });
 
       if (!saveResponse.ok) {
-        throw new Error("Failed to save seat assignment");
+        throw new Error("This place is Available for the selected position");
       }
 
       setConfirmed(true);
