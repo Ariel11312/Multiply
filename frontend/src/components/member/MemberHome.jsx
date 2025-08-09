@@ -403,7 +403,7 @@ const Dashboard = () => {
         setSelectedSpot(null);
         localStorage.removeItem("selectedSpot");
         
-        window.location.href = responseData.checkoutUrl;
+        window.location.href = import.meta.env.VITE_URL + "/payment-transaction";
       } else {
         setError("Failed to create payment, please try again.");
       }
