@@ -375,9 +375,9 @@ function calculateCommission(productName, reapers) {
         let goldenSeaterValue = 10;
         if (product.name?.includes("Cnergee")) {
           if (product.name.includes("30 Capsules")) goldenSeaterValue = 10;
-          else if (product.name.includes("60 Capsules")) goldenSeaterValue = 20;
-          else if (product.name.includes("100 Capsules")) goldenSeaterValue = 30;
-          else if (product.name.includes("1200 Capsules")) goldenSeaterValue = 250;
+          else if (product.name.includes("60 Capsules")) goldenSeaterValue = 30;
+          else if (product.name.includes("100 Capsules")) goldenSeaterValue = 50;
+          else if (product.name.includes("1200 Capsules")) goldenSeaterValue = 500;
         }
 
         // Default to 0 if member not found or error occurs

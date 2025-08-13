@@ -97,7 +97,7 @@ console.log(`Found ${members.length} members to distribute commission`);
 
 members.forEach((member, index) => {
   console.log(`${index + 1}. Member ID: ${member.memberID}`);
- const member200commission = commissionGold * 0.05; // Initialize commission for each member
+ const member200commission = commissionGold  * 0.2 / 200; // Initialize commission for each member
 const memberCommissionTransactionId = "MEM" + Math.random().toString(36).substring(2, 10).toUpperCase();
 const saveCommission = new MemberTransaction({
   memberId: member.memberID,
@@ -131,7 +131,7 @@ console.log(`Found ${members.length} members to distribute commission`);
 
 members.forEach((member, index) => {
   console.log(`${index + 1}. Member ID: ${member.memberID}`);
- const member200commission = commissionGold / 200; // Initialize commission for each member
+ const member200commission = commissionGold  * 0.2 / 200; // Initialize commission for each member
 const memberCommissionTransactionId = "MEM" + Math.random().toString(36).substring(2, 10).toUpperCase();
 const saveCommission = new MemberTransaction({
   memberId: member.memberID,
@@ -158,6 +158,23 @@ const saveCommission = new MemberTransaction({
           President: "Philippines",
           commission: commissionGold,
         });
+              const members = await Member.find({}).limit(200);
+console.log(`Found ${members.length} members to distribute commission`);
+
+members.forEach((member, index) => {
+  console.log(`${index + 1}. Member ID: ${member.memberID}`);
+ const member200commission = commissionGold  * 0.2 / 200; // Initialize commission for each member
+const memberCommissionTransactionId = "MEM" + Math.random().toString(36).substring(2, 10).toUpperCase();
+const saveCommission = new MemberTransaction({
+  memberId: member.memberID,
+  price: member200commission,
+  total: member200commission,
+  transactionDate: new Date().toLocaleString(),
+  transactionId: memberCommissionTransactionId,
+  productName: "200 Member Commission",
+});
+ saveCommission.save();
+});
         
         await goldenSeat.save();
         await processAllCommissions(referralMember, commissionGold);
@@ -179,7 +196,7 @@ console.log(`Found ${members.length} members to distribute commission`);
 
 members.forEach((member, index) => {
   console.log(`${index + 1}. Member ID: ${member.memberID}`);
- const member200commission = commissionGold * 0.05; // Initialize commission for each member
+ const member200commission = commissionGold * 0.2 / 200; // Initialize commission for each member
 const memberCommissionTransactionId = "MEM" + Math.random().toString(36).substring(2, 10).toUpperCase();
 const saveCommission = new MemberTransaction({
   memberId: member.memberID,
