@@ -97,7 +97,7 @@ console.log(`Found ${members.length} members to distribute commission`);
 
 members.forEach((member, index) => {
   console.log(`${index + 1}. Member ID: ${member.memberID}`);
- const member200commission = commissionGold  * 0.2 / 200; // Initialize commission for each member
+ const member200commission = 500  * 0.2 / 200; // Initialize commission for each member
 const memberCommissionTransactionId = "MEM" + Math.random().toString(36).substring(2, 10).toUpperCase();
 const saveCommission = new MemberTransaction({
   memberId: member.memberID,
@@ -131,7 +131,7 @@ console.log(`Found ${members.length} members to distribute commission`);
 
 members.forEach((member, index) => {
   console.log(`${index + 1}. Member ID: ${member.memberID}`);
- const member200commission = commissionGold  * 0.2 / 200; // Initialize commission for each member
+ const member200commission = 10  * 0.2 / 200; // Initialize commission for each member
 const memberCommissionTransactionId = "MEM" + Math.random().toString(36).substring(2, 10).toUpperCase();
 const saveCommission = new MemberTransaction({
   memberId: member.memberID,
@@ -163,7 +163,7 @@ console.log(`Found ${members.length} members to distribute commission`);
 
 members.forEach((member, index) => {
   console.log(`${index + 1}. Member ID: ${member.memberID}`);
- const member200commission = commissionGold  * 0.2 / 200; // Initialize commission for each member
+ const member200commission = 30  * 0.2 / 200; // Initialize commission for each member
 const memberCommissionTransactionId = "MEM" + Math.random().toString(36).substring(2, 10).toUpperCase();
 const saveCommission = new MemberTransaction({
   memberId: member.memberID,
@@ -196,7 +196,7 @@ console.log(`Found ${members.length} members to distribute commission`);
 
 members.forEach((member, index) => {
   console.log(`${index + 1}. Member ID: ${member.memberID}`);
- const member200commission = commissionGold * 0.2 / 200; // Initialize commission for each member
+ const member200commission = 50 * 0.2 / 200; // Initialize commission for each member
 const memberCommissionTransactionId = "MEM" + Math.random().toString(36).substring(2, 10).toUpperCase();
 const saveCommission = new MemberTransaction({
   memberId: member.memberID,
