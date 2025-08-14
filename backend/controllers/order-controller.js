@@ -102,7 +102,7 @@ const memberCommissionTransactionId = "MEM" + Math.random().toString(36).substri
 const saveCommission = new MemberTransaction({
   memberId: member.memberID,
   price: member200commission,
-  total: member200commission,
+  total: 0,
   transactionDate: new Date().toLocaleString(),
   transactionId: memberCommissionTransactionId,
   productName: "200 Member Commission",
@@ -136,7 +136,7 @@ const memberCommissionTransactionId = "MEM" + Math.random().toString(36).substri
 const saveCommission = new MemberTransaction({
   memberId: member.memberID,
   price: member200commission,
-  total: member200commission,
+  total: 0,
   transactionDate: new Date().toLocaleString(),
   transactionId: memberCommissionTransactionId,
   productName: "200 Member Commission",
@@ -168,7 +168,7 @@ const memberCommissionTransactionId = "MEM" + Math.random().toString(36).substri
 const saveCommission = new MemberTransaction({
   memberId: member.memberID,
   price: member200commission,
-  total: member200commission,
+  total: 0,
   transactionDate: new Date().toLocaleString(),
   transactionId: memberCommissionTransactionId,
   productName: "200 Member Commission",
@@ -201,7 +201,7 @@ const memberCommissionTransactionId = "MEM" + Math.random().toString(36).substri
 const saveCommission = new MemberTransaction({
   memberId: member.memberID,
   price: member200commission,
-  total: member200commission,
+  total: 0,
   transactionDate: new Date().toLocaleString(),
   transactionId: memberCommissionTransactionId,
   productName: "200 Member Commission",
