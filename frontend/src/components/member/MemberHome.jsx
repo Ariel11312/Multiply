@@ -296,9 +296,9 @@ const Dashboard = () => {
       unlockAmount: "3,000,000",
       availed: false,
     },
-    { title: "e-Senator", unlockAmount: "1,500,000", availed: false },
-    { title: "e-Governor", unlockAmount: "700,000", availed: false },
-    { title: "e-Mayor", unlockAmount: "150,000", availed: false },
+    { title: "e-Senator", unlockAmount: "1,200,000", availed: false },
+    { title: "e-Governor", unlockAmount: "750,000", availed: false },
+    { title: "e-Mayor", unlockAmount: "250,000", availed: false },
     { title: "e-Captain", unlockAmount: "25,000", availed: false },
   ]);
 

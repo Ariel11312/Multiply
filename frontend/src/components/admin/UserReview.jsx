@@ -3,9 +3,9 @@ import {
   CheckCircle, XCircle, Eye, Calendar, 
   User, MapPin, FileText, Clock, 
   Hash, CreditCard, Users, Loader2,
-  DollarSign, Banknote, Wallet 
+  DollarSign, Banknote, Wallet, ShoppingCart,
+  Package, Phone, Mail
 } from 'lucide-react';
-
 
 const AdminApprovalCard = () => {
   // State management
@@ -17,6 +17,7 @@ const AdminApprovalCard = () => {
   const [selectedItem, setSelectedItem] = useState(null);
   const [showModal, setShowModal] = useState(false);
   const [withdrawals, setWithdrawals] = useState([]);
+  const [orders, setOrders] = useState([]);
   const [activeTab, setActiveTab] = useState('members');
   const [isProcessing, setIsProcessing] = useState(false);
 
@@ -44,6 +45,7 @@ const AdminApprovalCard = () => {
         setUsers(data.user || []);
         setUserProof(data.userProof || []);
         setWithdrawals(data.withdraw || []);
+        setOrders(data.orders || []);
       } else {
         throw new Error(data.message || 'Failed to fetch data');
       }
@@ -117,17 +119,16 @@ const AdminApprovalCard = () => {
   };
 
   const handleDeclineMember = async (memberId, userId) => {
-    
     try {
       setIsProcessing(true);
       const response = await fetch(
-  `${import.meta.env.VITE_API_URL}/api/member/declinemembership`,
-  {
-    method: 'POST',
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ memberId: memberId,messageToMember: "Your membership request due to not enough proof",userId:userId })
-  }
-);
+        `${import.meta.env.VITE_API_URL}/api/member/declinemembership`,
+        {
+          method: 'POST',
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ memberId: memberId, messageToMember: "Your membership request due to not enough proof", userId: userId })
+        }
+      );
       
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
@@ -150,49 +151,48 @@ const AdminApprovalCard = () => {
   };
 
   // Withdrawal approval functions
-  const handleApproveWithdrawal = async (id,withdrawalId,paymentMethod,accountNumber,walletAddress,amount) => {
-try {
-  setIsProcessing(true);
-  const response = await fetch(
-    `${import.meta.env.VITE_API_URL}/api/member/approvewithdraw`,
-    {
-      method: 'POST',
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ id,withdrawalId,paymentMethod,accountNumber,walletAddress,amount }), // Fixed: wrapped in object
-    }
-  );
-
-  if (!response.ok) {
-    throw new Error(`HTTP error! status: ${response.status}`);
-  }
-
-  const result = await response.json();
-  if (result.success) {
-    setWithdrawals(prev =>
-      prev.map(w =>
-        w._id === withdrawalId ? { ...w, status: 'Approved' } : w
-      )
-    );
-  }
-} catch (error) {
-  console.error('Error approving withdrawal:', error);
-} finally {
-  setIsProcessing(false);
-};
-  
-}
-
-  const handleRejectWithdrawal = async (id,withdrawalId,paymentMethod,accountNumber,walletAddress,amount)  => {
+  const handleApproveWithdrawal = async (id, withdrawalId, paymentMethod, accountNumber, walletAddress, amount) => {
     try {
       setIsProcessing(true);
-   const response = await fetch(
-    `${import.meta.env.VITE_API_URL}/api/member/rejectwithdraw`,
-    {
-      method: 'POST',
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ id,withdrawalId,paymentMethod,accountNumber,walletAddress,amount }), // Fixed: wrapped in object
+      const response = await fetch(
+        `${import.meta.env.VITE_API_URL}/api/member/approvewithdraw`,
+        {
+          method: 'POST',
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ id, withdrawalId, paymentMethod, accountNumber, walletAddress, amount }),
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const result = await response.json();
+      if (result.success) {
+        setWithdrawals(prev =>
+          prev.map(w =>
+            w._id === withdrawalId ? { ...w, status: 'Approved' } : w
+          )
+        );
+      }
+    } catch (error) {
+      console.error('Error approving withdrawal:', error);
+    } finally {
+      setIsProcessing(false);
     }
-  );
+  };
+
+  const handleRejectWithdrawal = async (id, withdrawalId, paymentMethod, accountNumber, walletAddress, amount) => {
+    try {
+      setIsProcessing(true);
+      const response = await fetch(
+        `${import.meta.env.VITE_API_URL}/api/member/rejectwithdraw`,
+        {
+          method: 'POST',
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ id, withdrawalId, paymentMethod, accountNumber, walletAddress, amount }),
+        }
+      );
 
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
@@ -208,6 +208,71 @@ try {
       }
     } catch (error) {
       console.error('Error rejecting withdrawal:', error);
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
+  // Order approval functions
+  const handleApproveOrder = async (orderId) => {
+    try {
+      setIsProcessing(true);
+      const response = await fetch(
+        `${import.meta.env.VITE_API_URL}/api/order/approve`,
+        {
+          method: 'PUT',
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ orderId, status: 'approved' }),
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const result = await response.json();
+      if (result.success) {
+        setOrders(prev =>
+          prev.map(order =>
+            order._id === orderId ? { ...order, status: 'approved' } : order
+          )
+        );
+        setShowModal(false);
+      }
+    } catch (error) {
+      console.error('Error approving order:', error);
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
+  const handleRejectOrder = async (orderId) => {
+    try {
+      setIsProcessing(true);
+      const response = await fetch(
+        `${import.meta.env.VITE_API_URL}/api/orders/reject`,
+        {
+          method: 'POST',
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ orderId }),
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const result = await response.json();
+      if (result.success) {
+        setOrders(prev =>
+          prev.map(order =>
+            order._id === orderId ? { ...order, status: 'rejected' } : order
+          )
+        );
+        setShowModal(false);
+      }
+    } catch (error) {
+      console.error('Error rejecting order:', error);
     } finally {
       setIsProcessing(false);
     }
@@ -248,6 +313,9 @@ try {
       case 'declined':
       case 'rejected': return 'text-red-600 bg-red-100';
       case 'pending': return 'text-yellow-600 bg-yellow-100';
+      case 'processing': return 'text-blue-600 bg-blue-100';
+      case 'shipped': return 'text-purple-600 bg-purple-100';
+      case 'delivered': return 'text-green-700 bg-green-200';
       default: return 'text-gray-600 bg-gray-100';
     }
   };
@@ -263,6 +331,10 @@ try {
 
   const getUserInfo = (memberId) => {
     return users.find(user => user.id === memberId || user._id === memberId) || {};
+  };
+
+  const calculateOrderTotal = (orderItems) => {
+    return orderItems.reduce((total, item) => total + (item.price * item.quantity), 0);
   };
 
   // Loading state
@@ -317,6 +389,12 @@ try {
             onClick={() => setActiveTab('withdrawals')}
           >
             Withdrawal Requests
+          </button>
+          <button
+            className={`px-4 py-2 font-medium ${activeTab === 'orders' ? 'text-blue-600 border-b-2 border-blue-600' : 'text-gray-500 hover:text-gray-700'}`}
+            onClick={() => setActiveTab('orders')}
+          >
+            Order Management
           </button>
         </div>
 
@@ -443,7 +521,7 @@ try {
                               <span>Approve</span>
                             </button>
                             <button
-                              onClick={() => handleDeclineMember(member._id,member.memberID)}
+                              onClick={() => handleDeclineMember(member._id, member.memberID)}
                               className="flex items-center space-x-2 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
                               disabled={isProcessing}
                             >
@@ -525,7 +603,7 @@ try {
                         {withdrawal.status?.toLowerCase() === 'pending' && (
                           <div className="flex space-x-3">
                             <button
-                              onClick={() => handleApproveWithdrawal(withdrawal._id,withdrawal.memberID, withdrawal.paymentMethod, withdrawal.accountNumber, withdrawal.walletAddress, withdrawal.amount)}
+                              onClick={() => handleApproveWithdrawal(withdrawal._id, withdrawal.memberID, withdrawal.paymentMethod, withdrawal.accountNumber, withdrawal.walletAddress, withdrawal.amount)}
                               className="flex items-center space-x-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
                               disabled={isProcessing}
                             >
@@ -537,7 +615,7 @@ try {
                               <span>Approve</span>
                             </button>
                             <button
-                              onClick={() => handleRejectWithdrawal(withdrawal._id,withdrawal.memberID, withdrawal.paymentMethod, withdrawal.accountNumber, withdrawal.walletAddress, withdrawal.amount)}
+                              onClick={() => handleRejectWithdrawal(withdrawal._id, withdrawal.memberID, withdrawal.paymentMethod, withdrawal.accountNumber, withdrawal.walletAddress, withdrawal.amount)}
                               className="flex items-center space-x-2 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
                               disabled={isProcessing}
                             >
@@ -559,14 +637,162 @@ try {
           </div>
         )}
 
+        {/* Orders Tab */}
+        {activeTab === 'orders' && (
+          <div className="space-y-6">
+            <h2 className="text-xl font-semibold text-gray-800">Order Management ({orders.length})</h2>
+            
+            {orders.length === 0 ? (
+              <div className="bg-white rounded-lg shadow-md p-8 text-center">
+                <p className="text-gray-600">No orders found.</p>
+              </div>
+            ) : (
+              <div className="grid gap-6">
+                {orders.map((order) => {
+                  const orderTotal = calculateOrderTotal(order.orderItems);
+                  
+                  return (
+                    <div key={order._id} className="bg-white rounded-lg shadow-md border border-gray-200 overflow-hidden">
+                      <div className="p-6">
+                        <div className="flex items-center justify-between mb-4">
+                          <div className="flex items-center space-x-4">
+                            <div className="p-3 bg-orange-50 rounded-full">
+                              <ShoppingCart className="w-6 h-6 text-orange-600" />
+                            </div>
+                            <div>
+                              <h3 className="text-lg font-semibold text-gray-900">
+                                {order.name}
+                              </h3>
+                              <p className="text-sm text-gray-600">
+                                Order ID: {order._id}
+                              </p>
+                            </div>
+                          </div>
+                          <span className={`px-3 py-1 rounded-full text-sm font-medium capitalize ${getStatusColor(order.status)}`}>
+                            {order.status}
+                          </span>
+                        </div>
+
+                        <div className="grid md:grid-cols-3 gap-4 mb-6">
+                          <div className="flex items-center space-x-2">
+                            <Mail className="w-4 h-4 text-gray-400" />
+                            <span className="text-sm text-gray-600">{order.email}</span>
+                          </div>
+                          <div className="flex items-center space-x-2">
+                            <Phone className="w-4 h-4 text-gray-400" />
+                            <span className="text-sm text-gray-600">{order.phone || 'No phone'}</span>
+                          </div>
+                          <div className="flex items-center space-x-2">
+                            <DollarSign className="w-4 h-4 text-gray-400" />
+                            <span className="text-sm text-gray-600">{formatCurrency(orderTotal)}</span>
+                          </div>
+                        </div>
+
+                        <div className="bg-gray-50 rounded-lg p-4 mb-6">
+                          <h4 className="font-medium text-gray-900 mb-2">Delivery Address</h4>
+                          <div className="text-sm text-gray-600">
+                            <p>{order.address}</p>
+                            <p>{order.barangay}, {order.city}, {order.province}</p>
+                            <p>{order.region} {order.postalCode}</p>
+                            {order.landmark && <p>Landmark: {order.landmark}</p>}
+                          </div>
+                        </div>
+
+                        <div className="mb-6">
+                          <h4 className="font-medium text-gray-900 mb-3">
+                            Order Items ({order.orderItems.length})
+                          </h4>
+                          <div className="space-y-3">
+                            {order.orderItems.map((item, index) => (
+                              <div key={item._id} className="flex items-center justify-between bg-blue-50 rounded-lg p-3">
+                                <div className="flex items-center space-x-3">
+                                  <img
+                                    src={item.image}
+                                    alt={item.name}
+                                    className="w-12 h-12 rounded-lg object-cover"
+                                    onError={(e) => {
+                                      e.target.src = 'https://static.vecteezy.com/system/resources/previews/004/999/463/non_2x/shopping-cart-icon-illustration-free-vector.jpg';
+                                    }}
+                                  />
+                                  <div>
+                                    <p className="text-sm font-medium text-gray-900">{item.name}</p>
+                                    <p className="text-xs text-gray-500">Qty: {item.quantity} × {formatCurrency(item.price)}</p>
+                                  </div>
+                                </div>
+                                <div className="text-sm font-medium text-gray-900">
+                                  {formatCurrency(item.price * item.quantity)}
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+
+                        <div className="bg-yellow-50 rounded-lg p-4 mb-6">
+                          <h4 className="font-medium text-gray-900 mb-2">Payment Information</h4>
+                          <div className="text-sm text-gray-600">
+                            <p><span className="font-medium">Payment Method:</span> {order.paymentMethod}</p>
+                            <p><span className="font-medium">Customer ID:</span> {order.customerId}</p>
+                          </div>
+                        </div>
+
+                        <div className="flex justify-between items-center pt-4 border-t">
+                          <div className="text-lg font-semibold text-gray-900">
+                            Total: {formatCurrency(orderTotal)}
+                          </div>
+                          
+                          {order.status?.toLowerCase() === 'pending' && (
+                            <div className="flex space-x-3">
+                              <button
+                                onClick={() => viewDetails(order)}
+                                className="flex items-center space-x-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                              >
+                                <Eye className="w-4 h-4" />
+                                <span>View Details</span>
+                              </button>
+                              <button
+                                onClick={() => handleApproveOrder(order._id)}
+                                className="flex items-center space-x-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
+                                disabled={isProcessing}
+                              >
+                                {isProcessing ? (
+                                  <Loader2 className="w-4 h-4 animate-spin" />
+                                ) : (
+                                  <CheckCircle className="w-4 h-4" />
+                                )}
+                                <span>Approve</span>
+                              </button>
+                              <button
+                                onClick={() => handleRejectOrder(order._id)}
+                                className="flex items-center space-x-2 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
+                                disabled={isProcessing}
+                              >
+                                {isProcessing ? (
+                                  <Loader2 className="w-4 h-4 animate-spin" />
+                                ) : (
+                                  <XCircle className="w-4 h-4" />
+                                )}
+                                <span>Reject</span>
+                              </button>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+        )}
+
         {/* Detail Modal */}
         {showModal && selectedItem && (
           <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-            <div className="bg-white rounded-lg max-w-3xl w-full max-h-[90vh] overflow-y-auto">
+            <div className="bg-white rounded-lg max-w-4xl w-full max-h-[90vh] overflow-y-auto">
               <div className="p-6">
                 <div className="flex items-center justify-between mb-6">
                   <h2 className="text-2xl font-bold text-gray-900">
-                    {activeTab === 'members' ? 'Member' : 'Withdrawal'} Application Details
+                    {activeTab === 'members' ? 'Member' : activeTab === 'withdrawals' ? 'Withdrawal' : 'Order'} Details
                   </h2>
                   <button
                     onClick={() => setShowModal(false)}
@@ -587,7 +813,7 @@ try {
                     onDecline={handleDeclineMember}
                     isProcessing={isProcessing}
                   />
-                ) : (
+                ) : activeTab === 'withdrawals' ? (
                   <WithdrawalDetailsModal 
                     withdrawal={selectedItem} 
                     userInfo={getUserInfo(selectedItem.userId)}
@@ -596,6 +822,17 @@ try {
                     getStatusColor={getStatusColor}
                     onApprove={handleApproveWithdrawal}
                     onReject={handleRejectWithdrawal}
+                    isProcessing={isProcessing}
+                  />
+                ) : (
+                  <OrderDetailsModal 
+                    order={selectedItem}
+                    formatDate={formatDate}
+                    formatCurrency={formatCurrency}
+                    getStatusColor={getStatusColor}
+                    calculateOrderTotal={calculateOrderTotal}
+                    onApprove={handleApproveOrder}
+                    onReject={handleRejectOrder}
                     isProcessing={isProcessing}
                   />
                 )}
@@ -726,7 +963,7 @@ const MemberDetailsModal = ({
           <span>Approve Member</span>
         </button>
         <button
-          onClick={() => onDecline(member._id)}
+          onClick={() => onDecline(member._id, member.memberID)}
           className="flex-1 flex items-center justify-center space-x-2 px-4 py-3 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
           disabled={isProcessing}
         >
@@ -810,7 +1047,7 @@ const WithdrawalDetailsModal = ({
     {withdrawal.status?.toLowerCase() === 'pending' && (
       <div className="flex space-x-3 pt-4 border-t">
         <button
-          onClick={() => onApprove(withdrawal._id)}
+          onClick={() => onApprove(withdrawal._id, withdrawal.memberID, withdrawal.paymentMethod, withdrawal.accountNumber, withdrawal.walletAddress, withdrawal.amount)}
           className="flex-1 flex items-center justify-center space-x-2 px-4 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
           disabled={isProcessing}
         >
@@ -822,7 +1059,7 @@ const WithdrawalDetailsModal = ({
           <span>Approve Withdrawal</span>
         </button>
         <button
-          onClick={() => onReject(withdrawal._id)}
+          onClick={() => onReject(withdrawal._id, withdrawal.memberID, withdrawal.paymentMethod, withdrawal.accountNumber, withdrawal.walletAddress, withdrawal.amount)}
           className="flex-1 flex items-center justify-center space-x-2 px-4 py-3 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
           disabled={isProcessing}
         >
@@ -837,5 +1074,152 @@ const WithdrawalDetailsModal = ({
     )}
   </div>
 );
+
+const OrderDetailsModal = ({ 
+  order, 
+  formatDate, 
+  formatCurrency, 
+  getStatusColor, 
+  calculateOrderTotal,
+  onApprove, 
+  onReject, 
+  isProcessing 
+}) => {
+  const orderTotal = calculateOrderTotal(order.orderItems);
+  
+  return (
+    <div className="space-y-6">
+      <div className="flex items-center space-x-4">
+        <div className="p-4 bg-orange-50 rounded-full">
+          <ShoppingCart className="w-8 h-8 text-orange-600" />
+        </div>
+        <div>
+          <h3 className="text-xl font-semibold text-gray-900">
+            {order.name}
+          </h3>
+          <p className="text-gray-600">
+            Order ID: {order._id}
+          </p>
+          <p className="text-sm text-gray-500">
+            Ordered: {formatDate(order.createdAt)}
+          </p>
+        </div>
+      </div>
+
+      <div className="grid md:grid-cols-2 gap-6">
+        <div className="space-y-4">
+          <div>
+            <h4 className="font-semibold text-gray-900 mb-2">Customer Information</h4>
+            <div className="space-y-2 text-sm">
+              <div><span className="font-medium">Name:</span> {order.name}</div>
+              <div><span className="font-medium">Email:</span> {order.email}</div>
+              <div><span className="font-medium">Phone:</span> {order.phone || 'Not provided'}</div>
+              <div><span className="font-medium">Customer ID:</span> {order.customerId}</div>
+              <div><span className="font-medium">Status:</span> 
+                <span className={`ml-2 px-2 py-1 rounded text-xs ${getStatusColor(order.status)}`}>
+                  {order.status}
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="space-y-4">
+          <div>
+            <h4 className="font-semibold text-gray-900 mb-2">Delivery Information</h4>
+            <div className="space-y-2 text-sm bg-gray-50 p-3 rounded">
+              <div><span className="font-medium">Address:</span> {order.address}</div>
+              <div><span className="font-medium">Barangay:</span> {order.barangay}</div>
+              <div><span className="font-medium">City:</span> {order.city}</div>
+              <div><span className="font-medium">Province:</span> {order.province}</div>
+              <div><span className="font-medium">Region:</span> {order.region}</div>
+              {order.postalCode && <div><span className="font-medium">Postal Code:</span> {order.postalCode}</div>}
+              {order.landmark && <div><span className="font-medium">Landmark:</span> {order.landmark}</div>}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div>
+        <h4 className="font-semibold text-gray-900 mb-3">
+          Order Items ({order.orderItems.length})
+        </h4>
+        <div className="space-y-3 max-h-60 overflow-y-auto">
+          {order.orderItems.map((item, index) => (
+            <div key={item._id} className="flex items-center justify-between bg-gray-50 rounded-lg p-4">
+              <div className="flex items-center space-x-4">
+                <img
+                  src={item.image}
+                  alt={item.name}
+                  className="w-16 h-16 rounded-lg object-cover"
+                  onError={(e) => {
+                    e.target.src = '/api/placeholder/64/64';
+                  }}
+                />
+                <div>
+                  <p className="font-medium text-gray-900">{item.name}</p>
+                  <p className="text-sm text-gray-500">
+                    Product ID: {item.productId}
+                  </p>
+                  <p className="text-sm text-gray-600">
+                    {formatCurrency(item.price)} × {item.quantity}
+                  </p>
+                </div>
+              </div>
+              <div className="text-right">
+                <p className="font-semibold text-gray-900">
+                  {formatCurrency(item.price * item.quantity)}
+                </p>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <div className="bg-yellow-50 rounded-lg p-4">
+        <div className="flex justify-between items-center">
+          <div>
+            <h4 className="font-semibold text-gray-900">Payment Information</h4>
+            <p className="text-sm text-gray-600">Payment Method: {order.paymentMethod}</p>
+          </div>
+          <div className="text-right">
+            <p className="text-2xl font-bold text-gray-900">
+              Total: {formatCurrency(orderTotal)}
+            </p>
+          </div>
+        </div>
+      </div>
+
+      {order.status?.toLowerCase() === 'pending' && (
+        <div className="flex space-x-3 pt-4 border-t">
+          <button
+            onClick={() => onApprove(order._id)}
+            className="flex-1 flex items-center justify-center space-x-2 px-4 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
+            disabled={isProcessing}
+          >
+            {isProcessing ? (
+              <Loader2 className="w-5 h-5 animate-spin" />
+            ) : (
+              <CheckCircle className="w-5 h-5" />
+            )}
+            <span>Approve Order</span>
+          </button>
+          <button
+            onClick={() => onReject(order._id)}
+            className="flex-1 flex items-center justify-center space-x-2 px-4 py-3 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
+            disabled={isProcessing}
+          >
+            {isProcessing ? (
+              <Loader2 className="w-5 h-5 animate-spin" />
+            ) : (
+              <XCircle className="w-5 h-5" />
+            )}
+            <span>Reject Order</span>
+          </button>
+        </div>
+      )}
+    </div>
+  );
+};
 
 export default AdminApprovalCard;

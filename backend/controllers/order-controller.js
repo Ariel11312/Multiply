@@ -563,5 +563,39 @@ export const updateOrderStatusHandler = async (req, res) => {
     });
   }
 };
+export const HandleOrderStatusUpdate = async (req, res) => {
+  try {
+    const { orderId, status, customerId } = req.body;
+    console.log(`Handling order status update for order ID: ${orderId}, status: ${status}, customer ID: ${customerId}`);
+    if (!orderId || !status ) {
+      return res.status(400).json({ error: 'Order ID, status, and customer ID are required' });
+    }
+
+    const updatedOrder = await Order.findByIdAndUpdate(
+     { _id: orderId},  
+      { status: status },
+      { new: true }
+    );
+
+    if (!updatedOrder) {
+      return res.status(404).json({
+        success: false,
+        error: 'Order not found'
+      });
+    }
+    
+    res.status(200).json({
+      success: true,
+      message: 'Order status updated successfully',
+      order: updatedOrder
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      error: error.message
+    });
+  }
+};
+
 // Using ES modules export as the import style suggests this is preferred
 export default { placeOrder };

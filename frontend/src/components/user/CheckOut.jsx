@@ -829,8 +829,7 @@ export default function CheckoutPage() {
                       className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-green-500 focus:border-green-500"
                     >
                       <option value="">Select Payment Method</option>
-                      <option value="cod">Cash on Delivery</option>
-                      <option value="gcash">GCash</option>
+                      <option value="Bank">Bank</option>
                     </select>
                   </div>
               

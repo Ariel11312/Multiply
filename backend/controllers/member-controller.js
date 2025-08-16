@@ -8,6 +8,7 @@ import { Payment } from "../models/payment.js";
 import { Proof } from "../models/proof.js";
 import { Withdraw } from "../models/witthdraw.js";
 import { Notification } from '../models/notification.js';
+import { Order } from "../models/order.js";
 export const createMember = async (request, response) => {
     
   try {
@@ -444,25 +445,30 @@ export const getAllUserProof = async (request, response) => {
     const userIds = members.map(member => member.memberID.toString());
     
     const userProof = await Proof.find({ id: { $in: ids } });
-    const user = await User.find({ _id: { $in: userIds } })
-    const withdraw = await Withdraw.find();    // Fixed console.log - objects need to be stringified or logged separately
+    const user = await User.find({ _id: { $in: userIds } });
+    const withdraw = await Withdraw.find();
+    
+    // Add orders to the response
+    const orders = await Order.find({status:"pending"}); // Assuming you have an Order model
+    
+    // Fixed console.log - objects need to be stringified or logged separately
     
     response.status(200).json({
       success: true,
       members,
       userProof, // Added userProof to response
-      user, // Added userProof to response
+      user, // Added user to response
       withdraw,
+      orders, // Added orders to response
     });
   } catch (error) {
-    console.error(`Error fetching members: ${error.message}`);
+    console.error(`Error fetching data: ${error.message}`);
     response.status(500).json({
       success: false,
-      message: "An error occurred while fetching members",
+      message: "An error occurred while fetching data",
     });
   }
 };
-
 export const getMemberById = async (request, response) => {
   try {
     const member = await Member.findOne({ memberID: request.params.id });
